@@ -1,0 +1,998 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>第 2 章 資料型態、變數與記憶體｜金融程式計算：C++課程筆記</title>
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<link rel="stylesheet" href="assets/style.css?v=f08507d8">
+</head><body data-page="ch02" data-mode="course">
+<div class="topbar"><a class="brand" href="index.html">金融程式計算：C++｜課程筆記</a><div class="pickers">
+<label for="unitSelect">選擇單元</label><select id="unitSelect" aria-label="選擇單元"><option value="index.html">首頁：課程介紹與使用說明</option><option value="ch01.html">第 1 章　C++ 簡介與第一支程式</option><option value="ch02.html" selected>第 2 章　資料型態、變數與記憶體</option><option value="ch03.html">第 3 章　陣列、指標與字串</option><option value="ch04.html">第 4 章　表達式、運算子與流程控制</option><option value="ch05.html">第 5 章　函數</option><option value="ch06.html">第 6 章　命名空間、預處理與記憶體管理</option><option value="ch07.html">第 7 章　類別 class（一）：封裝、建構與物件的一生</option><option value="ch08.html">第 8 章　類別 class（二）：繼承、多型與設計模式</option><option value="ch09.html">第 9 章　模板與泛型</option><option value="ch10.html">第 10 章　課程總結：從語法到量化程式庫</option></select></div></div>
+<main class="wrap"><header class="ch-head"><h1>第 2 章　資料型態、變數與記憶體</h1><details class="ch-toc"><summary>本章目錄（11 節）</summary><ol><li><a href="#s2-1"><span>2.1</span>型態：資料長什麼樣子</a></li><li><a href="#s2-2"><span>2.2</span>變數：有名字的一塊記憶體</a></li><li><a href="#s2-3"><span>2.3</span>整數與浮點數的陷阱</a></li><li><a href="#s2-4"><span>2.4</span>常數與字面值</a></li><li><a href="#s2-5"><span>2.5</span>從鍵盤輸入：std::cin</a></li><li><a href="#s2-6"><span>2.6</span>變數與記憶體：位址</a></li><li><a href="#s2-7"><span>2.7</span>參考：替變數取別名</a></li><li><a href="#s2-8"><span>2.8</span>指標：存放位址的變數</a></li><li><a href="#s2-9"><span>2.9</span>const 與指標、右值參考</a></li><li><a href="#s2-10"><span>2.10</span>自訂型態：struct、enum、union</a></li><li><a href="#s2-11"><span>2.11</span>本章小結</a></li></ol></details></header>
+<div class="ch-intro"><p>這一章對應老師的講義二：C++ 怎麼存資料。從「型態」和「變數」開始，接著是常數、鍵盤輸入，然後進入 C++ 和 R、Python 最不一樣的地方——<strong>記憶體位址、參考與指標</strong>，最後用 <code>struct</code>、<code>enum</code> 自己定義型態。這一章是後面所有內容（陣列、函數、類別）的地基，指標的部分第一次看不懂很正常，先把「位址」的圖像建立起來。</p></div><section class="sec" id="s2-1" data-label="2.1 型態：資料長什麼樣子"><h2><span class="num">2.1</span>型態：資料長什麼樣子</h2><h3 id="s2-1-1">強型別</h3>
+<p>C++ 是<strong>強型別語言</strong>：每個變數、每個物件在使用前都要先說清楚它的<strong>型態</strong>（type）。型態決定兩件事：</p>
+<ol>
+<li>這筆資料在記憶體中佔<strong>多大的空間</strong>；</li>
+<li>可以對它做<strong>哪些操作</strong>（整數可以相除取餘數，文字可以相接…）。</li>
+</ol>
+<p>老師講義的分類：</p>
+<table>
+<thead>
+<tr>
+<th>類別</th>
+<th>型態</th>
+<th>例子</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>整數</td>
+<td><code>short</code>、<code>int</code>、<code>long</code>、<code>long long</code></td>
+<td>股數、天數、期數</td>
+</tr>
+<tr>
+<td>浮點數（有小數）</td>
+<td><code>float</code>、<code>double</code></td>
+<td>價格、利率、報酬率</td>
+</tr>
+<tr>
+<td>字元</td>
+<td><code>char</code></td>
+<td>'A'、評等 'B'</td>
+</tr>
+<tr>
+<td>布林</td>
+<td><code>bool</code></td>
+<td><code>true</code>／<code>false</code>：是否違約</td>
+</tr>
+<tr>
+<td>空</td>
+<td><code>void</code></td>
+<td>「沒有回傳值」的函數</td>
+</tr>
+<tr>
+<td>複合型態</td>
+<td>陣列、指標、參考</td>
+<td>本章後半、第 3 章</td>
+</tr>
+<tr>
+<td>使用者定義型態</td>
+<td><code>struct</code>、<code>union</code>、<code>enum</code>、<code>class</code></td>
+<td>本章最後、第 7 章</td>
+</tr>
+</tbody>
+</table>
+<h3 id="s2-1-2">佔多少記憶體：sizeof</h3>
+<p>記憶體的基本單位是<strong>位元組</strong>（byte，1 byte = 8 bits）。<code>sizeof</code> 告訴你某個型態或變數佔幾個位元組：</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"char      : "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">char</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" byte</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"bool      : "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">bool</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" byte</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"short     : "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">short</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" bytes</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"int       : "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" bytes</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"long      : "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">long</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" bytes</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"long long : "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">long</span><span class="w"> </span><span class="kt">long</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" bytes</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"float     : "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">float</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" bytes</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"double    : "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" bytes</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">price</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">101.25</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"price 這個變數: "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">price</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" bytes</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">   </span><span class="c1">// 也可以放變數</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>char      : 1 byte
+bool      : 1 byte
+short     : 2 bytes
+int       : 4 bytes
+long      : 8 bytes
+long long : 8 bytes
+float     : 4 bytes
+double    : 8 bytes
+price 這個變數: 8 bytes</code></pre>
+<p><code>long</code> 在 64 位元的 Linux／Mac 是 8 bytes，在 Windows 是 4 bytes——同一個型態在不同平台大小可能不同，這也是為什麼要用 <code>sizeof</code> 確認，而不是死背。</p>
+<h3 id="s2-1-3">能裝多大的數：numeric_limits</h3>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;limits&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"int       : "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">numeric_limits</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;::</span><span class="n">min</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" ~ "</span>
+<span class="w">              </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">numeric_limits</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;::</span><span class="n">max</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"unsigned  : 0 ~ "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">numeric_limits</span><span class="o">&lt;</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="o">&gt;::</span><span class="n">max</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"short     : "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">numeric_limits</span><span class="o">&lt;</span><span class="kt">short</span><span class="o">&gt;::</span><span class="n">min</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" ~ "</span>
+<span class="w">              </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">numeric_limits</span><span class="o">&lt;</span><span class="kt">short</span><span class="o">&gt;::</span><span class="n">max</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"long long : "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">numeric_limits</span><span class="o">&lt;</span><span class="kt">long</span><span class="w"> </span><span class="kt">long</span><span class="o">&gt;::</span><span class="n">min</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" ~ "</span>
+<span class="w">              </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">numeric_limits</span><span class="o">&lt;</span><span class="kt">long</span><span class="w"> </span><span class="kt">long</span><span class="o">&gt;::</span><span class="n">max</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"double 最大約 "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">numeric_limits</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;::</span><span class="n">max</span><span class="p">()</span>
+<span class="w">              </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"，有效位數約 "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">numeric_limits</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;::</span><span class="n">digits10</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" 位</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"float  有效位數約 "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">numeric_limits</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;::</span><span class="n">digits10</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" 位</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>int       : -2147483648 ~ 2147483647
+unsigned  : 0 ~ 4294967295
+short     : -32768 ~ 32767
+long long : -9223372036854775808 ~ 9223372036854775807
+double 最大約 1.79769e+308，有效位數約 15 位
+float  有效位數約 6 位</code></pre>
+<ul>
+<li>4 bytes = 32 bits，可以表示 \(2^{32}\) 種值。<code>int</code> 有正負號，範圍是 \(-2^{31}\) 到 \(2^{31}-1\)（約正負 21 億）；<code>unsigned int</code> 沒有負數，範圍是 0 到 \(2^{32}-1\)（約 43 億）。</li>
+<li>老師講義的表格中 short 的範圍印成 −32767～32768，實際是 <strong>−32768～32767</strong>（負的那邊多一個），以程式印出來的為準。</li>
+<li><code>double</code> 有約 15～16 位有效數字，<code>float</code> 只有約 6～7 位。<strong>金融計算幾乎一律用 <code>double</code></strong>。</li>
+</ul>
+<div class="box warn"><span class="tag">常見錯誤</span><strong class="bt">台積電市值裝得進 int 嗎？</strong><p>2.6 兆元這種數字超過 <code>int</code> 的上限（約 21 億），要用 <code>long long</code> 或 <code>double</code>。整數超過上限會「溢位」，下一節有示範。</p></div><section class="cc" id="cc-s2-1"><h3 class="cc-h">Concept Check：2.1 型態：資料長什麼樣子</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s2-1-1" data-label="2.1 型態：資料長什麼樣子 Q1"><div class="q-meta"><h4><a href="#q-s2-1-1">Q1</a></h4><span class="q-kind">選擇｜易</span><span class="q-title">強型別</span></div><div class="q-text"><p>C++ 是「強型別語言」，指的是什麼？</p></div><ol class="opts"><li><b>(A)</b><span>程式碼的關鍵字必須全部用大寫撰寫</span></li><li><b>(B)</b><span>變數要先宣告型態，之後不能改裝別種</span></li><li><b>(C)</b><span>只能使用整數運算，不能使用小數運算</span></li><li><b>(D)</b><span>型態在執行時才決定，編譯時不做檢查</span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (B)</strong><p>變數要先宣告型態，之後不能改裝別種</p></div><div class="why"><p class="sh">解析</p><p>強型別：變數在宣告時就決定型態，編譯器會依型態檢查每個操作是否合法。</p></div></div></article><article class="q" id="q-s2-1-2" data-label="2.1 型態：資料長什麼樣子 Q2"><div class="q-meta"><h4><a href="#q-s2-1-2">Q2</a></h4><span class="q-kind">選擇｜中</span><span class="q-title">sizeof</span></div><div class="q-text"><p>在 64 位元 Linux 上，<code>sizeof(double)</code> 和 <code>sizeof(int)</code> 通常各是多少？</p></div><ol class="opts"><li><b>(A)</b><span>8 和 4</span></li><li><b>(B)</b><span>4 和 4</span></li><li><b>(C)</b><span>8 和 8</span></li><li><b>(D)</b><span>16 和 2</span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (A)</strong><p>8 和 4</p></div><div class="why"><p class="sh">解析</p><p>double 佔 8 bytes、int 佔 4 bytes；這兩個在常見平台上都一樣。會因平台而不同的主要是 long。</p></div></div></article><article class="q" id="q-s2-1-3" data-label="2.1 型態：資料長什麼樣子 Q3"><div class="q-meta"><h4><a href="#q-s2-1-3">Q3</a></h4><span class="q-kind">填空｜中</span><span class="q-title">int 的範圍</span></div><div class="q-text"><p>4 bytes 的 <code>int</code> 最大值是 \(2^{31}-1\)，約等於 <strong><em>_</em>_（約幾億）；如果要存 3,000,000,000 這種數字，應改用 </strong>____ 型態。</p></div><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案</strong><p>約 21 億（2,147,483,647）；<code>long long</code>（或 <code>unsigned int</code>、<code>double</code>）</p></div></div></article></section></section><section class="sec" id="s2-2" data-label="2.2 變數：有名字的一塊記憶體"><h2><span class="num">2.2</span>變數：有名字的一塊記憶體</h2><h3 id="s2-2-1">宣告、初始化、賦值</h3>
+<p><strong>變數</strong>（variable）就是「有名字的一塊記憶體」，裡面放的值可以改變。每個變數有三個資訊：<strong>型態</strong>、<strong>位址</strong>（在記憶體的哪裡）、<strong>儲存的值</strong>。</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">shares</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1000</span><span class="p">;</span><span class="w">        </span><span class="c1">// 定義並「初始化」：產生變數的同時給初值</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">price</span><span class="p">;</span><span class="w">             </span><span class="c1">// 只定義，沒有給初值</span>
+<span class="w">    </span><span class="n">price</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">101.5</span><span class="p">;</span><span class="w">            </span><span class="c1">// 「賦值」：把新值放進已經存在的變數</span>
+<span class="w">    </span><span class="n">price</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">102.0</span><span class="p">;</span><span class="w">            </span><span class="c1">// 可以一直賦值</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"市值 = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">shares</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">price</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>市值 = 102000</code></pre>
+<ul>
+<li><strong>初始化</strong>只發生一次，在變數誕生的那一刻；<strong>賦值</strong>可以發生很多次。</li>
+<li>老師強調：<strong>一定要初始化</strong>。在函數裡宣告卻沒給初值的變數，內容是「上一個使用這塊記憶體的人留下的垃圾值」，讀它是未定義行為：</li>
+</ul>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">count</span><span class="p">;</span><span class="w">                       </span><span class="c1">// 沒有初始化！</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">      </span><span class="c1">// 印出不可預期的值</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out warnout" data-title="編譯器警告"><code>main.cpp:5:27: warning: ‘count’ is used uninitialized [-Wuninitialized]
+    5 |     std::cout &lt;&lt; count &lt;&lt; &quot;\n&quot;;      // 印出不可預期的值
+      |                           ^~~~
+main.cpp:4:9: note: ‘count’ was declared here
+    4 |     int count;                       // 沒有初始化！
+      |         ^~~~~</code></pre>
+<pre class="out" data-title="執行結果"><code>32766</code></pre>
+<p>編譯器（打開 <code>-Wall</code>）會警告 <code>is used uninitialized</code>。印出來的數字每台電腦、每次執行都可能不同（有時剛好是 0，別被騙了）。</p>
+<h3 id="s2-2-2">四種初始化寫法</h3>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span><span class="w">      </span><span class="c1">// 複製初始化（最常見）</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">b</span><span class="p">(</span><span class="mi">20</span><span class="p">);</span><span class="w">       </span><span class="c1">// 直接初始化（括號）</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">c</span><span class="p">{</span><span class="mi">30</span><span class="p">};</span><span class="w">       </span><span class="c1">// 列表初始化（大括號，C++11）</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">40</span><span class="p">};</span><span class="w">    </span><span class="c1">// 也是列表初始化</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">e</span><span class="p">{};</span><span class="w">         </span><span class="c1">// 大括號空的：初始化成 0</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>10 20 30 40 0</code></pre>
+<p>大括號 <code>{}</code> 有一個好處：<strong>不允許會遺失資料的轉換</strong>（narrowing）。例如把 3.14159 塞進 int：（若右邊是 double 變數而非字面值，g++ 預設只給警告，加上 <code>-pedantic-errors</code> 才會變成錯誤；其他編譯器如 clang、MSVC 直接報錯。）</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">a</span><span class="p">{</span><span class="mf">3.1415926</span><span class="p">};</span><span class="w">   </span><span class="c1">// 大括號：編譯器拒絕，避免悄悄遺失小數</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out err" data-title="編譯錯誤訊息"><code>main.cpp:2:11: error: narrowing conversion of ‘3.1415926000000001e+0’ from ‘double’ to ‘int’ [-Wnarrowing]
+    2 |     int a{3.1415926};   // 大括號：編譯器拒絕，避免悄悄遺失小數
+      |           ^~~~~~~~~
+main.cpp:2:9: warning: unused variable ‘a’ [-Wunused-variable]
+    2 |     int a{3.1415926};   // 大括號：編譯器拒絕，避免悄悄遺失小數
+      |         ^</code></pre>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">pi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">3.1415926</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">c</span><span class="p">(</span><span class="n">pi</span><span class="p">);</span><span class="w">          </span><span class="c1">// 小括號：允許，但小數被直接砍掉</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pi</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>3 3</code></pre>
+<p>把 <code>double</code> 變成 <code>int</code> 是<strong>直接捨去小數</strong>（不是四捨五入），金融計算中算股數、張數時常常因此少一股。</p>
+<h3 id="s2-2-3">命名規則</h3>
+<ul>
+<li>由英文字母、數字、底線 <code>_</code> 組成，<strong>不能以數字開頭</strong>，區分大小寫。</li>
+<li>不能使用關鍵字（<code>int</code>、<code>return</code>、<code>class</code>、<code>for</code>…）。</li>
+<li>好的名字讓程式自己會說話：<code>rate</code>、<code>maturity_years</code>、<code>couponRate</code> 比 <code>a</code>、<code>x1</code> 好得多。常見風格有 <code>snake_case</code>（底線）和 <code>camelCase</code>（駝峰），一個專案內統一就好。</li>
+</ul><section class="cc" id="cc-s2-2"><h3 class="cc-h">Concept Check：2.2 變數：有名字的一塊記憶體</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s2-2-1" data-label="2.2 變數：有名字的一塊記憶體 Q1"><div class="q-meta"><h4><a href="#q-s2-2-1">Q1</a></h4><span class="q-kind">選擇｜中</span><span class="q-title">初始化與賦值</span></div><div class="q-text"><p>關於初始化與賦值，下列何者正確？</p></div><ol class="opts"><li><b>(A)</b><span>初始化可以發生很多次，賦值只能一次</span></li><li><b>(B)</b><span>初始化在變數定義時發生一次，賦值可以很多次</span></li><li><b>(C)</b><span>沒有初始化的區域變數，值一定是 0</span></li><li><b>(D)</b><span><code>int x;</code> 之後 <code>x = 5;</code> 這一行是初始化</span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (B)</strong><p>初始化在變數定義時發生一次，賦值可以很多次</p></div><div class="why"><p class="sh">解析</p><p>初始化是變數誕生時給的初值，只有一次；之後用 <code>=</code> 改值都是賦值。函數內未初始化的區域變數值是不確定的，不一定是 0。</p></div></div></article><article class="q" id="q-s2-2-2" data-label="2.2 變數：有名字的一塊記憶體 Q2"><div class="q-meta"><h4><a href="#q-s2-2-2">Q2</a></h4><span class="q-kind">預測輸出｜中</span><span class="q-title">捨去小數</span></div><div class="q-text"><p>下面程式會印出什麼？</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">budget</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">100000</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">price</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">337.5</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">lots</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">budget</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">price</span><span class="p">;</span><span class="w">      </span><span class="c1">// 可以買幾股</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">lots</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案</strong><pre class="out" data-title="執行結果"><code>296</code></pre></div><div class="why"><p class="sh">解析</p><p>100000 / 337.5 = 296.296…，存進 int 時直接捨去小數，得到 296（不是四捨五入）。</p></div></div></article><article class="q" id="q-s2-2-3" data-label="2.2 變數：有名字的一塊記憶體 Q3"><div class="q-meta"><h4><a href="#q-s2-2-3">Q3</a></h4><span class="q-kind">找錯｜中</span><span class="q-title">大括號初始化</span></div><div class="q-text"><p>為什麼 <code>int shares{1500.0 / 7};</code> 無法編譯，而 <code>int shares = 1500.0 / 7;</code> 可以？要怎麼寫才能兩者都明確表示「我就是要捨去小數」？</p></div><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案</strong><p>大括號初始化不允許「縮窄轉換」（double → int 會遺失小數），所以編譯器拒絕；<code>=</code> 允許隱性轉換，只會給警告或什麼都不說。要明確表示捨去，用強制轉換：<code>int shares{static_cast&lt;int&gt;(1500.0 / 7)};</code>。</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">shares</span><span class="p">{</span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="mf">1500.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">7</span><span class="p">)};</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">shares</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>214</code></pre></div><div class="why"><p class="sh">解析</p><p><code>static_cast&lt;目標型態&gt;(值)</code> 是 C++ 建議的轉換寫法（第 4 章詳細介紹），讓讀程式的人一看就知道這裡是刻意轉型。</p></div></div></article></section></section><section class="sec" id="s2-3" data-label="2.3 整數與浮點數的陷阱"><h2><span class="num">2.3</span>整數與浮點數的陷阱</h2><h3 id="s2-3-1">整數除法</h3>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">7</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">        </span><span class="c1">// 兩個整數相除：結果是整數 3</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">7</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">        </span><span class="c1">// % 取餘數：1</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mf">7.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">      </span><span class="c1">// 只要有一個是浮點數：3.5</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">days</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">45</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">days</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">365</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"  "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">days</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">365.0</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">   </span><span class="c1">// 0 和 0.123...</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>3
+1
+3.5
+0  0.123288</code></pre>
+<p>計算「持有天數 / 365」這種年化比例時，<strong>兩邊都是整數就會得到 0</strong>——非常常見的 bug。寫成 <code>365.0</code> 或先轉成 double。</p>
+<h3 id="s2-3-2">整數溢位</h3>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">big</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2147483647</span><span class="p">;</span><span class="w">            </span><span class="c1">// int 的最大值</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">big</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">    </span><span class="c1">// 溢位：變成很大的負數</span>
+<span class="w">    </span><span class="kt">long</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">safe</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">2147483647L</span><span class="n">L</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">safe</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">   </span><span class="c1">// long long 沒問題</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>-2147483648
+2147483648</code></pre>
+<p>有號整數溢位在 C++ 是「未定義行為」，實際上通常會繞回最小值。市值、成交金額、以「分」為單位的金額，都要注意是否超過 <code>int</code> 的範圍。</p>
+<h3 id="s2-3-3">signed 與 unsigned 不要混用（老師的練習）</h3>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">u</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="n">u2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">42</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">u2</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">u</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">     </span><span class="c1">// 32</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">u</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">u2</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">     </span><span class="c1">// 不是 -32！</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="n">i2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">42</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">i2</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">     </span><span class="c1">// 32</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">i2</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">     </span><span class="c1">// -32</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">u</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">      </span><span class="c1">// int 和 unsigned 混用：int 被轉成 unsigned</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">u</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">      </span><span class="c1">// 0</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>32
+4294967264
+32
+-32
+0
+0</code></pre>
+<p><code>unsigned</code> 沒有負數，10 − 42 會「繞一圈」變成 \(2^{32}-32\) = 4294967264。更危險的是 <code>int</code> 和 <code>unsigned</code> 一起運算時，<code>int</code> 會被<strong>自動轉成 unsigned</strong>，所以 <code>i - u</code> 也變成一個超大的數。老師的提醒：<strong>同一條算式不要混用 signed 與 unsigned</strong>。</p>
+<h3 id="s2-3-4">浮點數不是精確的</h3>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iomanip&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">0.2</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setprecision</span><span class="p">(</span><span class="mi">17</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">boolalpha</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mf">0.3</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">       </span><span class="c1">// false！</span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">12.34567291234987654321</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">12.34567291234987654321</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">                     </span><span class="c1">// float 精度明顯較差</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>0.30000000000000004
+false
+12.345672607421875
+12.345672912349876</code></pre>
+<ul>
+<li>電腦用二進位存小數，0.1 無法被精確表示（就像 1/3 無法用有限的十進位小數表示），所以 0.1 + 0.2 不會剛好等於 0.3。</li>
+<li><strong>不要用 <code>==</code> 比較兩個浮點數</strong>，要用「差距小於某個很小的數」：<code>std::abs(a - 0.3) &lt; 1e-12</code>。</li>
+<li><code>std::boolalpha</code> 讓 bool 印成 true/false 而不是 1/0。</li>
+<li>float 只有約 7 位有效數字，第 8 位以後就不準了；這也是金融用 double 的原因。</li>
+</ul>
+<div class="box fin"><span class="tag">金融應用</span><strong class="bt">錢要怎麼存</strong><p>定價、風險這類「模型計算」用 <code>double</code> 沒問題（本來就是近似）。但會計帳、交易撮合這種「一分錢都不能差」的系統，常把金額存成<strong>以最小單位計的整數</strong>（例如以「分」為單位的 <code>long long</code>），或使用專門的十進位數型別，避免浮點誤差累積。</p></div><section class="cc" id="cc-s2-3"><h3 class="cc-h">Concept Check：2.3 整數與浮點數的陷阱</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s2-3-1" data-label="2.3 整數與浮點數的陷阱 Q1"><div class="q-meta"><h4><a href="#q-s2-3-1">Q1</a></h4><span class="q-kind">預測輸出｜易</span><span class="q-title">整數除法</span></div><div class="q-text"><p>下面程式印出什麼？</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">held</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">90</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">held</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">360</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">held</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">360.0</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">17</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案</strong><pre class="out" data-title="執行結果"><code>0 0.25 2</code></pre></div><div class="why"><p class="sh">解析</p><p>90 / 360 兩個都是整數，結果捨去為 0；90 / 360.0 有浮點數，結果 0.25；17 除以 5 餘 2。</p></div></div></article><article class="q" id="q-s2-3-2" data-label="2.3 整數與浮點數的陷阱 Q2"><div class="q-meta"><h4><a href="#q-s2-3-2">Q2</a></h4><span class="q-kind">選擇｜中</span><span class="q-title">unsigned 相減</span></div><div class="q-text"><p><code>unsigned a = 3, b = 5;</code> 則 <code>a - b</code> 的結果是？</p></div><ol class="opts"><li><b>(A)</b><span>-2</span></li><li><b>(B)</b><span>0</span></li><li><b>(C)</b><span>一個非常大的正整數</span></li><li><b>(D)</b><span>編譯錯誤，unsigned 不能相減</span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (C)</strong><p>一個非常大的正整數</p></div><div class="why"><p class="sh">解析</p><p>unsigned 沒有負數，3 − 5 會繞回成 \(2^{32}-2\) = 4294967294。</p></div></div></article><article class="q" id="q-s2-3-3" data-label="2.3 整數與浮點數的陷阱 Q3"><div class="q-meta"><h4><a href="#q-s2-3-3">Q3</a></h4><span class="q-kind">選擇｜中</span><span class="q-title">比較浮點數</span></div><div class="q-text"><p>要判斷 double 變數 <code>x</code> 是否「等於」0.3，下列何者最恰當？</p></div><ol class="opts"><li><b>(A)</b><span><code>x == 0.3 &amp;&amp; x != 0</code></span></li><li><b>(B)</b><span><code>x = 0.3; x == 0.3</code></span></li><li><b>(C)</b><span><code>std::abs(x - 0.3) &lt; 1e-12</code></span></li><li><b>(D)</b><span><code>static_cast&lt;int&gt;(x) == 0.3</code></span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (C)</strong><code>std::abs(x - 0.3) &lt; 1e-12</code></div><div class="why"><p class="sh">解析</p><p>浮點數有表示誤差，用差距小於一個容忍值來判斷。(B) 是賦值不是比較；(D) 先把 x 截成整數，沒有意義。</p></div></div></article><article class="q" id="q-s2-3-4" data-label="2.3 整數與浮點數的陷阱 Q4"><div class="q-meta"><h4><a href="#q-s2-3-4">Q4</a></h4><span class="q-kind">寫程式｜中</span><span class="q-title">年化報酬</span></div><div class="q-text"><p>某股票買進價 120 元、賣出價 132 元，持有 73 天。寫程式計算持有期間報酬率與年化報酬率（單利，一年以 365 天計），兩者都用百分比、2 位小數印出。注意不要掉進整數除法的陷阱。</p></div><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案</strong><div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iomanip&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">buy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">120</span><span class="p">,</span><span class="w"> </span><span class="n">sell</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">132</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">days</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">73</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">hpr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">sell</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">buy</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">buy</span><span class="p">;</span><span class="w">          </span><span class="c1">// 持有期間報酬</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">annual</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hpr</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">365.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">days</span><span class="p">;</span><span class="w">       </span><span class="c1">// 年化（單利）</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">fixed</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setprecision</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"持有期間報酬率："</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">hpr</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"%</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"年化報酬率："</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">annual</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"%</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>持有期間報酬率：10.00%
+年化報酬率：50.00%</code></pre></div><div class="why"><p class="sh">解析</p><p><code>365.0 / days</code> 讓除法用浮點數計算；若寫成 <code>365 / days</code> 會得到整數 5（剛好整除時沒差，但換成 70 天就錯了）。</p></div></div></article></section></section><section class="sec" id="s2-4" data-label="2.4 常數與字面值"><h2><span class="num">2.4</span>常數與字面值</h2><h3 id="s2-4-1">字面值</h3>
+<p>直接寫在程式裡的值叫<strong>字面值</strong>（literal）：</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">dec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">250</span><span class="p">;</span><span class="w">                 </span><span class="c1">// 十進位</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">bin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mb">0b11111010</span><span class="p">;</span><span class="w">          </span><span class="c1">// 二進位（C++14）：0b 開頭</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">oct</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mo">0372</span><span class="p">;</span><span class="w">                </span><span class="c1">// 八進位：0 開頭（小心！）</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">hex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mh">0xFA</span><span class="p">;</span><span class="w">                </span><span class="c1">// 十六進位：0x 開頭</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">dec</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">bin</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">oct</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">hex</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kt">long</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">notional</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">2'600'000'000'000L</span><span class="n">L</span><span class="p">;</span><span class="w">   </span><span class="c1">// C++14 可以用 ' 分隔位數，LL 代表 long long</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">rate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.75e-2</span><span class="p">;</span><span class="w">                       </span><span class="c1">// 科學記號：1.75 × 10^-2</span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">3.14f</span><span class="p">;</span><span class="w">                             </span><span class="c1">// f 結尾代表 float</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">u</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">42u</span><span class="p">;</span><span class="w">                            </span><span class="c1">// u 結尾代表 unsigned</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">notional</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">rate</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">u</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>250 250 250 250
+2600000000000 0.0175 3.14 42</code></pre>
+<p>注意 <code>0372</code> 開頭的 0 會讓它變成<strong>八進位</strong>（= 250），如果你只是想補零對齊（例如股票代號 0050），存成整數會出錯——代號這種東西應該存成<strong>字串</strong>。</p>
+<h3 id="s2-4-2">字元與字串</h3>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="n">grade</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">'A'</span><span class="p">;</span><span class="w">                 </span><span class="c1">// 字元：單引號，一個字元</span>
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">97</span><span class="p">;</span><span class="w">                      </span><span class="c1">// 字元其實存的是 ASCII 碼：97 就是 'a'</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">grade</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="kt">int</span><span class="p">(</span><span class="n">grade</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="kt">int</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">    </span><span class="c1">// 轉成整數看 ASCII 碼</span>
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="n">next</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">next</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">                           </span><span class="c1">// 'a' + 4 = 'e'</span>
+
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="sc">'a'</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="s">"a"</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">   </span><span class="c1">// 1 與 2</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>A a
+65 97
+e
+1 2</code></pre>
+<ul>
+<li><code>&#x27;a&#x27;</code> 是<strong>字元</strong>（1 個 byte），<code>&quot;a&quot;</code> 是<strong>字串</strong>：字串結尾會自動多一個看不見的<strong>結束字元</strong> <code>&#x27;\0&#x27;</code>（ASCII 碼 0），所以 <code>&quot;a&quot;</code> 佔 2 bytes。</li>
+<li><code>&#x27;\0&#x27;</code>（空字元）、<code>&#x27; &#x27;</code>（空格，ASCII 32）、<code>&quot;&quot;</code>（空字串）是三個不同的東西。</li>
+<li>字串的細節（C 字串 vs <code>std::string</code>）在第 3 章。</li>
+</ul>
+<h3 id="s2-4-3">布林</h3>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">is_default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">b1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">-123</span><span class="p">;</span><span class="w">     </span><span class="c1">// 非 0 → true</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">b2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w">        </span><span class="c1">// 0 → false</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">b3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.2</span><span class="p">;</span><span class="w">      </span><span class="c1">// 非 0 → true</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">is_default</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">b1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">b2</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">b3</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">            </span><span class="c1">// 預設印成 0/1</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">boolalpha</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">is_default</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">b1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">   </span><span class="c1">// true/false</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>0101
+false true</code></pre>
+<p>其他型態轉成 bool：<strong>0 是 false，其他全部是 true</strong>。</p>
+<h3 id="s2-4-4">const：不能改的變數</h3>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">TAX_RATE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.003</span><span class="p">;</span><span class="w">        </span><span class="c1">// 證交稅 0.3%，一經初始化就不能改</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">DAYS_PER_YEAR</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">365</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">proceeds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">500000</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"證交稅："</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">proceeds</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">TAX_RATE</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"一天的比例："</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mf">1.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">DAYS_PER_YEAR</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>證交稅：1500
+一天的比例：0.00273973</code></pre>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">TAX_RATE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.003</span><span class="p">;</span>
+<span class="w">    </span><span class="n">TAX_RATE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0015</span><span class="p">;</span><span class="w">        </span><span class="c1">// 錯誤：const 變數不能修改</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">k</span><span class="p">;</span><span class="w">              </span><span class="c1">// 錯誤：const 必須初始化</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out err" data-title="編譯錯誤訊息"><code>main.cpp:3:14: error: assignment of read-only variable ‘TAX_RATE’
+    3 |     TAX_RATE = 0.0015;        // 錯誤：const 變數不能修改
+      |     ~~~~~~~~~^~~~~~~~
+main.cpp:4:15: error: uninitialized ‘const k’ [-fpermissive]
+    4 |     const int k;              // 錯誤：const 必須初始化
+      |               ^
+main.cpp:4:15: warning: unused variable ‘k’ [-Wunused-variable]</code></pre>
+<ul>
+<li><code>const</code> 物件<strong>必須初始化</strong>，之後任何修改都會被編譯器擋下來。</li>
+<li>好處：(1) 把「魔術數字」取名字，程式更好讀；(2) 防止自己不小心改掉；(3) 稅率改了只要改一個地方。</li>
+</ul>
+<h3 id="s2-4-5">constexpr：編譯時就算好</h3>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="k">constexpr</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="nf">square</span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">x</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w">     </span><span class="c1">// constexpr 函數</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">TRADING_DAYS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">252</span><span class="p">;</span><span class="w">                  </span><span class="c1">// 一年的交易日</span>
+<span class="w">    </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">DAILY_VOL</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.02</span><span class="p">;</span>
+<span class="w">    </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">ANNUAL_VAR</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">square</span><span class="p">(</span><span class="n">DAILY_VOL</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">TRADING_DAYS</span><span class="p">;</span><span class="w">   </span><span class="c1">// 編譯期就算出來</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"年化變異數 = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">ANNUAL_VAR</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>年化變異數 = 0.1008</code></pre>
+<ul>
+<li><code>const</code>：執行期間不能改。<code>constexpr</code>：值<strong>在編譯時就要能算出來</strong>（更嚴格）。</li>
+<li>老師的原則：能在編譯期算的就在編譯期算——效能更好，也更安全。所有 constexpr 都是 const，反過來不一定：<code>const int n = get_size();</code> 是 const，但要執行才知道值，不能是 constexpr。</li>
+</ul><section class="cc" id="cc-s2-4"><h3 class="cc-h">Concept Check：2.4 常數與字面值</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s2-4-1" data-label="2.4 常數與字面值 Q1"><div class="q-meta"><h4><a href="#q-s2-4-1">Q1</a></h4><span class="q-kind">選擇｜易</span><span class="q-title">字元與字串</span></div><div class="q-text"><p>關於 <code>&#x27;a&#x27;</code> 與 <code>&quot;a&quot;</code>，下列何者正確？</p></div><ol class="opts"><li><b>(A)</b><span>兩者完全相同，都是字元，都佔 1 byte</span></li><li><b>(B)</b><span>"a" 比 'a' 多一個結尾的 '\0'，共 2 bytes</span></li><li><b>(C)</b><span>'a' 是字串，"a" 是字元，兩者都佔 1 byte</span></li><li><b>(D)</b><span>"a" 只佔 1 byte，'a' 因為是字元佔 2 bytes</span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (B)</strong><p>"a" 比 'a' 多一個結尾的 '\0'，共 2 bytes</p></div><div class="why"><p class="sh">解析</p><p>單引號是字元，雙引號是字串；C 風格字串結尾會自動加上結束字元 '\0'。</p></div></div></article><article class="q" id="q-s2-4-2" data-label="2.4 常數與字面值 Q2"><div class="q-meta"><h4><a href="#q-s2-4-2">Q2</a></h4><span class="q-kind">預測輸出｜中</span><span class="q-title">八進位陷阱</span></div><div class="q-text"><p>下面程式印出什麼？</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">code</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mo">0050</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">code</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案</strong><pre class="out" data-title="執行結果"><code>40</code></pre></div><div class="why"><p class="sh">解析</p><p>0 開頭的整數字面值是八進位，八進位 50 = 5 × 8 = 40。股票代號這類「有前導 0 的代碼」應該用字串存。</p></div></div></article><article class="q" id="q-s2-4-3" data-label="2.4 常數與字面值 Q3"><div class="q-meta"><h4><a href="#q-s2-4-3">Q3</a></h4><span class="q-kind">選擇｜中</span><span class="q-title">const 與 constexpr</span></div><div class="q-text"><p>下列何者<strong>一定</strong>要在編譯時就能算出值？</p></div><ol class="opts"><li><b>(A)</b><span><code>const double r = read_rate();</code></span></li><li><b>(B)</b><span><code>constexpr int N = 252;</code></span></li><li><b>(C)</b><span><code>double r = 0.02;</code></span></li><li><b>(D)</b><span><code>int n;</code></span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (B)</strong><code>constexpr int N = 252;</code></div><div class="why"><p class="sh">解析</p><p>constexpr 要求在編譯期求值；const 只保證初始化後不能修改，初值可以在執行期才得到。</p></div></div></article><article class="q" id="q-s2-4-4" data-label="2.4 常數與字面值 Q4"><div class="q-meta"><h4><a href="#q-s2-4-4">Q4</a></h4><span class="q-kind">寫程式｜易</span><span class="q-title">手續費</span></div><div class="q-text"><p>用 <code>const</code> 定義手續費率 0.1425% 和證交稅率 0.3%，計算賣出 2,000 股、每股 85.6 元的手續費、證交稅與實收金額（賣出金額 − 手續費 − 稅），以整數元（捨去）印出。</p></div><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案</strong><div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">FEE_RATE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.001425</span><span class="p">;</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">TAX_RATE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.003</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">shares</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2000</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">price</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">85.6</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">amount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">shares</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">price</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">fee</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="n">amount</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">FEE_RATE</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">tax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="n">amount</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">TAX_RATE</span><span class="p">);</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"成交金額："</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">amount</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">手續費："</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">fee</span>
+<span class="w">              </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">證交稅："</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">tax</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">實收："</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">amount</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">fee</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">tax</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>成交金額：171200
+手續費：243
+證交稅：513
+實收：170444</code></pre></div><div class="why"><p class="sh">解析</p><p>費率宣告成 const 並取有意義的名字；<code>static_cast&lt;int&gt;</code> 明確表示捨去小數。</p></div></div></article></section></section><section class="sec" id="s2-5" data-label="2.5 從鍵盤輸入：std::cin"><h2><span class="num">2.5</span>從鍵盤輸入：std::cin</h2><div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iomanip&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;cmath&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">principal</span><span class="p">,</span><span class="w"> </span><span class="n">rate</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">years</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"請輸入本金、年利率、年數："</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cin</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">principal</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">rate</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">years</span><span class="p">;</span><span class="w">      </span><span class="c1">// 依序讀入三個值（空白或換行分隔）</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">fixed</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setprecision</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span><span class="w">   </span><span class="c1">// 固定小數 2 位，避免科學記號</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">到期本利和 = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">principal</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">pow</span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">rate</span><span class="p">,</span><span class="w"> </span><span class="n">years</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out inp" data-title="鍵盤輸入"><code>1000000 0.025 10</code></pre>
+<pre class="out" data-title="執行結果"><code>請輸入本金、年利率、年數：
+到期本利和 = 1280084.54</code></pre>
+<ul>
+<li><code>std::cin</code>（character input）代表鍵盤輸入；<code>&gt;&gt;</code> 是<strong>輸入運算子</strong>，方向和 <code>&lt;&lt;</code> 相反：把輸入的值「流進」右邊的變數。</li>
+<li>會依變數的型態解讀輸入：讀進 <code>double</code> 就解讀成小數。</li>
+<li>多個值可以用空白或換行分隔。上面「鍵盤輸入」那一格是網站代替你打的內容。</li>
+</ul>
+<p>輸入的格式不對時（例如在要數字的地方打了英文），<code>cin</code> 會進入失敗狀態，變數會變成 0：</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cin</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">n</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">cin</span><span class="p">.</span><span class="n">fail</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"輸入的不是整數！n = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out inp" data-title="鍵盤輸入"><code>abc</code></pre>
+<pre class="out" data-title="執行結果"><code>輸入的不是整數！n = 0</code></pre>
+<p>（<code>if</code> 在第 4 章介紹；這裡先知道「讀取可能失敗，要檢查」。）</p><section class="cc" id="cc-s2-5"><h3 class="cc-h">Concept Check：2.5 從鍵盤輸入：std::cin</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s2-5-1" data-label="2.5 從鍵盤輸入：std::cin Q1"><div class="q-meta"><h4><a href="#q-s2-5-1">Q1</a></h4><span class="q-kind">選擇｜易</span><span class="q-title">輸入運算子</span></div><div class="q-text"><p>要從鍵盤讀入一個整數到變數 <code>n</code>，正確的寫法是？</p></div><ol class="opts"><li><b>(A)</b><span><code>std::cout &gt;&gt; n;</code></span></li><li><b>(B)</b><span><code>std::cin &lt;&lt; n;</code></span></li><li><b>(C)</b><span><code>std::cin &gt;&gt; n;</code></span></li><li><b>(D)</b><span><code>std::cin(n);</code></span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (C)</strong><code>std::cin &gt;&gt; n;</code></div><div class="why"><p class="sh">解析</p><p>cin 搭配 &gt;&gt;（資料流入變數）；cout 搭配 &lt;&lt;（資料流向螢幕）。</p></div></div></article><article class="q" id="q-s2-5-2" data-label="2.5 從鍵盤輸入：std::cin Q2"><div class="q-meta"><h4><a href="#q-s2-5-2">Q2</a></h4><span class="q-kind">寫程式｜中</span><span class="q-title">讀入計算</span></div><div class="q-text"><p>寫一支程式：從鍵盤讀入持股數與每股價格，印出持股市值。（用 <code>stdin</code> 輸入 <code>3000 45.2</code> 測試。）</p></div><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案</strong><div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">shares</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">price</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"持股數與價格："</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cin</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">shares</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">price</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">市值 = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">shares</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">price</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out inp" data-title="鍵盤輸入"><code>3000 45.2</code></pre>
+<pre class="out" data-title="執行結果"><code>持股數與價格：
+市值 = 135600</code></pre></div></div></article></section></section><section class="sec" id="s2-6" data-label="2.6 變數與記憶體：位址"><h2><span class="num">2.6</span>變數與記憶體：位址</h2><h3 id="s2-6-1">記憶體像一排有門牌的置物櫃</h3>
+<p>電腦記憶體可以想成一長排置物櫃，每一格是 1 byte，每一格都有編號——這個編號就是<strong>位址</strong>（address）。定義一個 <code>int</code> 變數，就是向系統借了<strong>連續 4 格</strong>；變數名代表這一段的<strong>起始位址</strong>，型態決定這一段<strong>有多長</strong>。</p>
+<p>用 <code>&amp;</code>（<strong>取址運算子</strong>）可以看到變數的位址：</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">shares</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1000</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">price</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">101.5</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="n">grade</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">'A'</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"shares 的值 = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">shares</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"，位址 = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="o">&amp;</span><span class="n">shares</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"price  的值 = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">price</span><span class="w">  </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"，位址 = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="o">&amp;</span><span class="n">price</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"grade  的位址 = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">void</span><span class="o">*&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">grade</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>shares 的值 = 1000，位址 = 0x7ffd8c7db18c
+price  的值 = 101.5，位址 = 0x7ffd8c7db190
+grade  的位址 = 0x7ffd8c7db18b</code></pre>
+<ul>
+<li>位址用<strong>十六進位</strong>顯示（0x 開頭），每次執行可能不同——作業系統每次分配的位置不一樣。</li>
+<li><code>char</code> 的位址要轉成 <code>void*</code> 才會印出位址，否則 cout 會把它當成字串去印（第 3 章字元陣列會說明）。</li>
+</ul>
+<h3 id="s2-6-2">為什麼要在意位址</h3>
+<p>在 R 裡你幾乎不用想記憶體；但 C++ 讓你直接操作位址，這帶來兩件事：</p>
+<ol>
+<li><strong>效率</strong>：傳一個很大的資料（例如一百萬筆報酬率）給函數時，可以只傳「它在哪裡」（位址，8 bytes），不用整份複製。</li>
+<li><strong>共享與修改</strong>：多個地方可以指向同一份資料，一個地方改了，大家都看得到。</li>
+</ol>
+<p>這就是接下來的<strong>參考</strong>和<strong>指標</strong>。</p><section class="cc" id="cc-s2-6"><h3 class="cc-h">Concept Check：2.6 變數與記憶體：位址</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s2-6-1" data-label="2.6 變數與記憶體：位址 Q1"><div class="q-meta"><h4><a href="#q-s2-6-1">Q1</a></h4><span class="q-kind">選擇｜易</span><span class="q-title">取址運算子</span></div><div class="q-text"><p><code>&amp;x</code>（x 是變數）的意思是？</p></div><ol class="opts"><li><b>(A)</b><span>x 的值加 1</span></li><li><b>(B)</b><span>x 在記憶體中的位址</span></li><li><b>(C)</b><span>x 佔用的位元組數</span></li><li><b>(D)</b><span>x 的參考型態（別名的型態）</span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (B)</strong><p>x 在記憶體中的位址</p></div><div class="why"><p class="sh">解析</p><p>在運算式中，&amp; 是取址運算子，得到變數的記憶體位址。佔用大小要用 sizeof。</p></div></div></article><article class="q" id="q-s2-6-2" data-label="2.6 變數與記憶體：位址 Q2"><div class="q-meta"><h4><a href="#q-s2-6-2">Q2</a></h4><span class="q-kind">簡答｜中</span><span class="q-title">變數的三個資訊</span></div><div class="q-text"><p>用「置物櫃」的比喻說明：一個 <code>double</code> 變數的型態、位址、值分別代表什麼？</p></div><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案</strong><p>記憶體像一排有編號的置物櫃，每格 1 byte。位址是這個變數第一格的編號（從哪裡開始）；型態 double 決定它佔連續 8 格，以及這 8 格的內容要怎麼解讀（解讀成有小數的數字）；值就是這 8 格裡實際存放的內容，例如 101.5。</p></div></div></article></section></section><section class="sec" id="s2-7" data-label="2.7 參考：替變數取別名"><h2><span class="num">2.7</span>參考：替變數取別名</h2><h3 id="s2-7-1">定義參考</h3>
+<p><strong>參考</strong>（reference）就是<strong>別名</strong>：給一個已經存在的變數另一個名字。宣告時在型態後面加 <code>&amp;</code>：</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">price</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">100.0</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="o">&amp;</span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">price</span><span class="p">;</span><span class="w">        </span><span class="c1">// p 是 price 的別名（參考）</span>
+<span class="w">    </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">105.5</span><span class="p">;</span><span class="w">                </span><span class="c1">// 透過別名修改，等於改 price</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"price = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">price</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"，p = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"位址相同嗎？"</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><span class="o">&amp;</span><span class="n">price</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="o">&amp;</span><span class="n">p</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>price = 105.5，p = 105.5
+位址相同嗎？1</code></pre>
+<ul>
+<li><code>double &amp;p = price;</code>：p 和 price 是<strong>同一塊記憶體</strong>的兩個名字（位址相同）。</li>
+<li>參考本身<strong>不是物件</strong>，不另外佔一塊記憶體，只是「綁定」在原來的物件上。</li>
+</ul>
+<h3 id="s2-7-2">參考的規則</h3>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="o">&amp;</span><span class="n">r1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">x</span><span class="p">;</span><span class="w">       </span><span class="c1">// 正確</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="o">&amp;</span><span class="n">r2</span><span class="p">;</span><span class="w">           </span><span class="c1">// 錯誤：參考一定要初始化（一定要綁定某個東西）</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="o">&amp;</span><span class="n">r3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span><span class="w">      </span><span class="c1">// 錯誤：一般參考不能綁定字面值</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="o">&amp;</span><span class="n">r4</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">x</span><span class="p">;</span><span class="w">    </span><span class="c1">// 錯誤：型態必須相同</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out err" data-title="編譯錯誤訊息"><code>main.cpp:4:10: error: ‘r2’ declared as reference but not initialized
+    4 |     int &amp;r2;           // 錯誤：參考一定要初始化（一定要綁定某個東西）
+      |          ^~
+main.cpp:5:15: error: cannot bind non-const lvalue reference of type ‘int&amp;’ to an rvalue of type ‘int’
+    5 |     int &amp;r3 = 10;      // 錯誤：一般參考不能綁定字面值
+      |               ^~
+main.cpp:6:18: error: cannot bind non-const lvalue reference of type ‘double&amp;’ to a value of type ‘int’
+    6 |     double &amp;r4 = x;    // 錯誤：型態必須相同
+      |                  ^
+main.cpp:3:10: warning: unused variable ‘r1’ [-Wunused-variable]
+    3 |     int &amp;r1 = x;       // 正確
+      |          ^~
+main.cpp:4:10: warning: unused variable ‘r2’ [-Wunused-variable]
+    4 |     int &amp;r2;           // 錯誤：參考一定要初始化（一定要綁定某個東西）</code></pre>
+<ul>
+<li>參考<strong>必須初始化</strong>，而且綁定之後<strong>不能改綁別人</strong>——之後的 <code>=</code> 都是「改值」，不是「換綁定對象」。</li>
+<li>只能綁定物件（有位址的東西），不能綁定 <code>10</code> 這種字面值。</li>
+<li>型態必須一致。</li>
+<li>一行宣告多個參考時，每個名字前都要有 <code>&amp;</code>：<code>int &amp;r = i, r2 = i2;</code> 中只有 r 是參考，r2 是普通 int。</li>
+</ul>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="o">&amp;</span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">;</span>
+<span class="w">    </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="p">;</span><span class="w">            </span><span class="c1">// 不是「改綁 b」，而是把 b 的值 2 指定給 a</span>
+<span class="w">    </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">99</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"a = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"，b = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>a = 99，b = 2</code></pre>
+<h3 id="s2-7-3">參考最常見的用途：函數參數（預告）</h3>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">apply_return</span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="o">&amp;</span><span class="n">balance</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">r</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">   </span><span class="c1">// balance 是呼叫端變數的別名</span>
+<span class="w">    </span><span class="n">balance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">r</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">account</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10000</span><span class="p">;</span>
+<span class="w">    </span><span class="n">apply_return</span><span class="p">(</span><span class="n">account</span><span class="p">,</span><span class="w"> </span><span class="mf">0.05</span><span class="p">);</span>
+<span class="w">    </span><span class="n">apply_return</span><span class="p">(</span><span class="n">account</span><span class="p">,</span><span class="w"> </span><span class="mf">-0.02</span><span class="p">);</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"帳戶餘額："</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">account</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">   </span><span class="c1">// 10000 × 1.05 × 0.98</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>帳戶餘額：10290</code></pre>
+<p>函數拿到的是 <code>account</code> 的別名，所以在函數裡改 <code>balance</code> 就是改 <code>account</code>。第 5 章會詳細比較「傳值」和「傳參考」。</p><section class="cc" id="cc-s2-7"><h3 class="cc-h">Concept Check：2.7 參考：替變數取別名</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s2-7-1" data-label="2.7 參考：替變數取別名 Q1"><div class="q-meta"><h4><a href="#q-s2-7-1">Q1</a></h4><span class="q-kind">預測輸出｜中</span><span class="q-title">參考改值</span></div><div class="q-text"><p>下面程式印出什麼？</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">8</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="o">&amp;</span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">x</span><span class="p">;</span>
+<span class="w">    </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">y</span><span class="p">;</span>
+<span class="w">    </span><span class="n">r</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案</strong><pre class="out" data-title="執行結果"><code>9 8</code></pre></div><div class="why"><p class="sh">解析</p><p>r 永遠是 x 的別名。<code>r = y</code> 是把 y 的值 8 放進 x；<code>r += 1</code> 讓 x 變 9；y 沒被改。</p></div></div></article><article class="q" id="q-s2-7-2" data-label="2.7 參考：替變數取別名 Q2"><div class="q-meta"><h4><a href="#q-s2-7-2">Q2</a></h4><span class="q-kind">選擇｜中</span><span class="q-title">參考的規則</span></div><div class="q-text"><p>下列哪一行可以編譯？</p></div><ol class="opts"><li><b>(A)</b><span><code>int v = 1; int &amp;r = v;</code></span></li><li><b>(B)</b><span><code>int &amp;r = 100;</code></span></li><li><b>(C)</b><span><code>int &amp;r;</code></span></li><li><b>(D)</b><span><code>int v = 1; double &amp;r = v;</code></span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (A)</strong><code>int v = 1; int &amp;r = v;</code></div><div class="why"><p class="sh">解析</p><p>參考必須初始化、只能綁定物件（不能是字面值）、型態必須相同。</p></div></div></article><article class="q" id="q-s2-7-3" data-label="2.7 參考：替變數取別名 Q3"><div class="q-meta"><h4><a href="#q-s2-7-3">Q3</a></h4><span class="q-kind">寫程式｜中</span><span class="q-title">用參考交換</span></div><div class="q-text"><p>寫一個函數 <code>void swap_price(double &amp;a, double &amp;b)</code>，交換兩個變數的值；在 main 裡交換買價 99.5 和賣價 100.5 並印出結果。</p></div><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案</strong><div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">swap_price</span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="o">&amp;</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="o">&amp;</span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">tmp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">;</span>
+<span class="w">    </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="p">;</span>
+<span class="w">    </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmp</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">bid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">99.5</span><span class="p">,</span><span class="w"> </span><span class="n">ask</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">100.5</span><span class="p">;</span>
+<span class="w">    </span><span class="n">swap_price</span><span class="p">(</span><span class="n">bid</span><span class="p">,</span><span class="w"> </span><span class="n">ask</span><span class="p">);</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"bid = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">bid</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"，ask = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">ask</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>bid = 100.5，ask = 99.5</code></pre></div><div class="why"><p class="sh">解析</p><p>因為參數是參考，函數裡的 a、b 就是 main 的 bid、ask 本身，交換會反映回呼叫端。如果參數寫成 <code>double a, double b</code>（傳值），交換的只是副本，main 裡的值不會變。</p></div></div></article></section></section><section class="sec" id="s2-8" data-label="2.8 指標：存放位址的變數"><h2><span class="num">2.8</span>指標：存放位址的變數</h2><h3 id="s2-8-1">指標是什麼</h3>
+<p><strong>指標</strong>（pointer）是一個<strong>變數</strong>，它存放的值是<strong>另一個變數的位址</strong>。用置物櫃比喻：普通變數的櫃子裡放的是「東西」，指標的櫃子裡放的是一張紙條，寫著「東西在第幾號櫃子」。</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">price</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">101.5</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="o">*</span><span class="n">ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">price</span><span class="p">;</span><span class="w">      </span><span class="c1">// ptr 是「指向 double 的指標」，存放 price 的位址</span>
+
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"price 的位址 : "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="o">&amp;</span><span class="n">price</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"ptr 的值      : "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">ptr</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">      </span><span class="c1">// 和上一行一樣</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"*ptr          : "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="o">*</span><span class="n">ptr</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">     </span><span class="c1">// 解參考：到那個位址拿東西</span>
+<span class="w">    </span><span class="o">*</span><span class="n">ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">99.0</span><span class="p">;</span><span class="w">                                        </span><span class="c1">// 透過指標修改 price</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"price 變成    : "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">price</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"ptr 自己的位址: "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="o">&amp;</span><span class="n">ptr</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"，大小 "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">ptr</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" bytes</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>price 的位址 : 0x7ffd435d7388
+ptr 的值      : 0x7ffd435d7388
+*ptr          : 101.5
+price 變成    : 99
+ptr 自己的位址: 0x7ffd435d7390，大小 8 bytes</code></pre>
+<p>兩個符號、兩種角色（老師特別提醒要看上下文）：</p>
+<table>
+<thead>
+<tr>
+<th>出現在哪</th>
+<th><code>*</code></th>
+<th><code>&amp;</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>宣告</strong>中</td>
+<td><code>double *ptr</code>：ptr 是指標</td>
+<td><code>double &amp;r = x</code>：r 是參考</td>
+</tr>
+<tr>
+<td><strong>運算式</strong>中</td>
+<td><code>*ptr</code>：解參考，取指向的東西</td>
+<td><code>&amp;x</code>：取 x 的位址</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>指標<strong>本身是物件</strong>：有自己的位址（<code>&amp;ptr</code>）、自己的大小（64 位元系統上 8 bytes，不管指向什麼型態）。所以可以有「指標的指標」，但沒有「參考的參考」。</li>
+<li>指標的型態要和指向的物件一致：<code>int*</code> 只能指向 int。</li>
+<li>指標可以<strong>改指向別的物件</strong>（參考不行）。</li>
+</ul>
+<h3 id="s2-8-2">指標 vs 參考</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>參考 <code>T&amp;</code></th>
+<th>指標 <code>T*</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>本質</td>
+<td>別名，不是物件</td>
+<td>獨立的物件，存位址</td>
+</tr>
+<tr>
+<td>一定要初始化</td>
+<td>是</td>
+<td>否（但強烈建議）</td>
+</tr>
+<tr>
+<td>可以改綁／改指</td>
+<td>不行</td>
+<td>可以</td>
+</tr>
+<tr>
+<td>可以是「空的」</td>
+<td>不行</td>
+<td>可以（<code>nullptr</code>）</td>
+</tr>
+<tr>
+<td>取值寫法</td>
+<td>直接用名字</td>
+<td><code>*ptr</code></td>
+</tr>
+</tbody>
+</table>
+<p>老師的說法：參考是指標「更安全、更方便」的版本。能用參考就用參考；需要「可以為空」或「要改指向」時才用指標。</p>
+<h3 id="s2-8-3">空指標與指標的狀態</h3>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">nullptr</span><span class="p">;</span><span class="w">          </span><span class="c1">// 空指標：不指向任何東西（C++11）</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">p</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">nullptr</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"p 目前沒有指向任何東西</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">rate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.03</span><span class="p">;</span>
+<span class="w">    </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">rate</span><span class="p">;</span><span class="w">                    </span><span class="c1">// 改指向 rate</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">                      </span><span class="c1">// 非空指標轉成 bool 是 true</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"現在指向的值："</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>p 目前沒有指向任何東西
+現在指向的值：0.03</code></pre>
+<p>指標的值只會是四種狀態之一：(1) 指向一個物件；(2) 指向某物件「緊接著的下一個位置」（陣列走到尾端時）；(3) <strong>空指標</strong> <code>nullptr</code>；(4) <strong>無效指標</strong>（例如沒初始化、或指向已經被釋放的記憶體）。對無效指標解參考會讓程式崩潰或產生怪結果，而且<strong>編譯器不會幫你檢查</strong>。所以：</p>
+<div class="box key"><span class="tag">重點</span><strong class="bt">指標的好習慣</strong><p>宣告指標時一律初始化，不知道要指向誰就給 <code>nullptr</code>；解參考之前先確定不是空的。舊程式裡的 <code>NULL</code> 或 <code>0</code> 也代表空指標，新程式用 <code>nullptr</code>。</p></div>
+<h3 id="s2-8-4">指標的指標</h3>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">100</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">x</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="o">**</span><span class="n">ptr2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">ptr</span><span class="p">;</span><span class="w">          </span><span class="c1">// ptr2 存放 ptr 的位址</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"x     = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"ptr   = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">ptr</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"，*ptr = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="o">*</span><span class="n">ptr</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"ptr2  = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">ptr2</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"，*ptr2 = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="o">*</span><span class="n">ptr2</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"，**ptr2 = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="o">**</span><span class="n">ptr2</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>x     = 100
+ptr   = 0x7fffef28e564，*ptr = 100
+ptr2  = 0x7fffef28e568，*ptr2 = 0x7fffef28e564，**ptr2 = 100</code></pre>
+<p><code>*ptr2</code> 拿到的是 ptr（一個位址），再 <code>*</code> 一次 <code>**ptr2</code> 才拿到 x 的值 100。</p>
+<h3 id="s2-8-5">void* 指標</h3>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">obj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">3.14</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">pv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">obj</span><span class="p">;</span><span class="w">                                   </span><span class="c1">// void* 可以存任何型態的位址</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="o">*</span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">pv</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">    </span><span class="c1">// 要先轉回正確的型態才能解參考</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>3.14</code></pre>
+<p><code>void*</code> 只知道「位址」，不知道那裡放的是什麼型態，所以不能直接解參考。現代 C++ 很少需要它，看到能認得就好。</p>
+<h3 id="s2-8-6">從右往左讀複雜的宣告</h3>
+<p>老師的技巧：<strong>離變數名稱最近的符號影響最直接，從右往左讀</strong>。</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">42</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="p">;</span><span class="w">               </span><span class="c1">// p 是一個指標，指向 int</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="o">*&amp;</span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="p">;</span><span class="w">          </span><span class="c1">// 從右往左：r 是一個參考（&amp;），綁定的是 int*（指向 int 的指標）</span>
+<span class="w">    </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">i</span><span class="p">;</span><span class="w">               </span><span class="c1">// 透過 r 讓 p 指向 i</span>
+<span class="w">    </span><span class="o">*</span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w">               </span><span class="c1">// 透過 r 解參考，把 i 改成 0</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"i = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"，*p = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>i = 0，*p = 0</code></pre><section class="cc" id="cc-s2-8"><h3 class="cc-h">Concept Check：2.8 指標：存放位址的變數</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s2-8-1" data-label="2.8 指標：存放位址的變數 Q1"><div class="q-meta"><h4><a href="#q-s2-8-1">Q1</a></h4><span class="q-kind">預測輸出｜中</span><span class="q-title">指標改值</span></div><div class="q-text"><p>下面程式印出什麼？</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">7</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">a</span><span class="p">;</span>
+<span class="w">    </span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span>
+<span class="w">    </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">b</span><span class="p">;</span>
+<span class="w">    </span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案</strong><pre class="out" data-title="執行結果"><code>10 8</code></pre></div><div class="why"><p class="sh">解析</p><p><code>*p = 10</code> 改的是 a；接著 p 改指向 b，<code>*p = *p + 1</code> 讓 b 變 8。</p></div></div></article><article class="q" id="q-s2-8-2" data-label="2.8 指標：存放位址的變數 Q2"><div class="q-meta"><h4><a href="#q-s2-8-2">Q2</a></h4><span class="q-kind">選擇｜中</span><span class="q-title">指標與參考</span></div><div class="q-text"><p>關於指標與參考，下列何者<strong>錯誤</strong>？</p></div><ol class="opts"><li><b>(A)</b><span>指標可以是 nullptr，參考不能為空</span></li><li><b>(B)</b><span>指標可以改指向別的物件，參考綁定後不能改綁</span></li><li><b>(C)</b><span>指標本身有自己的位址，所以可以有指標的指標</span></li><li><b>(D)</b><span>參考是物件，有自己獨立的記憶體位址</span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (D)</strong><p>參考是物件，有自己獨立的記憶體位址</p></div><div class="why"><p class="sh">解析</p><p>參考不是物件，只是別名；對參考取址得到的是它綁定的那個物件的位址。</p></div></div></article><article class="q" id="q-s2-8-3" data-label="2.8 指標：存放位址的變數 Q3"><div class="q-meta"><h4><a href="#q-s2-8-3">Q3</a></h4><span class="q-kind">填空｜中</span><span class="q-title">兩個符號</span></div><div class="q-text"><p>在 <code>int *p = &amp;x;</code> 這一行中，<code>*</code> 的作用是 <strong><em>_</em>_，<code>&amp;</code> 的作用是 </strong><strong><em>_；在 <code>y = *p;</code> 中，<code>*</code> 的作用是 </em></strong>___。</p></div><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案</strong><p>宣告 p 是指標；取 x 的位址；解參考（取得 p 指向的值）</p></div><div class="why"><p class="sh">解析</p><p>同一個符號在宣告中和在運算式中意義不同，要看上下文。</p></div></div></article><article class="q" id="q-s2-8-4" data-label="2.8 指標：存放位址的變數 Q4"><div class="q-meta"><h4><a href="#q-s2-8-4">Q4</a></h4><span class="q-kind">找錯｜中</span><span class="q-title">未初始化的指標</span></div><div class="q-text"><p>下面的程式哪裡危險？要怎麼改？</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="p">;</span>
+<span class="w">    </span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.5</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案</strong><p>p 沒有初始化，是一個無效指標，指向不知道哪裡的記憶體；<code>*p = 1.5</code> 會寫進未知位置，可能讓程式崩潰（未定義行為），而編譯器不一定會報錯。應先讓它指向一個真的物件，或初始化成 nullptr 並在使用前檢查：</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">value</span><span class="p">;</span>
+<span class="w">    </span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.5</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>1.5</code></pre></div></div></article></section></section><section class="sec" id="s2-9" data-label="2.9 const 與指標、右值參考"><h2><span class="num">2.9</span>const 與指標、右值參考</h2><h3 id="s2-9-1">指向常數的指標 vs 常數指標</h3>
+<p><code>const</code> 和指標放在一起有兩種意思，老師用 <strong>Top-Level</strong> 和 <strong>Low-Level</strong> 區分：</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">rate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.02</span><span class="p">,</span><span class="w"> </span><span class="n">other</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.05</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="o">*</span><span class="n">p1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">rate</span><span class="p">;</span><span class="w">    </span><span class="c1">// 指向「常數」的指標（Low-Level const）：不能透過 p1 改值</span>
+<span class="w">    </span><span class="n">p1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">other</span><span class="p">;</span><span class="w">                 </span><span class="c1">// 可以改指向</span>
+<span class="w">    </span><span class="c1">// *p1 = 0.1;                // 錯誤</span>
+
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="o">*</span><span class="k">const</span><span class="w"> </span><span class="n">p2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">rate</span><span class="p">;</span><span class="w">    </span><span class="c1">// 「常數指標」（Top-Level const）：p2 永遠指向 rate</span>
+<span class="w">    </span><span class="o">*</span><span class="n">p2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.03</span><span class="p">;</span><span class="w">                  </span><span class="c1">// 可以透過 p2 改值</span>
+<span class="w">    </span><span class="c1">// p2 = &amp;other;              // 錯誤</span>
+
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="o">*</span><span class="k">const</span><span class="w"> </span><span class="n">p3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">rate</span><span class="p">;</span><span class="w">   </span><span class="c1">// 兩者皆是：不能改指向，也不能透過它改值</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="o">*</span><span class="n">p1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="o">*</span><span class="n">p2</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="o">*</span><span class="n">p3</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>0.05 0.03 0.03</code></pre>
+<p>從右往左讀：<code>double *const p2</code> → p2 是 const 的（<code>const</code> 緊鄰 p2），它是指標，指向 double。<code>const double *p1</code> → p1 是指標，指向 const double。</p>
+<ul>
+<li><strong>Top-Level const</strong>：物件本身是 const（指標本身不能改）。</li>
+<li><strong>Low-Level const</strong>：指向／綁定的物件是 const（不能透過它改）。</li>
+</ul>
+<h3 id="s2-9-2">const 參考：唯讀的別名</h3>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">nav</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">15.32</span><span class="p">;</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="o">&amp;</span><span class="n">view</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">nav</span><span class="p">;</span><span class="w">    </span><span class="c1">// 唯讀別名：可以看、不能改</span>
+<span class="w">    </span><span class="n">nav</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">15.40</span><span class="p">;</span><span class="w">                 </span><span class="c1">// 原變數自己可以改</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">view</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">   </span><span class="c1">// 看到的是最新值 15.4</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="o">&amp;</span><span class="n">tmp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.5</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w"> </span><span class="c1">// const 參考可以綁定運算結果（臨時物件）</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">tmp</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>15.4
+3</code></pre>
+<p>const 參考是傳大型資料給函數的標準寫法：不複製（快）、又保證函數不會改到原資料（安全）。第 5、7 章會一直出現 <code>const std::vector&lt;double&gt;&amp;</code>、<code>const std::string&amp;</code>。</p>
+<h3 id="s2-9-3">右值參考 &amp;&amp;（C++11，先認識）</h3>
+<ul>
+<li><strong>左值</strong>：有名字、有位址、可以出現在 <code>=</code> 左邊的東西，例如變數 <code>x</code>。</li>
+<li><strong>右值</strong>：臨時的值，例如 <code>3</code>、<code>x * 100</code>、函數回傳的暫時結果，用完就消失。</li>
+</ul>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="n">r1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span><span class="w">              </span><span class="c1">// 右值參考綁定右值（字面值）</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="n">r2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">1000</span><span class="p">;</span><span class="w">       </span><span class="c1">// 綁定運算產生的臨時值</span>
+<span class="w">    </span><span class="n">r1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="p">;</span><span class="w">                    </span><span class="c1">// 綁定後可以修改</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">r1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">r2</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="c1">// int &amp;&amp;r3 = i;           // 錯誤：右值參考不能綁定左值</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>5 10000</code></pre>
+<p>右值參考的目的是<strong>效率</strong>：對「反正要消失的臨時物件」，與其複製一份，不如直接把它的內容「搬走」（move）。這是現代 C++ 的重要機制，第 7 章講物件複製時會再看到；現在只要知道 <code>&amp;</code> 綁定有名字的東西、<code>&amp;&amp;</code> 綁定臨時的東西。</p><section class="cc" id="cc-s2-9"><h3 class="cc-h">Concept Check：2.9 const 與指標、右值參考</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s2-9-1" data-label="2.9 const 與指標、右值參考 Q1"><div class="q-meta"><h4><a href="#q-s2-9-1">Q1</a></h4><span class="q-kind">選擇｜難</span><span class="q-title">const 的位置</span></div><div class="q-text"><p><code>double x = 1, y = 2; double *const p = &amp;x;</code> 之後，下列哪一行<strong>無法</strong>編譯？</p></div><ol class="opts"><li><b>(A)</b><span><code>*p = 3;</code></span></li><li><b>(B)</b><span><code>x = 4;</code></span></li><li><b>(C)</b><span><code>p = &amp;y;</code></span></li><li><b>(D)</b><span><code>double z = *p;</code></span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (C)</strong><code>p = &amp;y;</code></div><div class="why"><p class="sh">解析</p><p><code>double *const p</code> 是常數指標（Top-Level const）：p 本身不能改指向，但可以透過 p 修改 x。</p></div></div></article><article class="q" id="q-s2-9-2" data-label="2.9 const 與指標、右值參考 Q2"><div class="q-meta"><h4><a href="#q-s2-9-2">Q2</a></h4><span class="q-kind">簡答｜中</span><span class="q-title">const 參考的用途</span></div><div class="q-text"><p>為什麼函數參數常寫成 <code>const std::vector&lt;double&gt; &amp;returns</code>，而不是 <code>std::vector&lt;double&gt; returns</code> 或 <code>std::vector&lt;double&gt; &amp;returns</code>？</p></div><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案</strong><p>寫成 <code>std::vector&lt;double&gt; returns</code>（傳值）會把整份資料複製一次，資料大時很慢；寫成 <code>std::vector&lt;double&gt; &amp;returns</code>（一般參考）不複製，但函數可能不小心修改呼叫端的資料。<code>const</code> 參考兩者兼顧：不複製、又保證函數只能讀不能改，也能接受臨時物件。</p></div></div></article></section></section><section class="sec" id="s2-10" data-label="2.10 自訂型態：struct、enum、union"><h2><span class="num">2.10</span>自訂型態：struct、enum、union</h2><h3 id="s2-10-1">struct：把相關的資料打包</h3>
+<p>一張債券有面額、票面利率、到期年數……分散成好幾個變數很亂。<strong>結構</strong>（struct）把它們打包成一個新型態：</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;cmath&gt;</span>
+
+<span class="k">struct</span><span class="w"> </span><span class="nc">Bond</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">face</span><span class="p">;</span><span class="w">          </span><span class="c1">// 面額</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">coupon_rate</span><span class="p">;</span><span class="w">   </span><span class="c1">// 票面利率（年）</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">years</span><span class="p">;</span><span class="w">            </span><span class="c1">// 到期年數</span>
+<span class="p">};</span><span class="w">                        </span><span class="c1">// 注意：結構定義結尾要有分號！</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">Bond</span><span class="w"> </span><span class="n">b1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mf">100.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.02</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">};</span><span class="w">    </span><span class="c1">// 依成員順序初始化</span>
+<span class="w">    </span><span class="n">Bond</span><span class="w"> </span><span class="n">b2</span><span class="p">;</span>
+<span class="w">    </span><span class="n">b2</span><span class="p">.</span><span class="n">face</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1000</span><span class="p">;</span><span class="w">                </span><span class="c1">// 用「.」存取成員</span>
+<span class="w">    </span><span class="n">b2</span><span class="p">.</span><span class="n">coupon_rate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.035</span><span class="p">;</span>
+<span class="w">    </span><span class="n">b2</span><span class="p">.</span><span class="n">years</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.03</span><span class="p">;</span><span class="w">               </span><span class="c1">// 殖利率</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">price</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">b1</span><span class="p">.</span><span class="n">years</span><span class="p">;</span><span class="w"> </span><span class="n">t</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">cf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b1</span><span class="p">.</span><span class="n">face</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">b1</span><span class="p">.</span><span class="n">coupon_rate</span><span class="p">;</span><span class="w">      </span><span class="c1">// 每年票息</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">t</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">b1</span><span class="p">.</span><span class="n">years</span><span class="p">)</span><span class="w"> </span><span class="n">cf</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">b1</span><span class="p">.</span><span class="n">face</span><span class="p">;</span><span class="w">           </span><span class="c1">// 最後一年加上本金</span>
+<span class="w">        </span><span class="n">price</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">cf</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">pow</span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"b1 價格 = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">price</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"b2 面額 = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">b2</span><span class="p">.</span><span class="n">face</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"，sizeof(Bond) = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">Bond</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>b1 價格 = 95.4203
+b2 面額 = 1000，sizeof(Bond) = 24</code></pre>
+<ul>
+<li><code>struct Bond { ... };</code> 定義一個新型態 Bond，之後 <code>Bond b1;</code> 就像 <code>int x;</code> 一樣用。</li>
+<li>用 <code>.</code> 存取成員：<code>b1.face</code>。</li>
+<li><code>sizeof(Bond)</code> 是 24 而不是 8 + 8 + 4 = 20：編譯器會在成員之間或尾端補空白（<strong>對齊</strong>，alignment），讓存取更快。</li>
+<li>老師提醒：<strong>struct 是 class 的基礎</strong>。第 7 章的類別就是「資料＋操作資料的函數」打包在一起。</li>
+</ul>
+<p>結構可以套結構，也可以有指向結構的指標（用 <code>-&gt;</code> 存取成員）：</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string&gt;</span>
+
+<span class="k">struct</span><span class="w"> </span><span class="nc">Date</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">year</span><span class="p">,</span><span class="w"> </span><span class="n">month</span><span class="p">,</span><span class="w"> </span><span class="n">day</span><span class="p">;</span><span class="w"> </span><span class="p">};</span>
+
+<span class="k">struct</span><span class="w"> </span><span class="nc">Trade</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">ticker</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">shares</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">price</span><span class="p">;</span>
+<span class="w">    </span><span class="n">Date</span><span class="w"> </span><span class="n">trade_date</span><span class="p">;</span><span class="w">          </span><span class="c1">// 結構裡放結構</span>
+<span class="p">};</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">Trade</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s">"2330"</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="mf">1015.0</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">2026</span><span class="p">,</span><span class="w"> </span><span class="mi">11</span><span class="p">,</span><span class="w"> </span><span class="mi">13</span><span class="p">}};</span>
+<span class="w">    </span><span class="n">Trade</span><span class="w"> </span><span class="o">*</span><span class="n">pt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">t</span><span class="p">;</span><span class="w">           </span><span class="c1">// 指向結構的指標</span>
+<span class="w">    </span><span class="n">pt</span><span class="o">-&gt;</span><span class="n">shares</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">500</span><span class="p">;</span><span class="w">        </span><span class="c1">// 指標用 -&gt;，等於 (*pt).shares</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">ticker</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">shares</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" 股，成交日 "</span>
+<span class="w">              </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">trade_date</span><span class="p">.</span><span class="n">year</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"/"</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">trade_date</span><span class="p">.</span><span class="n">month</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"/"</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">trade_date</span><span class="p">.</span><span class="n">day</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>2330 1500 股，成交日 2026/11/13</code></pre>
+<h3 id="s2-10-2">enum：用名字取代代號</h3>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="k">enum</span><span class="w"> </span><span class="nc">Rating</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">AAA</span><span class="p">,</span><span class="w"> </span><span class="n">AA</span><span class="p">,</span><span class="w"> </span><span class="n">A</span><span class="p">,</span><span class="w"> </span><span class="n">BBB</span><span class="p">,</span><span class="w"> </span><span class="n">BB</span><span class="w"> </span><span class="p">};</span><span class="w">          </span><span class="c1">// 傳統 enum：值依序是 0, 1, 2, 3, 4</span>
+<span class="k">enum</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">Side</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Buy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">Sell</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">-1</span><span class="w"> </span><span class="p">};</span><span class="w">       </span><span class="c1">// C++11 的 enum class（建議）</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">Rating</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">BBB</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"BBB 的代碼 = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"投資等級？"</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">BBB</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">Side</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Side</span><span class="o">::</span><span class="n">Sell</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">qty</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">100</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">signed_qty</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">qty</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="n">s</span><span class="p">);</span><span class="w">   </span><span class="c1">// enum class 要明確轉型才能當整數用</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"部位變動 = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">signed_qty</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>BBB 的代碼 = 3
+投資等級？1
+部位變動 = -100</code></pre>
+<ul>
+<li>列舉讓程式用 <code>BBB</code>、<code>Side::Sell</code> 這種有意義的名字，而不是神秘的數字。</li>
+<li>傳統 enum 的值預設從 0 開始依序加 1，也可以自己指定（<code>Red = 7</code> 之後的成員會接著 8）。</li>
+<li><code>enum class</code>（有範圍的列舉）要寫 <code>Side::Sell</code>，也不會自動變成整數，比較不會出錯，現代 C++ 建議用它。</li>
+</ul>
+<h3 id="s2-10-3">union：同一塊記憶體輪流使用（認識即可）</h3>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="k">union</span><span class="w"> </span><span class="nc">Value</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">d</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">Value</span><span class="w"> </span><span class="n">v</span><span class="p">;</span>
+<span class="w">    </span><span class="n">v</span><span class="p">.</span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">42</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"sizeof(Value) = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">Value</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">   </span><span class="c1">// 取最大成員的大小</span>
+<span class="w">    </span><span class="n">v</span><span class="p">.</span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">3.5</span><span class="p">;</span><span class="w">                                               </span><span class="c1">// 之後只有 d 有效</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">v</span><span class="p">.</span><span class="n">d</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>sizeof(Value) = 8
+3.5</code></pre>
+<p>union 的所有成員<strong>共用同一塊記憶體</strong>，同一時間只有最後被賦值的那個有效。用在記憶體非常吃緊的場合；一般金融程式很少用，現代 C++ 有更安全的 <code>std::variant</code>。</p><section class="cc" id="cc-s2-10"><h3 class="cc-h">Concept Check：2.10 自訂型態：struct、enum、union</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s2-10-1" data-label="2.10 自訂型態：struct、enum、union Q1"><div class="q-meta"><h4><a href="#q-s2-10-1">Q1</a></h4><span class="q-kind">選擇｜易</span><span class="q-title">存取成員</span></div><div class="q-text"><p><code>Bond b; Bond *pb = &amp;b;</code> 要取得 b 的 face 成員，下列何者<strong>錯誤</strong>？</p></div><ol class="opts"><li><b>(A)</b><span><code>b.face</code></span></li><li><b>(B)</b><span><code>pb-&gt;face</code></span></li><li><b>(C)</b><span><code>(*pb).face</code></span></li><li><b>(D)</b><span><code>pb.face</code></span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (D)</strong><code>pb.face</code></div><div class="why"><p class="sh">解析</p><p>物件用 <code>.</code>，指標用 <code>-&gt;</code>（等於先解參考再用 <code>.</code>）。pb 是指標，不能直接用 <code>.</code>。</p></div></div></article><article class="q" id="q-s2-10-2" data-label="2.10 自訂型態：struct、enum、union Q2"><div class="q-meta"><h4><a href="#q-s2-10-2">Q2</a></h4><span class="q-kind">選擇｜中</span><span class="q-title">enum 的值</span></div><div class="q-text"><p><code>enum Color { Red = 7, Green, Blue = 2, Yellow };</code> 中 Green 和 Yellow 的值分別是？</p></div><ol class="opts"><li><b>(A)</b><span>8 和 3</span></li><li><b>(B)</b><span>1 和 3</span></li><li><b>(C)</b><span>8 和 4</span></li><li><b>(D)</b><span>7 和 2</span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (A)</strong><p>8 和 3</p></div><div class="why"><p class="sh">解析</p><p>沒有指定值的列舉常數，等於前一個加 1：Green = 7 + 1 = 8，Yellow = 2 + 1 = 3。（這是老師講義的例子。）</p></div></div></article><article class="q" id="q-s2-10-3" data-label="2.10 自訂型態：struct、enum、union Q3"><div class="q-meta"><h4><a href="#q-s2-10-3">Q3</a></h4><span class="q-kind">寫程式｜中</span><span class="q-title">股票部位</span></div><div class="q-text"><p>定義 <code>struct Position { std::string ticker; int shares; double cost; double price; };</code>，建立兩個部位，寫程式計算並印出每個部位的未實現損益（(price − cost) × shares）與合計。</p></div><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案</strong><div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string&gt;</span>
+
+<span class="k">struct</span><span class="w"> </span><span class="nc">Position</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">ticker</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">shares</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">cost</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">price</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">Position</span><span class="w"> </span><span class="n">p1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s">"2330"</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="mf">980.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1015.0</span><span class="p">};</span>
+<span class="w">    </span><span class="n">Position</span><span class="w"> </span><span class="n">p2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s">"2317"</span><span class="p">,</span><span class="w"> </span><span class="mi">2000</span><span class="p">,</span><span class="w"> </span><span class="mf">185.0</span><span class="p">,</span><span class="w"> </span><span class="mf">178.5</span><span class="p">};</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">pnl1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">p1</span><span class="p">.</span><span class="n">price</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">p1</span><span class="p">.</span><span class="n">cost</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">p1</span><span class="p">.</span><span class="n">shares</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">pnl2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">p2</span><span class="p">.</span><span class="n">price</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">p2</span><span class="p">.</span><span class="n">cost</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">p2</span><span class="p">.</span><span class="n">shares</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">p1</span><span class="p">.</span><span class="n">ticker</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"："</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">pnl1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">p2</span><span class="p">.</span><span class="n">ticker</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"："</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">pnl2</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"合計："</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">pnl1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">pnl2</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>2330：35000
+2317：-13000
+合計：22000</code></pre></div><div class="why"><p class="sh">解析</p><p>學完第 3 章的 vector 後，可以把很多個 Position 放進 <code>std::vector&lt;Position&gt;</code>，用迴圈一次算完；第 7 章再把「計算損益」做成 Position 自己的成員函數。</p></div></div></article></section></section><section class="sec" id="s2-11" data-label="2.11 本章小結"><h2><span class="num">2.11</span>本章小結</h2><ul>
+<li>C++ 是強型別語言：整數 <code>int</code>／<code>long long</code>、浮點數 <code>double</code>（金融首選）、字元 <code>char</code>、布林 <code>bool</code>；用 <code>sizeof</code>、<code>numeric_limits</code> 查大小與範圍。</li>
+<li>變數要<strong>初始化</strong>；<code>{}</code> 初始化可防止縮窄轉換；double 轉 int 是捨去。</li>
+<li>陷阱：整數除法、整數溢位、signed／unsigned 混用、浮點數不能用 <code>==</code> 比較。</li>
+<li>字面值：<code>0b</code>／<code>0</code>／<code>0x</code> 進位、<code>&#x27;a&#x27;</code> 字元 vs <code>&quot;a&quot;</code> 字串（多一個 <code>&#x27;\0&#x27;</code>）、bool 中 0 為 false；<code>const</code> 不能改、<code>constexpr</code> 編譯期求值。</li>
+<li><code>std::cin &gt;&gt;</code> 讀入資料。</li>
+<li>記憶體與位址：<code>&amp;x</code> 取址；<strong>參考</strong> <code>T&amp;</code> 是別名（必須初始化、不能改綁）；<strong>指標</strong> <code>T*</code> 存位址（<code>*p</code> 解參考、<code>nullptr</code> 空指標、可以改指向）。</li>
+<li>const 與指標：<code>const T*</code> 不能透過它改值（Low-Level）、<code>T* const</code> 不能改指向（Top-Level）；<code>const T&amp;</code> 是唯讀別名。<code>&amp;&amp;</code> 右值參考綁定臨時物件，用於 move。</li>
+<li><code>struct</code> 打包資料（<code>.</code> 與 <code>-&gt;</code>）、<code>enum class</code> 取有意義的名字、<code>union</code> 共用記憶體。</li>
+</ul></section>
+<nav class="pager"><a class="prev" href="ch01.html">← 第 1 章</a><a class="next" href="ch03.html">第 3 章 →</a></nav></main>
+<script src="assets/katex/katex.min.js"></script><script src="assets/katex/auto-render.min.js"></script>
+<script src="assets/search.js?v=4da4dfd2"></script>
+<script src="assets/site.js?v=99d8caa2"></script>
+</body></html>

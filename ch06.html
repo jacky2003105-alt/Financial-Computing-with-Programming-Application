@@ -1,0 +1,647 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>第 6 章 命名空間、預處理與記憶體管理｜金融程式計算：C++課程筆記</title>
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<link rel="stylesheet" href="assets/style.css?v=f08507d8">
+</head><body data-page="ch06" data-mode="course">
+<div class="topbar"><a class="brand" href="index.html">金融程式計算：C++｜課程筆記</a><div class="pickers">
+<label for="unitSelect">選擇單元</label><select id="unitSelect" aria-label="選擇單元"><option value="index.html">首頁：課程介紹與使用說明</option><option value="ch01.html">第 1 章　C++ 簡介與第一支程式</option><option value="ch02.html">第 2 章　資料型態、變數與記憶體</option><option value="ch03.html">第 3 章　陣列、指標與字串</option><option value="ch04.html">第 4 章　表達式、運算子與流程控制</option><option value="ch05.html">第 5 章　函數</option><option value="ch06.html" selected>第 6 章　命名空間、預處理與記憶體管理</option><option value="ch07.html">第 7 章　類別 class（一）：封裝、建構與物件的一生</option><option value="ch08.html">第 8 章　類別 class（二）：繼承、多型與設計模式</option><option value="ch09.html">第 9 章　模板與泛型</option><option value="ch10.html">第 10 章　課程總結：從語法到量化程式庫</option></select></div></div>
+<main class="wrap"><header class="ch-head"><h1>第 6 章　命名空間、預處理與記憶體管理</h1><details class="ch-toc"><summary>本章目錄（7 節）</summary><ol><li><a href="#s6-1"><span>6.1</span>命名空間 namespace</a></li><li><a href="#s6-2"><span>6.2</span>前置處理器：#define、#include、條件編譯</a></li><li><a href="#s6-3"><span>6.3</span>記憶體的分區</a></li><li><a href="#s6-4"><span>6.4</span>new 與 delete：手動管理堆積</a></li><li><a href="#s6-5"><span>6.5</span>智慧指標：讓物件自己收拾</a></li><li><a href="#s6-6"><span>6.6</span>補充：讀寫檔案</a></li><li><a href="#s6-7"><span>6.7</span>本章小結</a></li></ol></details></header>
+<div class="ch-intro"><p>這一章整理老師講義五後半的四個主題，它們都和「<strong>程式怎麼被組織、資源怎麼被管理</strong>」有關：<strong>命名空間</strong>（避免名稱衝突）、<strong>前置處理器</strong>（編譯前對原始碼做的文字處理：<code>#define</code>、<code>#include</code>、條件編譯）、<strong>記憶體的分區與動態配置</strong>（<code>new</code>／<code>delete</code>），以及現代 C++ 用來取代手動管理的<strong>智慧指標</strong>。最後補充一節講義沒有、但做金融資料一定會用到的<strong>讀寫檔案</strong>。</p></div><section class="sec" id="s6-1" data-label="6.1 命名空間 namespace"><h2><span class="num">6.1</span>命名空間 namespace</h2><h3 id="s6-1-1">為什麼需要命名空間</h3>
+<p>大型專案會用到很多程式庫，不同程式庫很可能都有叫 <code>price</code>、<code>Option</code>、<code>log</code> 的東西。<strong>命名空間</strong>（namespace）就是替名稱加上「姓氏」，讓同名的東西可以共存：</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;cmath&gt;</span>
+
+<span class="k">namespace</span><span class="w"> </span><span class="nn">bond</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="nf">price</span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="n">face</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">      </span><span class="c1">// bond::price</span>
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">n</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">t</span><span class="p">)</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">face</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">0.03</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">pow</span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">face</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">pow</span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">namespace</span><span class="w"> </span><span class="nn">equity</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="nf">price</span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="n">dividend</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">g</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">   </span><span class="c1">// equity::price（股利折現模型）</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">dividend</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">g</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"債券價格 = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">bond</span><span class="o">::</span><span class="n">price</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="mf">0.035</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"股票價格 = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">equity</span><span class="o">::</span><span class="n">price</span><span class="p">(</span><span class="mf">2.5</span><span class="p">,</span><span class="w"> </span><span class="mf">0.08</span><span class="p">,</span><span class="w"> </span><span class="mf">0.03</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>債券價格 = 97.7425
+股票價格 = 50</code></pre>
+<ul>
+<li>語法：<code>namespace 名稱 { ... }</code>（右大括號後<strong>不用分號</strong>）。</li>
+<li>用<strong>作用域運算子</strong> <code>::</code> 存取：<code>命名空間::名稱</code>。</li>
+<li>命名空間就是一個作用域；同一個命名空間可以<strong>分好幾段、寫在不同檔案</strong>，會合併在一起。</li>
+<li><code>std</code> 就是標準程式庫的命名空間，所以要寫 <code>std::cout</code>、<code>std::vector</code>。</li>
+</ul>
+<p>同一個名字 <code>price</code> 在兩個命名空間中各有一個，彼此互不干擾。</p>
+<h3 id="s6-1-2">using：少打一點字</h3>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;vector&gt;</span>
+
+<span class="k">namespace</span><span class="w"> </span><span class="nn">quant</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="nf">mean</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="w"> </span><span class="o">&amp;</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">v</span><span class="p">;</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="n">size</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">using</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="p">;</span><span class="w">                 </span><span class="c1">// using 宣告：只引入 cout 一個名字</span>
+<span class="w">    </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">quant</span><span class="o">::</span><span class="n">mean</span><span class="p">({</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">})</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">quant</span><span class="p">;</span><span class="w">           </span><span class="c1">// using 指示：引入 quant 裡所有名字</span>
+<span class="w">    </span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">mean</span><span class="p">({</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="p">})</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>2
+5</code></pre>
+<ul>
+<li><code>using std::cout;</code> 只引入一個名字；<code>using namespace std;</code> 引入<strong>全部</strong>。</li>
+<li>老師的提醒（也是業界共識）：<strong>不要在標頭檔裡寫 <code>using namespace</code></strong>——所有 include 它的檔案都會被「污染」，名稱衝突的機率大增。在 .cpp 的函數裡局部使用則還好。本講義一律寫完整的 <code>std::</code>。</li>
+</ul>
+<h3 id="s6-1-3">匿名命名空間與全域作用域 ::</h3>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="k">namespace</span><span class="w"> </span><span class="p">{</span><span class="w">                          </span><span class="c1">// 匿名命名空間：只有這個 .cpp 看得到</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">call_count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">log_call</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">++</span><span class="n">call_count</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">100</span><span class="p">;</span><span class="w">                     </span><span class="c1">// 全域變數</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">log_call</span><span class="p">();</span><span class="w"> </span><span class="n">log_call</span><span class="p">();</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"call_count = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">call_count</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">50</span><span class="p">;</span><span class="w">                  </span><span class="c1">// 區域變數遮住全域的 value</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"區域 value = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"，全域 value = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="o">::</span><span class="n">value</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>call_count = 2
+區域 value = 50，全域 value = 100</code></pre>
+<ul>
+<li><strong>匿名命名空間</strong>（沒有名字的 namespace）裡的東西只在<strong>這個原始檔</strong>內有效，效果和第 5 章的 <code>static</code> 全域變數／函數一樣（內部連結），是現代 C++ 較建議的寫法。</li>
+<li><code>::名稱</code>（前面什麼都不寫）代表<strong>全域作用域</strong>的名稱，可以在被遮住時取用全域變數。</li>
+</ul><section class="cc" id="cc-s6-1"><h3 class="cc-h">Concept Check：6.1 命名空間 namespace</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s6-1-1" data-label="6.1 命名空間 namespace Q1"><div class="q-meta"><h4><a href="#q-s6-1-1">Q1</a></h4><span class="q-kind">選擇｜易</span><span class="q-title">作用域運算子</span></div><div class="q-text"><p>命名空間 <code>risk</code> 中有函數 <code>var()</code>，在 main 中要呼叫它，正確寫法是？</p></div><ol class="opts"><li><b>(A)</b><span><code>risk.var()</code></span></li><li><b>(B)</b><span><code>risk-&gt;var()</code></span></li><li><b>(C)</b><span><code>risk::var()</code></span></li><li><b>(D)</b><span><code>var::risk()</code></span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (C)</strong><code>risk::var()</code></div><div class="why"><p class="sh">解析</p><p>存取命名空間的成員用作用域運算子 ::；<code>.</code> 和 <code>-&gt;</code> 是存取物件成員。</p></div></div></article><article class="q" id="q-s6-1-2" data-label="6.1 命名空間 namespace Q2"><div class="q-meta"><h4><a href="#q-s6-1-2">Q2</a></h4><span class="q-kind">簡答｜中</span><span class="q-title">using namespace</span></div><div class="q-text"><p>為什麼不建議在標頭檔中寫 <code>using namespace std;</code>？</p></div><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案</strong><p>標頭檔會被許多 .cpp include，標頭檔中的 using namespace std 會把 std 的所有名稱帶進每一個 include 它的檔案的全域範圍，使用者無法拒絕。std 的名稱非常多（count、distance、data、size…），很容易和使用者自己的變數或函數撞名，造成難以理解的編譯錯誤或呼叫到錯誤的版本。</p></div></div></article></section></section><section class="sec" id="s6-2" data-label="6.2 前置處理器：#define、#include、條件編譯"><h2><span class="num">6.2</span>前置處理器：#define、#include、條件編譯</h2><h3 id="s6-2-1">編譯之前的「文字處理」</h3>
+<p>第 1 章提過建置流程：<strong>前置處理 → 編譯 → 組譯 → 連結</strong>。前置處理器只認得以 <code>#</code> 開頭的指令，它做的事情都是<strong>單純的文字替換</strong>，不懂 C++ 語法：</p>
+<ul>
+<li><code>#define</code>：巨集定義（文字替換）</li>
+<li><code>#include</code>：把另一個檔案的內容貼進來</li>
+<li><code>#if</code>／<code>#ifdef</code>／<code>#ifndef</code>：條件編譯（決定哪些程式碼要交給編譯器）</li>
+</ul>
+<h3 id="s6-2-2">#define 與巨集的陷阱</h3>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="cp">#define TRADING_DAYS 252              </span><span class="c1">// 不帶參數的巨集：之後所有 TRADING_DAYS 換成 252</span>
+<span class="cp">#define SQUARE_BAD(x) x * x           </span><span class="c1">// 帶參數的巨集（危險寫法）</span>
+<span class="cp">#define SQUARE(x) ((x) * (x))         </span><span class="c1">// 正確寫法：參數與整體都加括號</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"一年交易日："</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">TRADING_DAYS</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">SQUARE_BAD</span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">     </span><span class="c1">// 展開成 1 + 2 * 1 + 2 = 5</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">SQUARE</span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">         </span><span class="c1">// 展開成 ((1 + 2) * (1 + 2)) = 9</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"TRADING_DAYS 不會被替換</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">   </span><span class="c1">// 字串裡的文字不會被替換</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>一年交易日：252
+5
+9
+TRADING_DAYS 不會被替換</code></pre>
+<ul>
+<li><code>#define 名稱 內容</code>：前置處理時把程式中的名稱換成內容（<strong>巨集展開</strong>）。習慣用全大寫命名。</li>
+<li>巨集<strong>不是語句，結尾不加分號</strong>；加了分號，分號也會被一起貼上：</li>
+</ul>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#define PI 3.1415926;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PI</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w">      </span><span class="c1">// 展開成 3.1415926; * 2;  → 語法錯誤</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out err" data-title="編譯錯誤訊息"><code>main.cpp:4:19: error: invalid type argument of unary ‘*’ (have ‘int’)
+    4 |     double y = PI * 2;      // 展開成 3.1415926; * 2;  → 語法錯誤
+      |                   ^~~
+main.cpp:4:12: warning: unused variable ‘y’ [-Wunused-variable]
+    4 |     double y = PI * 2;      // 展開成 3.1415926; * 2;  → 語法錯誤
+      |            ^</code></pre>
+<ul>
+<li>帶參數的巨集只做文字替換、<strong>不計算、不檢查型態</strong>，所以老師強調參數要加括號。</li>
+<li>巨集從定義處有效到檔案結尾（或 <code>#undef 名稱</code>）。</li>
+</ul>
+<div class="box key"><span class="tag">重點</span><strong class="bt">能用 const／constexpr／inline 就不要用巨集</strong><p><code>constexpr double PI = 3.1415926;</code> 有型態、有作用域、編譯器能檢查；<code>inline</code> 函數或模板（第 9 章）可以取代帶參數的巨集。巨集在現代 C++ 主要只剩下 include guard 與條件編譯這兩個用途。</p></div>
+<h3 id="s6-2-3">#include 與 include guard</h3>
+<ul>
+<li><code>#include &lt;檔名&gt;</code>：到<strong>系統目錄</strong>找（標準程式庫）。</li>
+<li><code>#include &quot;檔名&quot;</code>：先在<strong>目前目錄</strong>找，找不到再去系統目錄（自己的標頭檔）。</li>
+<li><code>#include</code> 就是把那個檔案的內容原封不動貼進來；標頭檔可以再 include 其他標頭檔（巢狀）。</li>
+</ul>
+<p>巢狀 include 很容易讓同一個標頭檔被貼進來兩次，造成重複定義。解法就是第 1 章看過的 <strong>include guard</strong>：</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++ 檔案：rates.h</span><pre><code><span class="c1">// rates.h</span>
+<span class="cp">#ifndef RATES_H          </span><span class="c1">// 如果還沒定義 RATES_H……</span>
+<span class="cp">#define RATES_H          </span><span class="c1">// ……就定義它，並保留以下內容</span>
+
+<span class="k">struct</span><span class="w"> </span><span class="nc">Rate</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">value</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">days</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="kt">double</span><span class="w"> </span><span class="nf">annualize</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Rate</span><span class="w"> </span><span class="o">&amp;</span><span class="n">r</span><span class="p">);</span>
+
+<span class="cp">#endif </span><span class="c1">// RATES_H        // 第二次 include 時 RATES_H 已定義，整段被跳過</span>
+</code></pre></div>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++ 檔案：curve.h</span><pre><code><span class="c1">// curve.h：也 include 了 rates.h</span>
+<span class="cp">#ifndef CURVE_H</span>
+<span class="cp">#define CURVE_H</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">"rates.h"</span>
+
+<span class="kt">double</span><span class="w"> </span><span class="nf">discount</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Rate</span><span class="w"> </span><span class="o">&amp;</span><span class="n">r</span><span class="p">);</span>
+
+<span class="cp">#endif</span>
+</code></pre></div>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">"rates.h"</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">"curve.h"</span><span class="w">       </span><span class="c1">// curve.h 又 include 一次 rates.h，但被 guard 擋掉了</span>
+
+<span class="kt">double</span><span class="w"> </span><span class="nf">annualize</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Rate</span><span class="w"> </span><span class="o">&amp;</span><span class="n">r</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">value</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">365.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">days</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="kt">double</span><span class="w"> </span><span class="nf">discount</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Rate</span><span class="w"> </span><span class="o">&amp;</span><span class="n">r</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">value</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">Rate</span><span class="w"> </span><span class="n">r</span><span class="p">{</span><span class="mf">0.01</span><span class="p">,</span><span class="w"> </span><span class="mi">90</span><span class="p">};</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"年化 "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">annualize</span><span class="p">(</span><span class="n">r</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"，折現因子 "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">discount</span><span class="p">(</span><span class="n">r</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>年化 0.0405556，折現因子 0.990099</code></pre>
+<p>把 rates.h 的 guard 拿掉，<code>struct Rate</code> 就會被定義兩次而編譯失敗。很多編譯器也支援更簡潔的 <code>#pragma once</code>（放在標頭檔第一行），效果相同。</p>
+<h3 id="s6-2-4">條件編譯</h3>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="cp">#define DEBUG                         </span><span class="c1">// 開發時打開，正式版拿掉這行</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="cp">#ifdef _WIN32</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"Windows</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="cp">#elif defined(__APPLE__)</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"macOS</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="cp">#elif defined(__linux__)</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"Linux</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">           </span><span class="c1">// 依編譯平台只保留其中一段</span>
+<span class="cp">#else</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"其他平台</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="cp">#endif</span>
+
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">pnl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1234.5</span><span class="p">;</span>
+<span class="cp">#ifdef DEBUG</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"[DEBUG] pnl = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">pnl</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">   </span><span class="c1">// 只在定義了 DEBUG 時才編譯進去</span>
+<span class="cp">#endif</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"完成</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>Linux
+[DEBUG] pnl = 1234.5
+完成</code></pre>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>意義</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>#ifdef 名稱</code> … <code>#endif</code></td>
+<td>名稱<strong>有定義</strong>才編譯這段</td>
+</tr>
+<tr>
+<td><code>#ifndef 名稱</code> … <code>#endif</code></td>
+<td>名稱<strong>沒定義</strong>才編譯這段（include guard）</td>
+</tr>
+<tr>
+<td><code>#if 表達式</code> / <code>#elif</code> / <code>#else</code></td>
+<td>依常數表達式的值選擇</td>
+</tr>
+</tbody>
+</table>
+<p>用途：跨平台程式（Windows／Mac／Linux 各寫一段）、開發時的除錯輸出、開關實驗性功能。也可以不改程式，直接在編譯指令加 <code>-DDEBUG</code> 來定義巨集。</p><section class="cc" id="cc-s6-2"><h3 class="cc-h">Concept Check：6.2 前置處理器：#define、#include、條件編譯</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s6-2-1" data-label="6.2 前置處理器：#define、#include、條件編譯 Q1"><div class="q-meta"><h4><a href="#q-s6-2-1">Q1</a></h4><span class="q-kind">預測輸出｜中</span><span class="q-title">巨集展開</span></div><div class="q-text"><p>下面程式印出什麼？</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="cp">#define DOUBLE(x) x + x</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">DOUBLE</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案</strong><pre class="out" data-title="執行結果"><code>33</code></pre></div><div class="why"><p class="sh">解析</p><p>巨集只做文字替換：DOUBLE(3) * 10 展開成 3 + 3 * 10 = 33，不是 60。應寫成 <code>#define DOUBLE(x) ((x) + (x))</code>，或乾脆用 inline 函數。</p></div></div></article><article class="q" id="q-s6-2-2" data-label="6.2 前置處理器：#define、#include、條件編譯 Q2"><div class="q-meta"><h4><a href="#q-s6-2-2">Q2</a></h4><span class="q-kind">選擇｜中</span><span class="q-title">include guard</span></div><div class="q-text"><p>include guard（<code>#ifndef X_H / #define X_H / ... / #endif</code>）的目的是？</p></div><ol class="opts"><li><b>(A)</b><span>讓標頭檔編譯得比較快</span></li><li><b>(B)</b><span>隱藏標頭檔中的變數與函數，讓其他檔案看不到</span></li><li><b>(C)</b><span>讓標頭檔只能被一個 .cpp 使用</span></li><li><b>(D)</b><span>避免同一個標頭檔在一個原始檔中被重複貼入</span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (D)</strong><p>避免同一個標頭檔在一個原始檔中被重複貼入</p></div><div class="why"><p class="sh">解析</p><p>第一次 include 時定義了 X_H，之後再被 include（例如透過其他標頭檔間接引入）時，#ifndef 不成立，整段內容被跳過，避免重複定義。</p></div></div></article><article class="q" id="q-s6-2-3" data-label="6.2 前置處理器：#define、#include、條件編譯 Q3"><div class="q-meta"><h4><a href="#q-s6-2-3">Q3</a></h4><span class="q-kind">選擇｜易</span><span class="q-title">&lt;&gt; 與 &quot;&quot;</span></div><div class="q-text"><p>自己寫的標頭檔 <code>pricing.h</code> 放在專案資料夾中，應該怎麼 include？</p></div><ol class="opts"><li><b>(A)</b><span><code>#include &quot;pricing.h&quot;</code></span></li><li><b>(B)</b><span><code>#include &lt;pricing.h&gt;</code></span></li><li><b>(C)</b><span><code>#include pricing.h</code></span></li><li><b>(D)</b><span><code>#import &quot;pricing.h&quot;</code></span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (A)</strong><code>#include &quot;pricing.h&quot;</code></div><div class="why"><p class="sh">解析</p><p>雙引號會先在目前目錄搜尋；角括號直接到系統目錄找，通常用於標準程式庫。</p></div></div></article></section></section><section class="sec" id="s6-3" data-label="6.3 記憶體的分區"><h2><span class="num">6.3</span>記憶體的分區</h2><p>老師把 C++ 程式使用的記憶體分成幾個區域：</p>
+<table>
+<thead>
+<tr>
+<th>區域</th>
+<th>放什麼</th>
+<th>誰管理</th>
+<th>生命週期</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>堆疊</strong>（stack）</td>
+<td>區域變數、形參、函數返回位址</td>
+<td>編譯器自動</td>
+<td>離開作用域就釋放</td>
+</tr>
+<tr>
+<td><strong>堆積</strong>（heap／free store）</td>
+<td><code>new</code> 出來的物件</td>
+<td><strong>程式設計師</strong></td>
+<td>直到 <code>delete</code></td>
+</tr>
+<tr>
+<td><strong>全域／靜態儲存區</strong></td>
+<td>全域變數、<code>static</code> 變數</td>
+<td>編譯器</td>
+<td>整個程式期間</td>
+</tr>
+<tr>
+<td><strong>常數儲存區</strong></td>
+<td>字串字面值等常數</td>
+<td>編譯器</td>
+<td>整個程式期間</td>
+</tr>
+</tbody>
+</table>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="n">g</span><span class="p">;</span><span class="w">                                   </span><span class="c1">// 全域／靜態儲存區</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w">                           </span><span class="c1">// 堆疊</span>
+<span class="w">    </span><span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">d</span><span class="p">;</span><span class="w">                        </span><span class="c1">// 全域／靜態儲存區</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"TAIEX"</span><span class="p">;</span><span class="w">             </span><span class="c1">// s 在堆疊，"TAIEX" 在常數儲存區</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="kt">int</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span><span class="w">                </span><span class="c1">// p 在堆疊，p 指向的 int 在堆積</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"堆疊   &amp;b = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="o">&amp;</span><span class="n">b</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"堆積    p = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"靜態   &amp;g = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="o">&amp;</span><span class="n">g</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"，&amp;d = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="o">&amp;</span><span class="n">d</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"常數    s = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="kt">void</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">delete</span><span class="w"> </span><span class="n">p</span><span class="p">;</span><span class="w">                            </span><span class="c1">// 釋放堆積上的記憶體</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>堆疊   &amp;b = 0x7ffe76b279b4
+堆積    p = 0x55639d80b2b0
+靜態   &amp;g = 0x55638da5b154，&amp;d = 0x55638da5b158
+常數    s = 0x55638da59004</code></pre>
+<p>從位址可以看出它們位在完全不同的區段。</p>
+<ul>
+<li><strong>堆疊</strong>：空間小（通常幾 MB）、配置極快、自動管理，但無法控制物件活多久。</li>
+<li><strong>堆積</strong>：空間大（受實體記憶體限制）、配置較慢，物件的生命週期由你決定——<strong>也必須由你結束</strong>。</li>
+</ul>
+<p>在函數裡宣告一個超大的陣列（例如 <code>double a[10&#x27;000&#x27;000];</code>，80 MB）會撐爆堆疊；<code>std::vector&lt;double&gt; a(10&#x27;000&#x27;000);</code> 則沒問題，因為 vector 會把元素放在堆積上。</p><section class="cc" id="cc-s6-3"><h3 class="cc-h">Concept Check：6.3 記憶體的分區</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s6-3-1" data-label="6.3 記憶體的分區 Q1"><div class="q-meta"><h4><a href="#q-s6-3-1">Q1</a></h4><span class="q-kind">選擇｜中</span><span class="q-title">記憶體分區</span></div><div class="q-text"><p>函數內的 <code>static double cache = 0;</code> 存放在哪個區域？</p></div><ol class="opts"><li><b>(A)</b><span>堆疊</span></li><li><b>(B)</b><span>堆積</span></li><li><b>(C)</b><span>全域／靜態儲存區</span></li><li><b>(D)</b><span>常數儲存區（和字串字面值放一起）</span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (C)</strong><p>全域／靜態儲存區</p></div><div class="why"><p class="sh">解析</p><p>static 區域變數和全域變數一樣放在靜態儲存區，整個程式期間都存在，只是只有該函數看得到。</p></div></div></article></section></section><section class="sec" id="s6-4" data-label="6.4 new 與 delete：手動管理堆積"><h2><span class="num">6.4</span>new 與 delete：手動管理堆積</h2><h3 id="s6-4-1">配置與釋放</h3>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">p1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="kt">int</span><span class="p">;</span><span class="w">              </span><span class="c1">// 配置一個 int，值不確定</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">p2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="kt">int</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span><span class="w">           </span><span class="c1">// 配置並初始化為 3</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">p3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="kt">int</span><span class="p">();</span><span class="w">            </span><span class="c1">// 值初始化為 0</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="o">*</span><span class="n">ps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="sc">'a'</span><span class="p">);</span><span class="w">      </span><span class="c1">// 配置並呼叫 string 的建構函數</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="o">*</span><span class="n">p2</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="o">*</span><span class="n">p3</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="o">*</span><span class="n">ps</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="p">;</span><span class="w">                      </span><span class="c1">// 實務上 n 來自輸入或檔案：執行時才知道</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="o">*</span><span class="n">prices</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="kt">double</span><span class="p">[</span><span class="n">n</span><span class="p">];</span><span class="w"> </span><span class="c1">// 動態陣列：長度可以是變數！</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">n</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="n">prices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">0.5</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"最後一天 "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">prices</span><span class="p">[</span><span class="n">n</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">delete</span><span class="w"> </span><span class="n">p1</span><span class="p">;</span><span class="w">                      </span><span class="c1">// 單一物件：delete</span>
+<span class="w">    </span><span class="k">delete</span><span class="w"> </span><span class="n">p2</span><span class="p">;</span>
+<span class="w">    </span><span class="k">delete</span><span class="w"> </span><span class="n">p3</span><span class="p">;</span>
+<span class="w">    </span><span class="k">delete</span><span class="w"> </span><span class="n">ps</span><span class="p">;</span>
+<span class="w">    </span><span class="k">delete</span><span class="p">[]</span><span class="w"> </span><span class="n">prices</span><span class="p">;</span><span class="w">                </span><span class="c1">// 陣列：delete[]（不用寫長度）</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>3 0 aaaaa
+最後一天 102</code></pre>
+<ul>
+<li><code>new 型態(初值)</code> 在堆積上建立一個<strong>沒有名字</strong>的物件，回傳它的位址。</li>
+<li><code>new 型態[n]</code> 建立長度為 n 的陣列——和一般陣列不同，<strong>n 可以是執行時才知道的變數</strong>。</li>
+<li>用 <code>new</code> 建立類別物件時，會自動呼叫建構函數；<code>delete</code> 時會呼叫解構函數（第 7 章）。<code>new</code>／<code>delete</code> 比 C 語言的 <code>malloc</code>／<code>free</code> 多做了這兩件事。</li>
+<li><strong><code>new</code> 和 <code>delete</code> 必須成對</strong>；<code>new[]</code> 配 <code>delete[]</code>，不能混用。</li>
+</ul>
+<h3 id="s6-4-2">手動管理的三大問題</h3>
+<p>老師講義列出顯式記憶體管理最常見的錯誤：</p>
+<p><strong>1. 記憶體洩漏</strong>（memory leak）：忘了 delete。</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">simulate_path</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="o">*</span><span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="kt">double</span><span class="p">[</span><span class="mi">252</span><span class="p">];</span><span class="w">     </span><span class="c1">// 每次呼叫配置 2 KB</span>
+<span class="w">    </span><span class="n">path</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">100</span><span class="p">;</span>
+<span class="w">    </span><span class="c1">// ……忘了 delete[] path;</span>
+<span class="p">}</span><span class="w">   </span><span class="c1">// path 這個指標變數被銷毀了，但它指向的 2 KB 永遠沒人能釋放</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">100000</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="n">simulate_path</span><span class="p">();</span><span class="w">     </span><span class="c1">// 洩漏約 200 MB</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"跑完了，但記憶體已經漏掉一大堆</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>跑完了，但記憶體已經漏掉一大堆</code></pre>
+<p>指標變數（在堆疊上）離開作用域會被銷毀，但它指向的堆積物件<strong>不會</strong>自動釋放。短程式結束時作業系統會回收，但長時間運行的交易系統、風控服務會越吃越多記憶體，最後當掉。</p>
+<p><strong>2. 懸空指標</strong>（dangling pointer）：delete 之後還在用。</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="kt">int</span><span class="p">(</span><span class="mi">100</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="p">;</span><span class="w">                </span><span class="c1">// q 和 p 指向同一個物件</span>
+<span class="w">    </span><span class="k">delete</span><span class="w"> </span><span class="n">p</span><span class="p">;</span><span class="w">                  </span><span class="c1">// 物件被釋放</span>
+<span class="w">    </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">nullptr</span><span class="p">;</span><span class="w">               </span><span class="c1">// 好習慣：delete 後設為 nullptr</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"q 還指著已經釋放的記憶體：*q 是未定義行為</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="c1">// std::cout &lt;&lt; *q;        // 千萬不要</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>q 還指著已經釋放的記憶體：*q 是未定義行為</code></pre>
+<p><strong>3. 重複釋放</strong>（double free）：同一塊記憶體 delete 兩次。</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="kt">int</span><span class="p">(</span><span class="mi">7</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="p">;</span>
+<span class="w">    </span><span class="k">delete</span><span class="w"> </span><span class="n">p</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"第一次 delete 完成"</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="w">    </span><span class="k">delete</span><span class="w"> </span><span class="n">q</span><span class="p">;</span><span class="w">                  </span><span class="c1">// 重複釋放：程式通常會直接被終止</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"不會印出"</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>第一次 delete 完成
+free(): double free detected in tcache 2
+
+（程式結束，回傳值 -6）</code></pre>
+<p>這三種錯誤在多人協作、多個指標指向同一物件、程式中途丟出例外時都很容易發生。C++11 的答案是<strong>智慧指標</strong>。</p><section class="cc" id="cc-s6-4"><h3 class="cc-h">Concept Check：6.4 new 與 delete：手動管理堆積</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s6-4-1" data-label="6.4 new 與 delete：手動管理堆積 Q1"><div class="q-meta"><h4><a href="#q-s6-4-1">Q1</a></h4><span class="q-kind">選擇｜易</span><span class="q-title">new 與 delete 配對</span></div><div class="q-text"><p><code>double *a = new double[100];</code> 應該用哪一行釋放？</p></div><ol class="opts"><li><b>(A)</b><span><code>delete a;</code></span></li><li><b>(B)</b><span><code>delete[] a;</code></span></li><li><b>(C)</b><span><code>free(a);</code></span></li><li><b>(D)</b><span>不需要釋放，函數結束會自動回收</span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (B)</strong><code>delete[] a;</code></div><div class="why"><p class="sh">解析</p><p>new[] 必須配 delete[]；用 delete 釋放陣列是未定義行為；堆積上的記憶體不會因為指標離開作用域而自動釋放。</p></div></div></article><article class="q" id="q-s6-4-2" data-label="6.4 new 與 delete：手動管理堆積 Q2"><div class="q-meta"><h4><a href="#q-s6-4-2">Q2</a></h4><span class="q-kind">簡答｜中</span><span class="q-title">記憶體洩漏</span></div><div class="q-text"><p>在函數中寫 <code>int *p = new int(5);</code>，函數結束時沒有 delete。說明函數結束後「什麼被銷毀了」、「什麼沒有」。</p></div><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案</strong><p>指標變數 p 本身是區域變數，存放在堆疊上，函數結束時被銷毀；但 p 指向的那個 int 是用 new 配置在堆積上的，不會自動釋放。由於已經沒有任何指標記得它的位址，這塊記憶體再也無法被 delete，造成記憶體洩漏。</p></div></div></article></section></section><section class="sec" id="s6-5" data-label="6.5 智慧指標：讓物件自己收拾"><h2><span class="num">6.5</span>智慧指標：讓物件自己收拾</h2><h3 id="s6-5-1">核心想法：擁有權</h3>
+<p><strong>智慧指標</strong>（smart pointer）是把裸指標包起來的類別模板（在 <code>&lt;memory&gt;</code>）：當智慧指標離開作用域時，<strong>它會自動 delete 所指的物件</strong>。你不再需要手寫 delete，也就不會忘記。</p>
+<p>C++ 標準程式庫的智慧指標：</p>
+<table>
+<thead>
+<tr>
+<th>智慧指標</th>
+<th>擁有權</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>std::unique_ptr&lt;T&gt;</code></td>
+<td><strong>獨占</strong>：同一時間只有一個指標擁有物件，可以轉移</td>
+<td>預設首選</td>
+</tr>
+<tr>
+<td><code>std::shared_ptr&lt;T&gt;</code></td>
+<td><strong>共享</strong>：多個指標共同擁有，最後一個消失時才釋放</td>
+<td>物件需要被多方持有</td>
+</tr>
+<tr>
+<td><code>std::weak_ptr&lt;T&gt;</code></td>
+<td>不擁有：觀察 shared_ptr 管理的物件</td>
+<td>打破循環參考</td>
+</tr>
+<tr>
+<td><code>std::auto_ptr&lt;T&gt;</code></td>
+<td>（C++98，已被移除）</td>
+<td>不要用</td>
+</tr>
+</tbody>
+</table>
+<p>老師的原則：<strong>優先用 <code>unique_ptr</code>，不夠用時才用 <code>shared_ptr</code></strong>。</p>
+<h3 id="s6-5-2">unique_ptr：獨占</h3>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;memory&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;vector&gt;</span>
+
+<span class="k">struct</span><span class="w"> </span><span class="nc">Path</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="w"> </span><span class="n">s</span><span class="p">;</span>
+<span class="w">    </span><span class="n">Path</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">s</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="mf">100.0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"  建立 Path（"</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" 天）</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="o">~</span><span class="n">Path</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"  釋放 Path</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w">        </span><span class="c1">// 解構函數：物件被銷毀時執行（第 7 章）</span>
+<span class="p">};</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">Path</span><span class="o">&gt;</span><span class="w"> </span><span class="n">make_path</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">Path</span><span class="o">&gt;</span><span class="p">(</span><span class="n">n</span><span class="p">);</span><span class="w">               </span><span class="c1">// 建立並回傳：擁有權交給呼叫端</span>
+<span class="p">}</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="n">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"進入區塊</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">Path</span><span class="o">&gt;</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">Path</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">252</span><span class="p">);</span>
+<span class="w">        </span><span class="n">p</span><span class="o">-&gt;</span><span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">101</span><span class="p">;</span><span class="w">                              </span><span class="c1">// 用法和普通指標一樣：-&gt; 和 *</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"  第一天 "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">p</span><span class="o">-&gt;</span><span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="w">                                               </span><span class="c1">// 離開區塊：自動釋放，不用 delete</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"離開區塊</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">make_path</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span>
+<span class="w">    </span><span class="c1">// auto b = a;                                  // 錯誤：unique_ptr 不能複製（獨占）</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">a</span><span class="p">);</span><span class="w">                          </span><span class="c1">// 可以「移交」擁有權</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"a 現在是空的嗎？"</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">nullptr</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"程式結束前</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>進入區塊
+  建立 Path（252 天）
+  第一天 101
+  釋放 Path
+離開區塊
+  建立 Path（5 天）
+a 現在是空的嗎？1
+程式結束前
+  釋放 Path</code></pre>
+<ul>
+<li>用 <code>std::make_unique&lt;T&gt;(建構參數)</code> 建立（C++14）。</li>
+<li>不能複製，只能用 <code>std::move</code> <strong>移交</strong>擁有權；移交後原本的指標變成空的。</li>
+<li>大小和裸指標一樣，幾乎沒有額外成本。</li>
+</ul>
+<h3 id="s6-5-3">shared_ptr：共享與參考計數</h3>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;memory&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">p1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span><span class="p">(</span><span class="s">"USD/TWD 曲線"</span><span class="p">);</span><span class="w">   </span><span class="c1">// 參考計數 = 1</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"use_count = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">p1</span><span class="p">.</span><span class="n">use_count</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span><span class="w"> </span><span class="n">p2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p1</span><span class="p">;</span><span class="w">                  </span><span class="c1">// 複製：計數 = 2</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">p3</span><span class="p">(</span><span class="n">p1</span><span class="p">);</span><span class="w">                                           </span><span class="c1">// 計數 = 3</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"區塊內 use_count = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">p1</span><span class="p">.</span><span class="n">use_count</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"，內容："</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="o">*</span><span class="n">p3</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="w">                                                          </span><span class="c1">// p2、p3 銷毀：計數回到 1</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"區塊外 use_count = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">p1</span><span class="p">.</span><span class="n">use_count</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">p1</span><span class="p">.</span><span class="n">reset</span><span class="p">();</span><span class="w">                                                </span><span class="c1">// 放棄擁有：計數歸 0 → 物件被釋放</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"reset 後 p1 是空的："</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">boolalpha</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><span class="n">p1</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">nullptr</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">p4</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">100</span><span class="p">);</span>
+<span class="w">    </span><span class="n">p4</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">400</span><span class="p">);</span><span class="w">                           </span><span class="c1">// 指向新物件，舊的 100 自動釋放</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="o">*</span><span class="n">p4</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>use_count = 1
+區塊內 use_count = 3，內容：USD/TWD 曲線
+區塊外 use_count = 1
+reset 後 p1 是空的：true
+400</code></pre>
+<ul>
+<li>每個 shared_ptr 物件都會記錄「有幾個 shared_ptr 指向同一物件」——<strong>參考計數</strong>（reference count），用 <code>use_count()</code> 查看。</li>
+<li>複製 shared_ptr 讓計數 +1；一個 shared_ptr 被銷毀或 <code>reset()</code> 讓計數 −1；<strong>計數歸零時自動 delete 物件</strong>。概念類似 R、Python 的垃圾回收。</li>
+<li>用 <code>std::make_shared&lt;T&gt;(參數)</code> 建立：只配置一次記憶體（物件和計數放在一起），比 <code>std::shared_ptr&lt;T&gt;(new T(...))</code> 有效率，也避免裸指標外流。</li>
+<li>智慧指標的建構函數是 <code>explicit</code>，不能寫 <code>std::shared_ptr&lt;int&gt; p = new int(1);</code>。</li>
+</ul>
+<div class="box fin"><span class="tag">金融應用</span><strong class="bt">共享的市場資料</strong><p>多個商品（債券、利率交換、選擇權）都要用同一條殖利率曲線來折現。讓每個商品持有一個指向曲線的 <code>shared_ptr</code>：曲線只有一份，大家共用；最後一個商品也被銷毀時，曲線才自動釋放。QuantLib 這類量化程式庫大量使用這種設計（第 10 章會看到 <code>Handle</code> 與觀察者模式）。</p></div>
+<h3 id="s6-5-4">不要混用裸指標與智慧指標</h3>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;memory&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">raw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="kt">int</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="n">raw</span><span class="p">);</span>
+<span class="w">    </span><span class="c1">// std::shared_ptr&lt;int&gt; b(raw);  // 千萬不要：兩個「各自計數」的 shared_ptr 會 delete 同一個物件兩次</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">;</span><span class="w">      </span><span class="c1">// 正確：從既有的 shared_ptr 複製，共用同一個計數</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">a</span><span class="p">.</span><span class="n">use_count</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">peek</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">.</span><span class="n">get</span><span class="p">();</span><span class="w">             </span><span class="c1">// get()：暫時取得裸指標（例如呼叫舊的 C 函數）</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="o">*</span><span class="n">peek</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">      </span><span class="c1">// 只能看，不要 delete 它</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>2
+5</code></pre>
+<p>規則：<strong>一律用 <code>make_unique</code>／<code>make_shared</code> 建立</strong>，不要自己 <code>new</code> 再交給智慧指標；需要裸指標時只用 <code>get()</code> 短暫存取，<strong>絕不 delete</strong>。</p>
+<h3 id="s6-5-5">weak_ptr（認識即可）</h3>
+<p><code>std::weak_ptr</code> 指向 shared_ptr 管理的物件，但<strong>不增加參考計數</strong>，用來「觀察」物件是否還活著（<code>lock()</code> 會回傳一個 shared_ptr，物件已消失時回傳空的）。主要用來打破兩個物件互相持有 shared_ptr、計數永遠不會歸零的<strong>循環參考</strong>。</p><section class="cc" id="cc-s6-5"><h3 class="cc-h">Concept Check：6.5 智慧指標：讓物件自己收拾</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s6-5-1" data-label="6.5 智慧指標：讓物件自己收拾 Q1"><div class="q-meta"><h4><a href="#q-s6-5-1">Q1</a></h4><span class="q-kind">選擇｜中</span><span class="q-title">智慧指標選擇</span></div><div class="q-text"><p>一個模擬函數要建立一大塊路徑資料並交給呼叫端，資料只會有一個擁有者。最適合的回傳型態是？</p></div><ol class="opts"><li><b>(A)</b><span><code>double*</code></span></li><li><b>(B)</b><span><code>std::weak_ptr&lt;Paths&gt;</code></span></li><li><b>(C)</b><span><code>std::shared_ptr&lt;Paths&gt;</code></span></li><li><b>(D)</b><span><code>std::unique_ptr&lt;Paths&gt;</code></span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (D)</strong><code>std::unique_ptr&lt;Paths&gt;</code></div><div class="why"><p class="sh">解析</p><p>單一擁有者用 unique_ptr，回傳時擁有權直接移交給呼叫端，離開作用域自動釋放。裸指標要靠呼叫端記得 delete；shared_ptr 有不必要的計數成本；weak_ptr 不擁有物件。</p></div></div></article><article class="q" id="q-s6-5-2" data-label="6.5 智慧指標：讓物件自己收拾 Q2"><div class="q-meta"><h4><a href="#q-s6-5-2">Q2</a></h4><span class="q-kind">預測輸出｜中</span><span class="q-title">參考計數</span></div><div class="q-text"><p>下面程式印出什麼？</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;memory&gt;</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">(</span><span class="mf">1.5</span><span class="p">);</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="w"> </span><span class="n">c</span><span class="p">;</span>
+<span class="w">    </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">a</span><span class="p">.</span><span class="n">use_count</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" "</span><span class="p">;</span>
+<span class="w">    </span><span class="n">b</span><span class="p">.</span><span class="n">reset</span><span class="p">();</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">a</span><span class="p">.</span><span class="n">use_count</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="o">*</span><span class="n">c</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案</strong><pre class="out" data-title="執行結果"><code>3 2 1.5</code></pre></div><div class="why"><p class="sh">解析</p><p>a、b、c 共用同一物件，計數 3；b.reset() 後剩 a、c，計數 2，物件仍存在。</p></div></div></article><article class="q" id="q-s6-5-3" data-label="6.5 智慧指標：讓物件自己收拾 Q3"><div class="q-meta"><h4><a href="#q-s6-5-3">Q3</a></h4><span class="q-kind">找錯｜難</span><span class="q-title">重複擁有</span></div><div class="q-text"><p>下面程式有什麼問題？</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="kt">double</span><span class="w"> </span><span class="o">*</span><span class="n">raw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="kt">double</span><span class="p">(</span><span class="mf">0.02</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="w"> </span><span class="n">r1</span><span class="p">(</span><span class="n">raw</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="w"> </span><span class="n">r2</span><span class="p">(</span><span class="n">raw</span><span class="p">);</span>
+</code></pre></div></div><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案</strong><p>r1 和 r2 都從同一個裸指標建立，各自擁有一個獨立的參考計數，彼此不知道對方存在。當兩者都離開作用域時，會各 delete 一次同一塊記憶體（重複釋放），屬於未定義行為。應該寫成 <code>auto r1 = std::make_shared&lt;double&gt;(0.02); auto r2 = r1;</code>，讓它們共用同一個計數。</p></div></div></article></section></section><section class="sec" id="s6-6" data-label="6.6 補充：讀寫檔案"><h2><span class="num">6.6</span>補充：讀寫檔案</h2><div class="box idea"><span class="tag">換個角度想</span><strong class="bt">講義外的補充</strong><p>這一節老師的講義沒有，但金融程式幾乎都要從檔案讀資料（價格、交易紀錄）、把結果寫出去，所以補充最基本的用法。</p></div>
+<p>C++ 用 <code>&lt;fstream&gt;</code> 讀寫檔案，用法和 <code>cin</code>／<code>cout</code> 幾乎一樣：<code>std::ofstream</code>（output file stream）寫檔，<code>std::ifstream</code> 讀檔；<code>&lt;sstream&gt;</code> 的 <code>std::stringstream</code> 則可以把一個字串當成資料流來切割。</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fstream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;sstream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;vector&gt;</span>
+
+<span class="k">struct</span><span class="w"> </span><span class="nc">Bar</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">date</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">close</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">long</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">volume</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// 1. 寫檔：先產生一個 CSV（實務上這個檔案來自資料商或 R 匯出）</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">ofstream</span><span class="w"> </span><span class="n">out</span><span class="p">(</span><span class="s">"prices.csv"</span><span class="p">);</span>
+<span class="w">        </span><span class="n">out</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"date,close,volume</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">        </span><span class="n">out</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"2026-11-09,1005.0,32100</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">        </span><span class="n">out</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"2026-11-10,1012.5,28750</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">        </span><span class="n">out</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"2026-11-11,998.0,41230</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">        </span><span class="n">out</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"2026-11-12,1015.0,35020</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="w">   </span><span class="c1">// out 離開作用域時自動關閉檔案</span>
+
+<span class="w">    </span><span class="c1">// 2. 讀檔：一列一列讀，再用 stringstream 以逗號切開</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">ifstream</span><span class="w"> </span><span class="n">in</span><span class="p">(</span><span class="s">"prices.csv"</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">                                      </span><span class="c1">// 檔案打不開時要處理</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">cerr</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"找不到檔案</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">line</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">getline</span><span class="p">(</span><span class="n">in</span><span class="p">,</span><span class="w"> </span><span class="n">line</span><span class="p">);</span><span class="w">                         </span><span class="c1">// 跳過標題列</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Bar</span><span class="o">&gt;</span><span class="w"> </span><span class="n">bars</span><span class="p">;</span>
+<span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">getline</span><span class="p">(</span><span class="n">in</span><span class="p">,</span><span class="w"> </span><span class="n">line</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">                </span><span class="c1">// 讀到檔尾時 getline 回傳 false</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">stringstream</span><span class="w"> </span><span class="n">ss</span><span class="p">(</span><span class="n">line</span><span class="p">);</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">date</span><span class="p">,</span><span class="w"> </span><span class="n">close</span><span class="p">,</span><span class="w"> </span><span class="n">vol</span><span class="p">;</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">getline</span><span class="p">(</span><span class="n">ss</span><span class="p">,</span><span class="w"> </span><span class="n">date</span><span class="p">,</span><span class="w"> </span><span class="sc">','</span><span class="p">);</span><span class="w">                </span><span class="c1">// 第三個參數：分隔字元</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">getline</span><span class="p">(</span><span class="n">ss</span><span class="p">,</span><span class="w"> </span><span class="n">close</span><span class="p">,</span><span class="w"> </span><span class="sc">','</span><span class="p">);</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">getline</span><span class="p">(</span><span class="n">ss</span><span class="p">,</span><span class="w"> </span><span class="n">vol</span><span class="p">,</span><span class="w"> </span><span class="sc">','</span><span class="p">);</span>
+<span class="w">        </span><span class="n">bars</span><span class="p">.</span><span class="n">push_back</span><span class="p">({</span><span class="n">date</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">stod</span><span class="p">(</span><span class="n">close</span><span class="p">),</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">stoll</span><span class="p">(</span><span class="n">vol</span><span class="p">)});</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// 3. 計算並寫出結果</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">ofstream</span><span class="w"> </span><span class="n">res</span><span class="p">(</span><span class="s">"returns.txt"</span><span class="p">);</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="kt">size_t</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">bars</span><span class="p">.</span><span class="n">size</span><span class="p">();</span><span class="w"> </span><span class="o">++</span><span class="n">t</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bars</span><span class="p">[</span><span class="n">t</span><span class="p">].</span><span class="n">close</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">bars</span><span class="p">[</span><span class="n">t</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">].</span><span class="n">close</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">        </span><span class="n">res</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">bars</span><span class="p">[</span><span class="n">t</span><span class="p">].</span><span class="n">date</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">bars</span><span class="p">[</span><span class="n">t</span><span class="p">].</span><span class="n">date</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" 報酬 "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"%，成交量 "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">bars</span><span class="p">[</span><span class="n">t</span><span class="p">].</span><span class="n">volume</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"共讀入 "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">bars</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" 筆，結果已寫入 returns.txt</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>2026-11-10 報酬 0.746269%，成交量 28750
+2026-11-11 報酬 -1.4321%，成交量 41230
+2026-11-12 報酬 1.70341%，成交量 35020
+共讀入 4 筆，結果已寫入 returns.txt</code></pre>
+<ul>
+<li><code>std::ofstream out(&quot;檔名&quot;);</code> 開檔寫入，之後 <code>out &lt;&lt; ...</code> 就像 cout。</li>
+<li><code>std::ifstream in(&quot;檔名&quot;);</code> 開檔讀取；<code>if (!in)</code> 檢查是否成功開啟。</li>
+<li><code>while (std::getline(in, line))</code> 是「讀到檔尾為止」的標準寫法。</li>
+<li><code>std::getline(ss, 欄位, &#x27;,&#x27;)</code> 以逗號為分隔讀取一個欄位。</li>
+<li>檔案物件離開作用域時會<strong>自動關閉</strong>——這和智慧指標自動釋放記憶體是同一個想法（RAII：資源的生命週期綁在物件上），第 7 章學 class 時會正式介紹。</li>
+</ul><section class="cc" id="cc-s6-6"><h3 class="cc-h">Concept Check：6.6 補充：讀寫檔案</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s6-6-1" data-label="6.6 補充：讀寫檔案 Q1"><div class="q-meta"><h4><a href="#q-s6-6-1">Q1</a></h4><span class="q-kind">寫程式｜中</span><span class="q-title">讀檔計算平均</span></div><div class="q-text"><p>修改上面的程式：讀入 prices.csv 後，計算平均收盤價與最大成交量，印出來。（先寫檔再讀檔，讓程式可以獨立執行。）</p></div><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案</strong><div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fstream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;sstream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">ofstream</span><span class="w"> </span><span class="n">out</span><span class="p">(</span><span class="s">"prices.csv"</span><span class="p">);</span>
+<span class="w">        </span><span class="n">out</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"date,close,volume</span><span class="se">\n</span><span class="s">2026-11-09,1005.0,32100</span><span class="se">\n</span><span class="s">2026-11-10,1012.5,28750</span><span class="se">\n</span><span class="s">"</span>
+<span class="w">            </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"2026-11-11,998.0,41230</span><span class="se">\n</span><span class="s">2026-11-12,1015.0,35020</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">ifstream</span><span class="w"> </span><span class="n">in</span><span class="p">(</span><span class="s">"prices.csv"</span><span class="p">);</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">line</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">getline</span><span class="p">(</span><span class="n">in</span><span class="p">,</span><span class="w"> </span><span class="n">line</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">sum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">long</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">max_vol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">getline</span><span class="p">(</span><span class="n">in</span><span class="p">,</span><span class="w"> </span><span class="n">line</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">stringstream</span><span class="w"> </span><span class="n">ss</span><span class="p">(</span><span class="n">line</span><span class="p">);</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">d</span><span class="p">,</span><span class="w"> </span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">;</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">getline</span><span class="p">(</span><span class="n">ss</span><span class="p">,</span><span class="w"> </span><span class="n">d</span><span class="p">,</span><span class="w"> </span><span class="sc">','</span><span class="p">);</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">getline</span><span class="p">(</span><span class="n">ss</span><span class="p">,</span><span class="w"> </span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="sc">','</span><span class="p">);</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">getline</span><span class="p">(</span><span class="n">ss</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">,</span><span class="w"> </span><span class="sc">','</span><span class="p">);</span>
+<span class="w">        </span><span class="n">sum</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">stod</span><span class="p">(</span><span class="n">c</span><span class="p">);</span>
+<span class="w">        </span><span class="kt">long</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">vol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">stoll</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">vol</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">max_vol</span><span class="p">)</span><span class="w"> </span><span class="n">max_vol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vol</span><span class="p">;</span>
+<span class="w">        </span><span class="o">++</span><span class="n">n</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"平均收盤 "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">sum</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"，最大成交量 "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">max_vol</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>平均收盤 1007.62，最大成交量 41230</code></pre></div></div></article></section></section><section class="sec" id="s6-7" data-label="6.7 本章小結"><h2><span class="num">6.7</span>本章小結</h2><ul>
+<li><strong>命名空間</strong>：<code>namespace 名 { }</code> 避免名稱衝突，<code>::</code> 存取；<code>using</code> 宣告／指示（不要放在標頭檔）；匿名命名空間限本檔使用；<code>::名稱</code> 取全域。</li>
+<li><strong>前置處理器</strong>做文字替換：<code>#define</code>（巨集，注意括號與分號，能用 constexpr／inline 就不用巨集）、<code>#include</code>（<code>&lt;&gt;</code> 系統、<code>&quot;&quot;</code> 自己的）、include guard、<code>#ifdef</code>／<code>#if</code> 條件編譯。</li>
+<li><strong>記憶體分區</strong>：堆疊（自動）、堆積（<code>new</code>／<code>delete</code> 手動）、靜態儲存區、常數儲存區。</li>
+<li><strong>new／delete</strong> 要成對（<code>new[]</code> 配 <code>delete[]</code>）；三大錯誤：記憶體洩漏、懸空指標、重複釋放。</li>
+<li><strong>智慧指標</strong>（<code>&lt;memory&gt;</code>）：<code>unique_ptr</code> 獨占（首選，<code>make_unique</code>、<code>std::move</code> 移交）、<code>shared_ptr</code> 共享（參考計數 <code>use_count</code>、<code>make_shared</code>、<code>reset</code>）、<code>weak_ptr</code> 觀察；不要和裸指標混用。</li>
+<li><strong>檔案</strong>：<code>ofstream</code> 寫、<code>ifstream</code> 讀、<code>getline</code> 逐列、<code>stringstream</code> 切欄位。</li>
+</ul></section>
+<nav class="pager"><a class="prev" href="ch05.html">← 第 5 章</a><a class="next" href="ch07.html">第 7 章 →</a></nav></main>
+<script src="assets/katex/katex.min.js"></script><script src="assets/katex/auto-render.min.js"></script>
+<script src="assets/search.js?v=4da4dfd2"></script>
+<script src="assets/site.js?v=99d8caa2"></script>
+</body></html>

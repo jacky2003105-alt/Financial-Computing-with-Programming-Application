@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>金融程式計算：C++｜課程筆記｜金融程式計算：C++課程筆記</title>
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<link rel="stylesheet" href="assets/style.css?v=f08507d8">
+</head><body data-page="index" data-mode="course">
+<div class="topbar"><a class="brand" href="index.html">金融程式計算：C++｜課程筆記</a><div class="pickers">
+<label for="unitSelect">選擇單元</label><select id="unitSelect" aria-label="選擇單元"><option value="index.html">首頁：課程介紹與使用說明</option><option value="ch01.html">第 1 章　C++ 簡介與第一支程式</option><option value="ch02.html">第 2 章　資料型態、變數與記憶體</option><option value="ch03.html">第 3 章　陣列、指標與字串</option><option value="ch04.html">第 4 章　表達式、運算子與流程控制</option><option value="ch05.html">第 5 章　函數</option><option value="ch06.html">第 6 章　命名空間、預處理與記憶體管理</option><option value="ch07.html">第 7 章　類別 class（一）：封裝、建構與物件的一生</option><option value="ch08.html">第 8 章　類別 class（二）：繼承、多型與設計模式</option><option value="ch09.html">第 9 章　模板與泛型</option><option value="ch10.html">第 10 章　課程總結：從語法到量化程式庫</option></select></div></div>
+<main class="wrap"><header class="ch-head"><h1>金融程式計算：C++｜課程筆記</h1></header>
+
+<div class="ch-intro">
+<p>這是「金融計算程式運用」（陳正暉老師）的 C++ 課程筆記，從完全沒寫過 C++ 的角度重新寫。章節順序照老師的講義一～七與課程總結；每個觀念都附上<b>完整、可以直接編譯執行的程式</b>，下方的「執行結果」是網站實際用 g++ 編譯、執行後貼上的，不是手打的。故意寫錯的程式則附上編譯器真正的錯誤訊息，讓你習慣讀錯誤訊息。</p>
+<p>每一節的寫法固定：<b>先講觀念（用生活或金融的比喻）→ 最小的程式 → 逐行解釋 → 換個寫法或常見錯誤 → 金融應用 → Concept Check</b>。老師上課特別強調的地方用紅框「老師上課強調」、上課的講法整理成紫框「老師上課怎麼說」。</p>
+</div>
+<section class="sec" id="chapters"><h2>章節</h2><div class="cards"><a class="card" href="ch01.html"><h3>第 1 章　C++ 簡介與第一支程式</h3><p>C++ 是什麼、編譯式語言、第一支程式 Hello Quant World、main 函數、編譯與連結的過程、CMake。</p></a><a class="card" href="ch02.html"><h3>第 2 章　資料型態、變數與記憶體</h3><p>型態與記憶體、變數與常數、整數與浮點數陷阱、cin、位址、參考與指標、const、struct 與 enum。</p></a><a class="card" href="ch03.html"><h3>第 3 章　陣列、指標與字串</h3><p>一維與二維陣列、指標和陣列的關係、C 字串、std::vector、std::string、迭代器與演算法。</p></a><a class="card" href="ch04.html"><h3>第 4 章　表達式、運算子與流程控制</h3><p>運算子與優先順序、型態轉換、if/switch、for/while 迴圈、break/continue、二分法與牛頓法、例外處理。</p></a><a class="card" href="ch05.html"><h3>第 5 章　函數</h3><p>函數的宣告與定義、傳值與傳參考、回傳值、生命週期與 static、重載、遞迴、函數指標、lambda、std::function。</p></a><a class="card" href="ch06.html"><h3>第 6 章　命名空間、預處理與記憶體管理</h3><p>命名空間、前置處理器（#define、#include、條件編譯）、堆疊與堆積、new/delete、智慧指標。</p></a><a class="card" href="ch07.html"><h3>第 7 章　類別 class（一）：封裝、建構與物件的一生</h3><p>類別 class：成員變數與成員函數、public/private、建構函數、explicit、初始化列表、const 成員函數、this、static 成員、運算子重載、複製與解構。</p></a><a class="card" href="ch08.html"><h3>第 8 章　類別 class（二）：繼承、多型與設計模式</h3><p>繼承、存取等級、覆寫與遮蔽、虛函數與多型、虛解構函數、friend、多重繼承、單例模式，以及 QuantLib 中的實例。</p></a><a class="card" href="ch09.html"><h3>第 9 章　模板與泛型</h3><p>模板 template：函數模板、類別模板、typename、實例化、特化、可變參數模板。</p></a><a class="card" href="ch10.html"><h3>第 10 章　課程總結：從語法到量化程式庫</h3><p>整學期的地圖：NPV 計算、LazyObject、觀察者模式，從語法走向 QuantLib。</p></a></div></section>
+
+<section class="sec" id="howto"><h2>怎麼讀這份筆記</h2>
+<ul>
+<li><b>一定要自己打一次程式</b>：按程式碼右上角「複製」可以複製，但建議至少自己打一遍，再改改數字看結果怎麼變。</li>
+<li><b>看執行結果</b>：程式下方灰底的「執行結果」就是螢幕上會看到的東西；黃色是編譯器警告、紅色是編譯錯誤。</li>
+<li><b>搜尋、本頁大綱、標記不熟、隱藏解答</b>：功能都在頁首，和其他課程網站一樣。</li>
+<li><b>不用一次全懂</b>：C++ 的很多細節（記憶體、指標、類別）要反覆看才會通，第一次讀先抓「能寫出會動的程式」。</li>
+</ul></section>
+
+<section class="sec" id="setup"><h2>開發環境（最快能開始寫程式的方法）</h2>
+<ul>
+<li><b>不想安裝任何東西</b>：先用線上編譯器（例如 Compiler Explorer godbolt.org、OnlineGDB）貼上程式就能跑，適合練習前幾章。</li>
+<li><b>Mac</b>：在終端機輸入 <code>xcode-select --install</code> 安裝 Clang 編譯器，再用 VS Code 撰寫；之後裝 Homebrew、CMake（老師的 QuantLib 專案需要）。</li>
+<li><b>Windows</b>：安裝 Visual Studio 2022（勾選「使用 C++ 的桌面開發」），或安裝 WSL 後在 Linux 裡用 g++。</li>
+<li>終端機編譯一個檔案：<code>g++ -std=c++20 -Wall main.cpp -o main</code>，執行：<code>./main</code>（Windows 是 <code>main.exe</code>）。第 1 章有詳細說明。</li>
+</ul></section>
+
+<nav class="pager"><span></span><a class="next" href="ch01.html">第 1 章 →</a></nav></main>
+<script src="assets/katex/katex.min.js"></script><script src="assets/katex/auto-render.min.js"></script>
+<script src="assets/search.js?v=4da4dfd2"></script>
+<script src="assets/site.js?v=99d8caa2"></script>
+</body></html>
