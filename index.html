@@ -4,14 +4,14 @@
 <meta name="color-scheme" content="light dark">
 <script>try{var t=localStorage.getItem('notes:theme')||(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 <link rel="stylesheet" href="assets/katex/katex.min.css">
-<link rel="stylesheet" href="assets/style.css?v=2772ac91">
+<link rel="stylesheet" href="assets/style.css?v=f238fc88">
 
 </head><body data-page="index" data-mode="course" data-course="cf" data-key="cf">
 <a class="skip" href="#main">跳到主要內容</a>
 <header class="topbar"><a class="brand" href="index.html" aria-label="金融程式計算：C++｜課程筆記首頁"><span class="logo" aria-hidden="true">C++</span><span>金融程式計算：C++</span><span class="sub">｜課程筆記</span></a>
-<div class="pickers"><nav class="mode" aria-label="切換課程或作業"><a href="ch01.html" data-mode="course" class=on>課程</a><a href="hw01.html" data-mode="hw">作業</a></nav><label for="unitSelect">選擇單元</label><select id="unitSelect" aria-label="選擇單元"><option value="index.html" selected>首頁：課程介紹與使用說明</option><option value="ch01.html">第 1 章　C++ 簡介與第一支程式</option><option value="ch02.html">第 2 章　資料型態、變數與記憶體</option><option value="ch03.html">第 3 章　陣列、指標與字串</option><option value="ch04.html">第 4 章　表達式、運算子與流程控制</option><option value="ch05.html">第 5 章　函數</option><option value="ch06.html">第 6 章　命名空間、預處理與記憶體管理</option><option value="ch07.html">第 7 章　類別 class（一）：封裝、建構與物件的一生</option><option value="ch08.html">第 8 章　類別 class（二）：繼承、多型與設計模式</option><option value="ch09.html">第 9 章　模板與泛型</option><option value="ch10.html">第 10 章　課程總結：從語法到量化程式庫</option></select></div></header>
+<div class="pickers"><nav class="mode" aria-label="切換課程或作業"><a href="ch01.html" data-mode="course" class=on>課程</a><a href="hw01.html" data-mode="hw">作業</a></nav><label for="unitSelect">選擇單元</label><select id="unitSelect" aria-label="選擇單元"><option value="index.html" selected>首頁：課程介紹與使用說明</option><option value="exam.html">工具：測驗模式</option><option value="notes.html">工具：我的重點與筆記</option><option value="ch01.html">第 1 章　C++ 簡介與第一支程式</option><option value="ch02.html">第 2 章　資料型態、變數與記憶體</option><option value="ch03.html">第 3 章　陣列、指標與字串</option><option value="ch04.html">第 4 章　表達式、運算子與流程控制</option><option value="ch05.html">第 5 章　函數</option><option value="ch06.html">第 6 章　命名空間、預處理與記憶體管理</option><option value="ch07.html">第 7 章　類別 class（一）：封裝、建構與物件的一生</option><option value="ch08.html">第 8 章　類別 class（二）：繼承、多型與設計模式</option><option value="ch09.html">第 9 章　模板與泛型</option><option value="ch10.html">第 10 章　課程總結：從語法到量化程式庫</option></select></div></header>
 <main class="wrap" id="main">
-<section class="hero"><p class="eyebrow">課程筆記</p><h1>金融程式計算：C++</h1><p class="lead">從完全沒寫過 C++ 開始，一路讀到類別、多型、模板與 QuantLib 的設計。每個觀念都附上完整、可以直接編譯執行的程式與真實的執行結果。</p><ul class="stats"><li><b>10</b>章</li><li><b>179</b>題 Concept Check</li><li><b>1</b>份作業</li></ul></section><div class="resume-slot"></div>
+<section class="hero"><p class="eyebrow">課程筆記</p><h1>金融程式計算：C++</h1><p class="lead">從完全沒寫過 C++ 開始，一路讀到類別、多型、模板與 QuantLib 的設計。每個觀念都附上完整、可以直接編譯執行的程式與真實的執行結果。</p><ul class="stats"><li><b>10</b>章</li><li><b>179</b>題 Concept Check</li><li><b>1</b>份作業</li></ul><div class="hero-actions"><a class="primary" href="ch01.html">從第 1 章開始讀</a><a href="exam.html">測驗模式</a><a href="notes.html">我的重點與筆記</a></div></section><div class="resume-slot"></div>
 <div class="ch-intro">
 <p>這是「金融計算程式運用」（陳正暉老師）的 C++ 課程筆記，從完全沒寫過 C++ 的角度重新寫。章節順序照老師的講義一～七與課程總結；每個觀念都附上<b>完整、可以直接編譯執行的程式</b>，下方的「執行結果」是網站實際用 g++ 編譯、執行後貼上的，不是手打的（g++ 是 Linux 上常見的 C++ 編譯器；你的 Mac 用的是 clang++／AppleClang，兩者都照同一份 C++ 標準，這些程式在兩邊結果相同）。故意寫錯的程式則附上編譯器真正的錯誤訊息，讓你習慣讀錯誤訊息。</p>
 <p>每一節的寫法固定：<b>先講觀念（用生活或金融的比喻）→ 最小的程式 → 逐行解釋 → 換個寫法或常見錯誤 → 金融應用 → Concept Check</b>。老師上課特別強調的地方用紅框「老師上課強調」、上課的講法整理成紫框「老師上課怎麼說」。</p>
@@ -23,6 +23,8 @@
 <ul>
 <li><b>一定要自己打一次程式</b>：按程式碼右上角「複製」可以複製，但建議至少自己打一遍，再改改數字看結果怎麼變。</li>
 <li><b>看執行結果</b>：程式下方灰底的「執行結果」就是螢幕上會看到的東西；黃色是編譯器警告、紅色是編譯錯誤。</li>
+<li><b>測驗模式</b>：頁首選單或首頁的「測驗模式」，選章節、題型與題數隨機出題，交卷後計分，每題都能連回教學處。</li>
+<li><b>畫重點與筆記</b>：在章節頁選取文字，按顏色畫重點或「加筆記」；「我的重點與筆記」頁整理全部內容，可以匯出備份或匯入到另一台裝置。這些紀錄只存在你自己的瀏覽器，別人看不到。</li>
 <li><b>搜尋</b>：頁首「搜尋」或按 <code>/</code>、<code>⌘K</code>（Windows 是 <code>Ctrl K</code>）跨章搜尋，方向鍵選擇、Enter 前往。</li>
 <li><b>本頁大綱、只看不熟、解答</b>：都在頁首；每題右上角可以標「不熟」，解答預設顯示，想先作答就按「隱藏全部解答」。右上角的月亮按鈕切換深色模式。</li>
 <li><b>不用一次全懂</b>：C++ 的很多細節（記憶體、指標、類別）要反覆看才會通，第一次讀先抓「能寫出會動的程式」。</li>
@@ -41,5 +43,5 @@
 <script src="assets/katex/katex.min.js"></script><script src="assets/katex/auto-render.min.js"></script>
 <script src="assets/search.js?v=e155388e"></script>
 <script src="assets/glossary.js?v=943f81c7"></script>
-<script src="assets/site.js?v=f42ce8f5"></script>
+<script src="assets/site.js?v=ddb9f3f8"></script>
 </body></html>

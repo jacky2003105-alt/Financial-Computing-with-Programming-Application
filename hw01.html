@@ -4,7 +4,7 @@
 <meta name="color-scheme" content="light dark">
 <script>try{var t=localStorage.getItem('notes:theme')||(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 <link rel="stylesheet" href="assets/katex/katex.min.css">
-<link rel="stylesheet" href="assets/style.css?v=2772ac91">
+<link rel="stylesheet" href="assets/style.css?v=f238fc88">
 
 </head><body data-page="hw01" data-mode="hw" data-course="cf" data-key="cf">
 <a class="skip" href="#main">跳到主要內容</a>
@@ -598,7 +598,7 @@ b: n_=3, rates_ ──┘</code></pre></div>
 <span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">a</span><span class="p">.</span><span class="n">at</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre></div>
-<pre class="out" data-title="執行結果"><code>==10884==ERROR: AddressSanitizer: attempting double-free on 0x… in thread T0:
+<pre class="out" data-title="執行結果"><code>==11891==ERROR: AddressSanitizer: attempting double-free on 0x… in thread T0:
     在 RateCurve::~RateCurve() main.cpp:9
     在 main main.cpp:18
 0x… is located 0 bytes inside of 24-byte region [0x…,0x…)
@@ -1050,5 +1050,5 @@ y = NaN：殖利率 y 必須是有限且非負的數
 <script src="assets/katex/katex.min.js"></script><script src="assets/katex/auto-render.min.js"></script>
 <script src="assets/search.js?v=e155388e"></script>
 <script src="assets/glossary.js?v=943f81c7"></script>
-<script src="assets/site.js?v=f42ce8f5"></script>
+<script src="assets/site.js?v=ddb9f3f8"></script>
 </body></html>

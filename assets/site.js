@@ -165,5 +165,71 @@ highlight();window.addEventListener('hashchange',highlight);
  document.addEventListener('keydown',function(e){if(e.key==='Escape')pop.hidden=true;});
  var f=$('.gl-filter');if(f)f.addEventListener('input',function(){var q=f.value.trim().toLowerCase();$$('.gl-row').forEach(function(r){r.hidden=q&&r.textContent.toLowerCase().indexOf(q)<0;});});
 })();
+/* ---------- 畫重點與筆記（只存在這台裝置；彙整在 notes.html） ---------- */
+(function(){if(!/^(ch|hw)/.test(PAGE))return;
+ var HK=KEY+':hl';function all(){try{return JSON.parse(ls(HK)||'[]');}catch(e){return [];}}function save(a){ls(HK,JSON.stringify(a));}
+ var SKIP='script,style,.katex-mathml,button,.rd-weak,.copy,.lang,textarea,input,select,.gl-pop,.hl-bar,.hl-pop';
+ function texts(root){var w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:function(n){return n.parentNode.closest(SKIP)?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT;}}),a=[];while(w.nextNode())a.push(w.currentNode);return a;}
+ function scopeOf(node){var e=node.nodeType===1?node:node.parentNode;return e.closest('.sec')||e.closest('.ch-intro')||null;}
+ function wrap(root,start,end,h){var pos=0,first=null;texts(root).forEach(function(n){var L=n.nodeValue.length,a=Math.max(start,pos),b=Math.min(end,pos+L);
+   if(a<b){var r=document.createRange();r.setStart(n,a-pos);r.setEnd(n,b-pos);var m=document.createElement('mark');m.className='hl hl-'+(h.k||'y')+(h.n?' has-note':'');m.setAttribute('data-hl',h.id);
+    if(!first){m.id='hl-'+h.id;first=m;}if(h.n)m.title=h.n;try{r.surroundContents(m);}catch(e){}}pos+=L;});return first;}
+ function find(root,h){var full=texts(root).map(function(n){return n.nodeValue;}).join(''),i=-1,best=-1;
+  while((i=full.indexOf(h.t,i+1))>=0){if(best<0)best=i;if(h.pre&&full.slice(Math.max(0,i-h.pre.length),i)===h.pre){best=i;break;}}return best;}
+ function restore(h){var root=h.s?document.getElementById(h.s):$('.ch-intro');if(!root)return null;var i=find(root,h);return i<0?null:wrap(root,i,i+h.t.length,h);}
+ function unwrap(id){$$('mark[data-hl="'+id+'"]').forEach(function(m){var p=m.parentNode;while(m.firstChild)p.insertBefore(m.firstChild,m);p.removeChild(m);p.normalize();});}
+ all().filter(function(h){return h.p===PAGE;}).forEach(restore);
+ if(/^#hl-/.test(location.hash)){var t=document.getElementById(location.hash.slice(1));if(t)setTimeout(function(){t.scrollIntoView({block:'center'});t.classList.add('hl-flash');},60);}
+ /* 選取文字後的工具列 */
+ var bar=document.createElement('div');bar.className='hl-bar';bar.hidden=true;
+ bar.innerHTML='<button type="button" data-k="y" aria-label="黃色重點"><i class="dot y"></i></button><button type="button" data-k="g" aria-label="綠色重點"><i class="dot g"></i></button><button type="button" data-k="p" aria-label="粉紅重點"><i class="dot p"></i></button><span class="sep"></span><button type="button" data-k="note">加筆記</button>';
+ B.appendChild(bar);var cur=null;
+ function selInfo(){var s=window.getSelection();if(!s||s.isCollapsed||!s.rangeCount)return null;var r=s.getRangeAt(0),t=s.toString();if(!t.trim()||t.length>1200)return null;
+  var root=scopeOf(r.startContainer);if(!root||root!==scopeOf(r.endContainer))return null;if((r.commonAncestorContainer.nodeType===1?r.commonAncestorContainer:r.commonAncestorContainer.parentNode).closest('pre,.toggle,.rd-weak'))return null;
+  var pre=document.createRange();pre.setStart(root,0);pre.setEnd(r.startContainer,r.startOffset);
+  var full=texts(root).map(function(n){return n.nodeValue;}).join('');var start=0;texts(root).some(function(n){if(n===r.startContainer){start+=r.startOffset;return true;}if(pre.intersectsNode(n))start+=n.nodeValue.length;return false;});
+  var sel=full.slice(start,start+t.length);if(sel!==t){var j=full.indexOf(t);if(j<0)return null;start=j;}
+  return {root:root,start:start,t:t,pre:full.slice(Math.max(0,start-30),start),rect:r.getBoundingClientRect()};}
+ function showBar(){cur=selInfo();if(!cur){bar.hidden=true;return;}bar.hidden=false;var x=cur.rect.left+cur.rect.width/2+window.scrollX-bar.offsetWidth/2,y=cur.rect.top+window.scrollY-bar.offsetHeight-10;
+  if(cur.rect.top<120)y=cur.rect.bottom+window.scrollY+10;bar.style.left=Math.max(8,Math.min(x,window.scrollX+document.documentElement.clientWidth-bar.offsetWidth-8))+'px';bar.style.top=y+'px';}
+ document.addEventListener('mouseup',function(e){if(e.target.closest('.hl-bar,.hl-pop'))return;setTimeout(showBar,10);});
+ document.addEventListener('selectionchange',function(){clearTimeout(window.__hlT);window.__hlT=setTimeout(function(){if('ontouchstart' in window)showBar();else if(window.getSelection().isCollapsed)bar.hidden=true;},350);});
+ function stamp(){var d=new Date();return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate();}
+ function add(k,note){if(!cur)return;var sec=cur.root.closest('.sec'),h={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),p:PAGE,pt:($('.ch-head h1')||{}).textContent||PAGE,
+   s:sec?sec.id:'',sl:sec?(sec.getAttribute('data-label')||''):'',t:cur.t,pre:cur.pre,k:k,n:note||'',d:stamp()};
+  var a=all();a.push(h);save(a);wrap(cur.root,cur.start,cur.start+cur.t.length,h);window.getSelection().removeAllRanges();bar.hidden=true;cur=null;return h;}
+ bar.addEventListener('mousedown',function(e){e.preventDefault();});
+ bar.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;var k=b.getAttribute('data-k');
+  if(k==='note'){var h=add('y','');if(h)openPop(document.getElementById('hl-'+h.id),true);}else add(k);});
+ /* 點已畫的重點：編輯筆記、換色、刪除 */
+ var pop=document.createElement('div');pop.className='hl-pop';pop.hidden=true;B.appendChild(pop);
+ function openPop(m,focus){if(!m)return;var id=m.getAttribute('data-hl'),a=all(),h=a.filter(function(x){return x.id===id;})[0];if(!h)return;
+  pop.innerHTML='<textarea rows="3" placeholder="寫一點筆記（可留空）"></textarea><div class="hl-pop-row"><button type="button" data-k="y"><i class="dot y"></i></button><button type="button" data-k="g"><i class="dot g"></i></button><button type="button" data-k="p"><i class="dot p"></i></button><span class="sep"></span><button type="button" class="del">刪除</button><button type="button" class="ok">完成</button></div><a href="notes.html">查看全部重點與筆記 →</a>';
+  var ta=$('textarea',pop);ta.value=h.n||'';pop.hidden=false;var r=m.getBoundingClientRect();pop.style.left=Math.max(8,Math.min(r.left+window.scrollX,window.scrollX+document.documentElement.clientWidth-pop.offsetWidth-8))+'px';pop.style.top=(r.bottom+window.scrollY+8)+'px';
+  if(focus)ta.focus();
+  function commit(){h.n=ta.value.trim();save(a);$$('mark[data-hl="'+id+'"]').forEach(function(x){x.classList.toggle('has-note',!!h.n);x.title=h.n||'';});}
+  $$('.hl-pop-row [data-k]',pop).forEach(function(b){b.onclick=function(){h.k=b.getAttribute('data-k');commit();$$('mark[data-hl="'+id+'"]').forEach(function(x){x.className='hl hl-'+h.k+(h.n?' has-note':'');});};});
+  $('.ok',pop).onclick=function(){commit();pop.hidden=true;};
+  $('.del',pop).onclick=function(){save(a.filter(function(x){return x.id!==id;}));unwrap(id);pop.hidden=true;};}
+ document.addEventListener('click',function(e){var m=e.target.closest('mark.hl');if(m&&!e.target.closest('.hl-pop')){e.preventDefault();openPop(m);return;}if(!e.target.closest('.hl-pop'))pop.hidden=true;});
+})();
+/* ---------- R 程式碼在網頁上執行（webR；按了才載入） ---------- */
+(function(){var blocks=$$('.code.runnable');if(!blocks.length)return;var loading=null;
+ function load(){if(window.NotesWebR)return Promise.resolve();if(loading)return loading;
+  loading=new Promise(function(ok,bad){var s=document.createElement('script');s.src='assets/webr.js';s.onload=ok;s.onerror=bad;document.head.appendChild(s);});return loading;}
+ blocks.forEach(function(blk){var btn=$('.run',blk),pre=$('pre',blk),orig=pre.innerText.replace(/\n$/,''),ta=null,box=null,st=null,reset=null;
+  btn.addEventListener('click',function(){
+   if(!ta){ta=document.createElement('textarea');ta.className='webr-edit';ta.spellcheck=false;ta.value=orig;ta.rows=Math.min(18,orig.split('\n').length+1);
+    ta.setAttribute('aria-label','可以修改的 R 程式碼');pre.hidden=true;blk.insertBefore(ta,pre);
+    reset=document.createElement('button');reset.type='button';reset.className='run-reset';reset.textContent='還原';blk.appendChild(reset);
+    reset.onclick=function(){ta.value=orig;};
+    ta.addEventListener('keydown',function(e){if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)){e.preventDefault();btn.click();}});
+    st=document.createElement('p');st.className='webr-status';box=document.createElement('div');box.className='webr-box';
+    var at=blk;while(at.nextElementSibling&&/\b(out|rfig)\b/.test(at.nextElementSibling.className))at=at.nextElementSibling;
+    at.insertAdjacentElement('afterend',st);st.insertAdjacentElement('afterend',box);
+    st.textContent='可以直接修改上面的程式碼，再按「▶ 執行」（或 ⌘／Ctrl + Enter）。';btn.textContent='▶ 執行';ta.focus();return;}
+   btn.disabled=true;load().then(function(){return window.NotesWebR.run(ta.value,box,function(m){st.textContent=m;});})
+    .catch(function(){st.textContent='無法載入 R：請確認有網路（webR 從 webr.r-wasm.org 下載）。';}).then(function(){btn.disabled=false;});});});
+})();
 sync();
 })();
