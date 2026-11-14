@@ -600,13 +600,13 @@ cmake --build build             # 真正編譯、連結
 <li>程式從 <code>main</code> 開始執行；<code>#include</code> 引入程式庫；敘述以 <code>;</code> 結尾；<code>{ }</code> 圍出區塊；區分大小寫。</li>
 <li>輸出：<code>std::cout &lt;&lt; ... &lt;&lt; std::endl;</code>；<code>\n</code>、<code>\t</code> 跳脫字元；<code>&lt;iomanip&gt;</code> 的 <code>fixed</code>、<code>setprecision</code>、<code>setw</code> 控制格式。</li>
 <li>建構過程：<strong>前處理</strong>（展開 #include、#define）→ <strong>編譯</strong>（每個 .cpp 變成目標檔，抓語法錯誤）→ <strong>連結</strong>（接成執行檔，<code>undefined reference</code> 是連結錯誤）。</li>
-<li>多檔案：宣告放 <code>.h</code>（加 include guard），定義放 <code>.cpp</code>；專案大了用 <span class="gl" tabindex="0" role="button" data-g="CMake">CMake</span>（＋Ninja）管理建構。</li>
+<li>多檔案：宣告放 <code>.h</code>（加 <span class="gl" tabindex="0" role="button" data-g="include guard">include guard</span>），定義放 <code>.cpp</code>；專案大了用 <span class="gl" tabindex="0" role="button" data-g="CMake">CMake</span>（＋Ninja）管理建構。</li>
 <li>編譯錯誤先看第一個 error 和行號；能執行但結果不對是邏輯錯誤，要自己驗算。</li>
 </ul></section>
 <nav class="pager" aria-label="上一頁與下一頁"><a class="next" href="ch02.html"><small>下一章 →</small>第 2 章　資料型態、變數與記憶體</a></nav></main>
 <footer class="site-foot"><span>金融程式計算：C++｜課程筆記</span></footer>
 <script src="assets/katex/katex.min.js"></script><script src="assets/katex/auto-render.min.js"></script>
 <script src="assets/search.js?v=138aa5e3"></script>
-<script src="assets/glossary.js?v=7292a76d"></script>
+<script src="assets/glossary.js?v=463e3d05"></script>
 <script src="assets/site.js?v=484e1572"></script>
 </body></html>

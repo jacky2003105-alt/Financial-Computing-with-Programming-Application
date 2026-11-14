@@ -1026,7 +1026,7 @@ b: n_=3, rates_ ──┘</code></pre></div>
 <span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">a</span><span class="p">.</span><span class="n">at</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre></div>
-<pre class="out" data-title="執行結果"><code>==1796==ERROR: AddressSanitizer: attempting double-free on 0x… in thread T0:
+<pre class="out" data-title="執行結果"><code>==5934==ERROR: AddressSanitizer: attempting double-free on 0x… in thread T0:
     在 RateCurve::~RateCurve() main.cpp:9
     在 main main.cpp:18
 0x… is located 0 bytes inside of 24-byte region [0x…,0x…)
@@ -1497,6 +1497,6 @@ y = NaN：殖利率 y 必須是有限且非負的數
 <footer class="site-foot"><span>金融程式計算：C++｜課程筆記</span></footer>
 <script src="assets/katex/katex.min.js"></script><script src="assets/katex/auto-render.min.js"></script>
 <script src="assets/search.js?v=138aa5e3"></script>
-<script src="assets/glossary.js?v=7292a76d"></script>
+<script src="assets/glossary.js?v=463e3d05"></script>
 <script src="assets/site.js?v=484e1572"></script>
 </body></html>

@@ -108,7 +108,7 @@ FixedRateBond</code></pre></div>
 </tr>
 <tr>
 <td><code>= delete</code></td>
-<td>強制產品一定要有必要參數；禁止複製單例</td>
+<td>強制產品一定要有必要參數；禁止複製<span class="gl" tabindex="0" role="button" data-g="單例">單例</span></td>
 <td>7.3、8.8</td>
 </tr>
 <tr>
@@ -191,7 +191,7 @@ FixedRateBond</code></pre></div>
 <li><code>update()</code>（收到通知時）<strong>只做一件事：標記 <code>calculated_ = false</code></strong>，不計算。</li>
 <li><code>calculate()</code> 是「快取閘門＋有效性閘門」：結果有效就直接用；過期了才呼叫 <code>performCalculations()</code>。</li>
 <li><code>NPV()</code> 只負責「確保結果有效」，然後回傳——<strong>不把計算邏輯塞在 getter 裡</strong>。</li>
-</ul></section><section class="sec" id="s10-3" data-label="10.3 自己寫一個迷你 QuantLib"><h2><span class="num">10.3</span>自己寫一個迷你 QuantLib</h2><p>把整學期的語法組合起來：智慧指標、抽象類別、虛函數與 override、mutable、const、<span class="gl" tabindex="0" role="button" data-g="多重繼承">多重繼承</span>與虛擬繼承、例外安全、lambda。</p>
+</ul></section><section class="sec" id="s10-3" data-label="10.3 自己寫一個迷你 QuantLib"><h2><span class="num">10.3</span>自己寫一個迷你 QuantLib</h2><p>把整學期的語法組合起來：智慧指標、抽象類別、虛函數與 override、<span class="gl" tabindex="0" role="button" data-g="mutable">mutable</span>、const、<span class="gl" tabindex="0" role="button" data-g="多重繼承">多重繼承</span>與虛擬繼承、例外安全、lambda。</p>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iomanip&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;vector&gt;</span>
@@ -485,7 +485,7 @@ N = 1000  歐式買權 11.346  歐式賣權 8.39056  美式賣權 8.67356</code>
 </ol></div></section><section class="sec" id="s10-6" data-label="10.6 本章小結"><h2><span class="num">10.6</span>本章小結</h2><ul>
 <li>這門課的主線：<strong>C++ 語言 → 物件模型 → 金融系統架構</strong>。</li>
 <li><code>Instrument</code> 不知道怎麼算，<code>PricingEngine</code> 才是演算法；<code>override</code> 是模型的插槽。</li>
-<li>每個關鍵字都對應一個工程需求：virtual／override（可替換、防寫錯）、explicit（防誤轉型）、= delete（強制必要參數）、const／mutable（狀態與快取）、static（共用）、friend（緊密合作）。</li>
+<li>每個關鍵字都對應一個工程需求：virtual／override（可替換、防寫錯）、<span class="gl" tabindex="0" role="button" data-g="explicit">explicit</span>（防誤轉型）、= delete（強制必要參數）、const／mutable（狀態與快取）、static（共用）、friend（緊密合作）。</li>
 <li><strong>觀察者模式</strong>：資料主動通知（<code>notifyObservers()</code> → <code>update()</code>），而不是物件不斷詢問。</li>
 <li><strong>LazyObject</strong>：<code>update()</code> 只標記過期；<code>calculate()</code> 是快取閘門與有效性閘門；<code>NPV()</code> 只保證結果有效。目標是「只在需要時才算，而且永遠算對」。</li>
 </ul></section>
@@ -493,6 +493,6 @@ N = 1000  歐式買權 11.346  歐式賣權 8.39056  美式賣權 8.67356</code>
 <footer class="site-foot"><span>金融程式計算：C++｜課程筆記</span></footer>
 <script src="assets/katex/katex.min.js"></script><script src="assets/katex/auto-render.min.js"></script>
 <script src="assets/search.js?v=138aa5e3"></script>
-<script src="assets/glossary.js?v=7292a76d"></script>
+<script src="assets/glossary.js?v=463e3d05"></script>
 <script src="assets/site.js?v=484e1572"></script>
 </body></html>

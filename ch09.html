@@ -178,7 +178,7 @@ main.cpp:5:15: note:   deduced conflicting types for parameter ‘T’ (‘int�
 平均 0.015（N 被推論為 4）
 0.0613636</code></pre>
 <ul>
-<li><code>template &lt;int N&gt;</code>：用型態名稱（<code>int</code>、<code>std::size_t</code>）而不是 typename 宣告，代表一個<strong>值</strong>。</li>
+<li><code>template &lt;int N&gt;</code>：用型態名稱（<code>int</code>、<code>std::size_t</code>）而不是 <span class="gl" tabindex="0" role="button" data-g="typename">typename</span> 宣告，代表一個<strong>值</strong>。</li>
 <li>實參必須是<strong>常數<span class="gl" tabindex="0" role="button" data-g="表達式">表達式</span></strong>——模板在編譯期實例化，執行期才知道的<span class="gl" tabindex="0" role="button" data-g="變數">變數</span>不能用。</li>
 <li><code>std::array&lt;double, 5&gt;</code> 的 5 就是非型態模板參數。</li>
 </ul>
@@ -479,7 +479,7 @@ collect2: error: ld returned 1 exit status</code></pre>
 <p>兩種解法：</p>
 <ol>
 <li><strong>把模板的定義放在標頭檔</strong>（最常見；標準程式庫幾乎都是這樣）。缺點是每個 include 它的檔案都要重新編譯模板，大型專案編譯會變慢。</li>
-<li><strong>顯式實例化</strong>（explicit instantiation）：在 .cpp 的模板定義之後寫 <code>template double average&lt;double&gt;(const double*, int);</code>，強迫編譯器在那裡產生指定型態的版本；其他檔案可以用 <code>extern template ...;</code> 宣告「不用在這裡實例化，別處已經有了」。適合事先知道只會用到哪幾種型態、又想縮短編譯時間的情況。</li>
+<li><strong>顯式實例化</strong>（<span class="gl" tabindex="0" role="button" data-g="explicit">explicit</span> instantiation）：在 .cpp 的模板定義之後寫 <code>template double average&lt;double&gt;(const double*, int);</code>，強迫編譯器在那裡產生指定型態的版本；其他檔案可以用 <code>extern template ...;</code> 宣告「不用在這裡實例化，別處已經有了」。適合事先知道只會用到哪幾種型態、又想縮短編譯時間的情況。</li>
 </ol>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++ 檔案：avg2.cpp</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">"avg.h"</span>
 <span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">T</span><span class="o">&gt;</span>
@@ -654,6 +654,6 @@ YTM = 3.78137%</code></pre>
 <footer class="site-foot"><span>金融程式計算：C++｜課程筆記</span></footer>
 <script src="assets/katex/katex.min.js"></script><script src="assets/katex/auto-render.min.js"></script>
 <script src="assets/search.js?v=138aa5e3"></script>
-<script src="assets/glossary.js?v=7292a76d"></script>
+<script src="assets/glossary.js?v=463e3d05"></script>
 <script src="assets/site.js?v=484e1572"></script>
 </body></html>
