@@ -1,0 +1,1043 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>期中作業 建構解構、遮蔽覆寫、切割、三法則與債券評價｜金融程式計算：C++課程筆記</title>
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<link rel="stylesheet" href="assets/style.css?v=f08507d8">
+</head><body data-page="hw01" data-mode="hw">
+<div class="topbar"><a class="brand" href="index.html">金融程式計算：C++｜課程筆記</a><div class="pickers">
+<nav class="mode" aria-label="切換課程或作業"><a href="ch01.html" data-mode="course">課程</a><a href="hw01.html" data-mode="hw" class=on>作業</a></nav><label for="unitSelect">選擇作業</label><select id="unitSelect" aria-label="選擇單元"><option value="hw01.html" selected>期中作業　建構解構、遮蔽覆寫、切割、三法則與債券評價</option></select></div></div>
+<main class="wrap"><header class="ch-head"><h1>期中作業　建構解構、遮蔽覆寫、切割、三法則與債券評價</h1><details class="ch-toc"><summary>本頁目錄（7 節）</summary><ol><li><a href="#s0-0"><span>0.0</span>作業環境：怎麼在自己的電腦編譯</a></li><li><a href="#s1-0"><span>1.0</span>第一題　建構與解構中的虛函數（10 分）</a></li><li><a href="#s2-0"><span>2.0</span>第二題　重載、遮蔽與覆寫（20 分）</a></li><li><a href="#s3-0"><span>3.0</span>第三題　切割與向下轉型（15 分）</a></li><li><a href="#s4-0"><span>4.0</span>第四題　淺複製與三法則（20 分）</a></li><li><a href="#s5-0"><span>5.0</span>第五題　債券評價與可切換的折現方法（35 分）</a></li><li><a href="#s6-0"><span>6.0</span>AI 使用紀錄與自行驗證</a></li></ol></details></header>
+<div class="ch-intro"><p>這一頁是「金融計算程式運用（二）」期中作業的參考解答與報告草稿。和 R 課的作業頁一樣，每一小題都是：<strong>題目 → 我怎麼想（思考過程）→ 程式與實際執行結果 → 重點整理 → 這題額外學到的 → 可直接貼到報告的段落</strong>。這份作業的評分重點是「推導、驗證、解釋設計決策」，所以每題都把<strong>想法怎麼演進</strong>寫出來：一開始怎麼猜、哪裡卡住、怎麼查證或問 AI、最後為什麼這樣寫。</p>
+<p>所有程式都以 <strong>C++17</strong> 實際編譯執行（老師規定的標準），而且每一段都同時用 g++ 和 clang++ 編譯過、確認結果一致——你的 Mac 用的是 clang++（AppleClang），兩者對標準 C++17 的行為相同。可繳交的 .cpp 檔名標在每段程式的右上角，整理好的檔案放在 <code>金融程式計算/期中作業/src/</code>。</p></div><section class="sec" id="s0-0" data-label="0.0 作業環境：怎麼在自己的電腦編譯"><h2><span class="num">0.0</span>作業環境：怎麼在自己的電腦編譯</h2><h3 id="s0-0-1">為什麼筆記裡寫 g++，我的電腦卻是 clang++？</h3>
+<p><code>g++</code>（GNU）和 <code>clang++</code>（LLVM，Mac 上叫 AppleClang）是兩個<strong>不同廠牌的 C++ 編譯器</strong>，就像 Word 和 Pages 都能打開同一份文件。它們都實作同一份 C++ 標準，所以標準寫法的程式在兩邊編譯、執行的結果一樣；差別只在<strong>錯誤訊息的措辭</strong>和部分警告。課程網站是在 Linux 伺服器上建置的，那裡預設的是 g++；你的 Mac 在 VS Code 裡 CMake 實際呼叫的是 <code>/usr/bin/clang++</code>（AppleClang 17，從你專案的 <code>build/CMakeCache.txt</code> 可以看到）。在 Mac 的終端機輸入 <code>g++ --version</code>，會發現它其實也是 clang 的別名。老師的作業說明也寫了「可使用 GCC、Clang 或 MSVC」。</p>
+<h3 id="s0-0-2">兩種編譯方式</h3>
+<p><strong>方式一：終端機直接編譯單一檔案</strong>（最簡單，每題附的就是這個指令）</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">終端機</span><pre><code>cd ~/Desktop/&quot;AI 課程整理筆記&quot;/金融程式計算/期中作業/src
+clang++ -std=c++17 -Wall -Wextra -pedantic Q5_bond_pricer.cpp -o Q5
+./Q5</code></pre></div>
+<ul>
+<li><code>-std=c++17</code>：指定 C++17 標準（作業規定）。</li>
+<li><code>-Wall -Wextra -pedantic</code>：打開幾乎所有警告，並要求嚴格符合標準——這樣才抓得到第一題（3）那種「可以編譯但很危險」的程式。</li>
+<li>你的 Mac 不加 <code>-std=c++17</code> 時預設是 C++14（CMakeCache 裡的 <code>CMAKE_CXX_STANDARD_COMPUTED_DEFAULT &quot;14&quot;</code>），所以一定要加。</li>
+</ul>
+<p><strong>方式二：用 VS Code + CMake 一次建置全部</strong>：<code>期中作業/</code> 資料夾裡附了 <code>CMakeLists.txt</code> 和 <code>.vscode/tasks.json</code>。用 VS Code 打開 <code>期中作業</code> 資料夾，按 <code>⌘⇧B</code>（Run Build Task），所有能執行的題目會編譯到 <code>期中作業/bin/</code>。之所以不直接放進課堂的 <code>MyProj</code>：MyProj 的 CMake 會把 <code>src/</code> 裡<strong>所有</strong> .cpp 編成同一個執行檔（每個專案只能有一個 <code>main</code>，老師第一堂課特別提醒過），還會一起編譯 QuantLib；作業每題都有自己的 <code>main</code>，分開成獨立專案比較乾淨。</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">CMake</span><pre><code>cmake_minimum_required(VERSION 3.10)
+project(CppMidterm LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+add_compile_options(-Wall -Wextra -pedantic)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+
+# 每一題一個執行檔（故意編譯失敗、或含未定義行為的原版不放進來）
+add_executable(Q1 src/Q1_lifecycle.cpp)
+add_executable(Q2A src/Q2_overload_hiding.cpp)
+add_executable(Q2A_fixed src/Q2_overload_hiding_fixed.cpp)
+add_executable(Q2B_fixed src/Q2_bad_override_fixed.cpp)
+add_executable(Q3 src/Q3_slicing_cast.cpp)
+add_executable(Q4_fixed src/Q4_rate_curve_fixed.cpp)
+add_executable(Q5 src/Q5_bond_pricer.cpp)</code></pre></div></section><section class="sec" id="s1-0" data-label="1.0 第一題　建構與解構中的虛函數（10 分）"><h2><span class="num">1.0</span>第一題　建構與解構中的虛函數（10 分）</h2><details class="refbox" open><summary>對應課程內容（2 處）</summary><ul><li><a href="ch08.html#s8-2">8.2 覆寫虛函數與多型</a>（virtual、override）</li><li><a href="ch06.html#s6-4">6.4 new 與 delete</a>（new、delete）</li></ul></details><div class="box task"><span class="tag">題目</span><strong class="bt">題目程式 Q1</strong><p><code>Bond</code> 的建構函數與（虛）解構函數裡都呼叫虛函數 <code>identify()</code>；<code>FixedRateBond</code> 覆寫了它。<code>main</code> 用 <code>Bond* p = new FixedRateBond;</code> 建立物件，呼叫 <code>p-&gt;identify()</code>，再 <code>delete p</code>。
+（1）不執行，逐行寫出輸出並註明對應的函數呼叫。（2）解釋為何在建構／解構函數中呼叫 <code>identify()</code>，結果不同於一般透過 <code>Bond*</code> 呼叫。（3）若 <code>~Bond()</code> 不是 virtual，有何風險？不要把未定義行為寫成固定輸出。</p></div>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++ 檔案：Q1_lifecycle.cpp</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="c1">// 簡化版；不是 QuantLib 官方 Bond API。</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Bond</span><span class="w"> </span><span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">   </span><span class="n">Bond</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"Bond+</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">      </span><span class="n">identify</span><span class="p">();</span>
+<span class="w">   </span><span class="p">}</span>
+<span class="w">   </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">virtual</span></a><span class="w"> </span><span class="o">~</span><span class="n">Bond</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="n">identify</span><span class="p">();</span>
+<span class="w">      </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"Bond-</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span>
+<span class="w">   </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">virtual</span></a><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">identify</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"Bond</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="p">};</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">FixedRateBond</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">Bond</span><span class="w"> </span><span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">     </span><span class="n">FixedRateBond</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"Fixed+</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">     </span><span class="o">~</span><span class="n">FixedRateBond</span><span class="p">()</span><span class="w"> </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">override</span></a><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"Fixed-</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">     </span><span class="kt">void</span><span class="w"> </span><span class="n">identify</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">override</span></a><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"Fixed</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="p">};</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">   </span><span class="n">Bond</span><span class="o">*</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><span class="k">new</span></a><span class="w"> </span><span class="n">FixedRateBond</span><span class="p">;</span>
+<span class="w">   </span><span class="n">p</span><span class="o">-&gt;</span><span class="n">identify</span><span class="p">();</span>
+<span class="w">   </span><a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><span class="k">delete</span></a><span class="w"> </span><span class="n">p</span><span class="p">;</span>
+<span class="w">   </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"END</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>Bond+
+Bond
+Fixed+
+Fixed
+Fixed-
+Bond
+Bond-
+END</code></pre>
+<h3 id="s1-0-1">（1）逐行輸出</h3>
+<p><strong>我怎麼想。</strong> 我一開始的直覺是：<code>identify()</code> 是虛函數、物件又是 <code>FixedRateBond</code>，所以<strong>每一次</strong>呼叫都應該印 <code>Fixed</code>，我寫下的第一版答案是 <code>Bond+ / Fixed / Fixed+ / Fixed / Fixed- / Fixed / Bond- / END</code>。但回頭看講義「建構順序：先父類別、再子類別」時卡住了：執行 <code>Bond()</code> 的時候，<code>FixedRateBond</code> 的部分<strong>根本還沒建構</strong>——如果這時候就呼叫 <code>FixedRateBond::identify()</code>，它用到的子類別成員都還沒初始化，這不合理。我拿這個疑問去問 AI，它說 C++ 標準正是這樣規定的：在建構函數與解構函數執行期間，物件的<strong>動態型別就是「目前正在建構／解構的那個類別」</strong>，虛函數呼叫只會派發到那一層。所以我把第 2 行和第 6 行改成 <code>Bond</code>，再實際編譯執行確認：</p>
+<table>
+<thead>
+<tr>
+<th>行</th>
+<th>輸出</th>
+<th>對應的呼叫</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>Bond+</code></td>
+<td><code>new FixedRateBond</code> → 先執行父類別 <code>Bond::Bond()</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>Bond</code></td>
+<td><code>Bond()</code> 裡的 <code>identify()</code>：此時物件只是 Bond → <code>Bond::identify()</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>Fixed+</code></td>
+<td>回到 <code>FixedRateBond::FixedRateBond()</code> 本體</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>Fixed</code></td>
+<td><code>p-&gt;identify()</code>：物件已完整，動態派發 → <code>FixedRateBond::identify()</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>Fixed-</code></td>
+<td><code>delete p</code> → <code>~Bond</code> 是 virtual，先執行 <code>FixedRateBond::~FixedRateBond()</code></td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>Bond</code></td>
+<td>接著執行 <code>Bond::~Bond()</code>，其中的 <code>identify()</code>：子類別部分已解構 → <code>Bond::identify()</code></td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>Bond-</code></td>
+<td><code>Bond::~Bond()</code> 剩下的部分</td>
+</tr>
+<tr>
+<td>8</td>
+<td><code>END</code></td>
+<td><code>main</code> 最後一行</td>
+</tr>
+</tbody>
+</table>
+<h3 id="s1-0-2">（2）為什麼建構／解構時的虛函數呼叫不一樣</h3>
+<p><strong>我怎麼想。</strong> 弄懂（1）之後，我想用自己的話說清楚「為什麼要這樣設計」。我的理解是兩個時間點的「危險」：建構 <code>Bond</code> 時，子類別的成員還沒初始化；解構 <code>Bond</code> 時，子類別的成員<strong>已經被摧毀</strong>。如果這時候派發到子類別版本，等於讓程式去用還沒誕生或已經死掉的資料。C++ 的做法是讓物件的「身分」隨建構進度改變：進入 <code>Bond()</code> 時它是 Bond，進入 <code>FixedRateBond()</code> 時才變成 FixedRateBond；解構時倒過來，離開 <code>~FixedRateBond()</code> 之後它又「退回」Bond。AI 補充了一個實作層面的說法：編譯器在每一層建構函數開始時把物件的 vptr 設成<strong>那一層</strong>的 vtable，解構時再一層層設回去，所以查表查到的就是那一層的版本——這也連到老師上課講的 vtable／vptr。</p>
+<p>而第 4 行 <code>p-&gt;identify()</code> 發生在建構完成之後、解構開始之前，物件是完整的 <code>FixedRateBond</code>，所以照一般的動態派發呼叫子類別版本。</p>
+<p><strong>額外學到的：</strong> 這解釋了為什麼很多 C++ 準則都說「<strong>不要在建構函數或解構函數裡呼叫虛函數</strong>」——它不會壞掉，但結果常常不是寫的人想要的。若真的需要「建立後做子類別特有的初始化」，要在建構完成後另外呼叫一個函數。</p>
+<h3 id="s1-0-3">（3）若 ~Bond() 不是 virtual</h3>
+<p><strong>我怎麼想。</strong> 我先想到上課老師說的：「沒有加 virtual，子類別的解構函數根本不會被呼叫，記憶體管理一定會出問題」。所以我原本想寫的答案是「輸出會少了 <code>Fixed-</code>」。但題目特別提醒「請勿把未定義行為寫成固定輸出」，我就去查這到底是不是「一定少一行」。結果標準的規定是：透過<strong>父類別指標</strong> delete 一個子類別物件，而父類別的解構函數<strong>不是 virtual</strong>，這是<strong>未定義行為</strong>（undefined behavior）——標準沒有保證任何結果。「只執行 <code>~Bond()</code>、少印 <code>Fixed-</code>」只是<strong>常見的實際表現</strong>，不是保證；也可能釋放錯誤大小的記憶體、破壞 heap，或在不同編譯器、不同最佳化等級下表現不同。</p>
+<p>所以我決定<strong>不執行</strong>這個版本，而是用編譯器警告當作證據——開了 <code>-Wall</code> 之後，編譯器直接指出這個問題：</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Bond</span><span class="w"> </span><span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">   </span><span class="n">Bond</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"Bond+</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w"> </span><span class="n">identify</span><span class="p">();</span><span class="w"> </span><span class="p">}</span>
+<span class="w">   </span><span class="o">~</span><span class="n">Bond</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">identify</span><span class="p">();</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"Bond-</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w">      </span><span class="c1">// 拿掉 virtual</span>
+<span class="w">   </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">virtual</span></a><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">identify</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"Bond</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="p">};</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">FixedRateBond</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">Bond</span><span class="w"> </span><span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">     </span><span class="n">FixedRateBond</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"Fixed+</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">     </span><span class="o">~</span><span class="n">FixedRateBond</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"Fixed-</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">     </span><span class="kt">void</span><span class="w"> </span><span class="n">identify</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">override</span></a><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"Fixed</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="p">};</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">   </span><span class="n">Bond</span><span class="o">*</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><span class="k">new</span></a><span class="w"> </span><span class="n">FixedRateBond</span><span class="p">;</span>
+<span class="w">   </span><span class="n">p</span><span class="o">-&gt;</span><span class="n">identify</span><span class="p">();</span>
+<span class="w">   </span><a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><span class="k">delete</span></a><span class="w"> </span><span class="n">p</span><span class="p">;</span><span class="w">          </span><span class="c1">// 透過 Bond* 刪除 FixedRateBond，但 ~Bond() 不是 virtual</span>
+<span class="w">   </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"END</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out warnout" data-title="編譯器警告"><code>main.cpp:20:4: warning: deleting object of polymorphic class type ‘Bond’ which has non-virtual destructor might cause undefined behavior [-Wdelete-non-virtual-dtor]
+   20 |    delete p;          // 透過 Bond* 刪除 FixedRateBond，但 ~Bond() 不是 virtual
+      |    ^~~~~~~~</code></pre>
+<p>（注意：子類別的 <code>~FixedRateBond() override</code> 在這個版本必須拿掉 <a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><code>override</code></a>——父類別的解構函數不是虛函數，就沒有東西可以覆寫，編譯器會直接報錯。這也是 <a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><code>override</code></a> 的好處：它會提醒你父類別不是 virtual。）</p>
+<p><strong>額外學到的：</strong> 「能編譯、能跑、這次結果看起來對」不等於程式是對的。未定義行為最可怕的地方就是<strong>有時候看起來沒事</strong>。開 <code>-Wall -Wextra</code> 讓編譯器幫忙抓，比自己肉眼看可靠。</p>
+<div class="box paste"><span class="tag">可直接貼到作業</span><button class="copy" type="button">複製這段</button><div class="ptext"><p>（1）輸出依序為：Bond+（new FixedRateBond 先執行父類別建構函數 Bond::Bond()）、Bond（Bond() 內呼叫 identify()，此時物件仍只是 Bond，呼叫 Bond::identify()）、Fixed+（FixedRateBond 建構函數本體）、Fixed（p-&gt;identify()，物件已完整，動態派發至 FixedRateBond::identify()）、Fixed-（delete p，因 ~Bond 為虛擬解構函數，先執行 ~FixedRateBond()）、Bond（~Bond() 內呼叫 identify()，子類別部分已解構，呼叫 Bond::identify()）、Bond-、END。實際以 C++17 編譯執行結果與推導一致。
+（2）C++ 規定在建構函數與解構函數執行期間，物件的動態型別是「目前正在建構或解構的那一層類別」。建構 Bond 時 FixedRateBond 的成員尚未初始化，解構 Bond 時子類別成員已被摧毀，若此時仍派發到子類別版本，就會存取尚未誕生或已失效的資料；因此虛函數呼叫只會派發到 Bond::identify()。實作上，編譯器在每一層建構／解構時把物件的 vptr 設為該層的 vtable。一般透過 Bond<em> 呼叫發生在物件完整存在期間，才會派發到 FixedRateBond::identify()。由此得到的原則是：不要在建構或解構函數中依賴虛函數的動態派發。
+（3）若 ~Bond() 不是 virtual，而以 Bond</em> 刪除 FixedRateBond 物件，依 C++17 標準屬於未定義行為，標準不保證任何輸出或結果。常見的實際情況是只執行 Bond 的解構函數、FixedRateBond 的解構函數未被呼叫，使子類別持有的資源洩漏，但也可能釋放錯誤大小的記憶體或破壞 heap，不同編譯器與最佳化設定下表現可能不同，因此不能把它寫成固定輸出。我以 -Wall 編譯時，編譯器即發出「刪除具有非虛擬解構函數的多型類別物件可能造成未定義行為」的警告；修正方式是作為基底類別的 Bond 必須宣告 virtual ~Bond()。</p></div></div></section><section class="sec" id="s2-0" data-label="2.0 第二題　重載、遮蔽與覆寫（20 分）"><h2><span class="num">2.0</span>第二題　重載、遮蔽與覆寫（20 分）</h2><details class="refbox" open><summary>對應課程內容（2 處）</summary><ul><li><a href="ch08.html#s8-2">8.2 覆寫虛函數與多型</a>（virtual、override）</li><li><a href="ch08.html#s8-3">8.3 覆寫、遮蔽與重載</a>（using）</li></ul></details><div class="box task"><span class="tag">題目</span><strong class="bt">題目程式 A</strong><p><code>Bond</code> 有虛函數 <code>payment(int)</code> 與非虛函數 <code>payment()</code>（內部呼叫 <code>payment(3)</code>）；<code>FixedRateBond</code> 只覆寫 <code>payment(int) const</code>。<code>main</code> 中依序印出 <code>fixed.payment(2)</code>、<code>base.payment(3)</code>、<code>base.payment()</code>（<code>base</code> 是綁定到 <code>fixed</code> 的 <code>const Bond&amp;</code>），最後一行 <code>fixed.payment()</code> 被註解。</p></div>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++ 檔案：Q2_overload_hiding.cpp</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="c1">// 簡化版；不是 QuantLib 官方 Bond API。</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Bond</span><span class="w"> </span><span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">   </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">virtual</span></a><span class="w"> </span><span class="o">~</span><span class="n">Bond</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">default</span><span class="p">;</span>
+<span class="w">   </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">virtual</span></a><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="nf">payment</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">year</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="n">year</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mf">1000.0</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span>
+<span class="w">   </span><span class="kt">double</span><span class="w"> </span><span class="nf">payment</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="n">payment</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span><span class="w"> </span><span class="c1">// 注意：此處呼叫的是哪個版本？</span>
+<span class="w">   </span><span class="p">}</span>
+<span class="p">};</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">FixedRateBond</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">Bond</span><span class="w"> </span><span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">   </span><span class="kt">double</span><span class="w"> </span><span class="n">payment</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">year</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">override</span></a><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="n">Bond</span><span class="o">::</span><span class="n">payment</span><span class="p">(</span><span class="n">year</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">50.0</span><span class="p">;</span>
+<span class="w">     </span><span class="p">}</span>
+<span class="p">};</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">   </span><span class="n">FixedRateBond</span><span class="w"> </span><span class="n">fixed</span><span class="p">;</span>
+<span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="n">Bond</span><span class="o">&amp;</span><span class="w"> </span><span class="n">base</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fixed</span><span class="p">;</span>
+<span class="w">   </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">fixed</span><span class="p">.</span><span class="n">payment</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span>
+<span class="w">   </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">base</span><span class="p">.</span><span class="n">payment</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span>
+<span class="w">   </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">base</span><span class="p">.</span><span class="n">payment</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span>
+<span class="w">   </span><span class="c1">// std::cout &lt;&lt; fixed.payment() &lt;&lt; '\n'; // 試分析此行能否編譯</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>50
+1050
+1050</code></pre>
+<h3 id="s2-0-1">（1）執行輸出，追蹤 base.payment()</h3>
+<p><strong>我怎麼想。</strong> 前兩行很快：<code>fixed.payment(2)</code> 直接呼叫子類別版本，<code>Bond::payment(2)</code> 是 0，加 50 得 <strong>50</strong>；<code>base.payment(3)</code> 雖然是透過 <code>const Bond&amp;</code>，但 <code>payment(int)</code> 是虛函數，派發到子類別，1000 + 50 = <strong>1050</strong>。</p>
+<p>第三行我一開始寫成 <strong>1000</strong>，理由是：「<code>payment()</code> 不是虛函數，所以進的是 <code>Bond::payment()</code>，那它裡面呼叫的 <code>payment(3)</code> 應該也是 Bond 的版本。」寫完覺得怪：同一個物件，<code>base.payment(3)</code> 是 1050，<code>base.payment()</code> 只是幫我呼叫 <code>payment(3)</code>，怎麼會變 1000？我把問題拆開問 AI：「<code>Bond::payment()</code> 裡寫 <code>payment(3)</code>，這個呼叫到底是怎麼解析的？」AI 提醒我：在成員函數裡寫 <code>payment(3)</code>，其實就是 <code>this-&gt;payment(3)</code>；<code>this</code> 指向的物件實際上是 <code>FixedRateBond</code>，而 <code>payment(int)</code> 是虛函數，所以<strong>還是會動態派發</strong>到 <code>FixedRateBond::payment(int)</code>。「入口」是非虛函數不影響裡面那個虛函數呼叫。所以答案是 <strong>1050</strong>，執行結果也證實了。</p>
+<p>追蹤 <code>base.payment()</code>：</p>
+<ol>
+<li><code>base</code> 的靜態型別是 <code>const Bond&amp;</code>，名稱查找在 <code>Bond</code> 找到兩個 <code>payment</code>，重載決議選中沒有參數的 <code>Bond::payment() const</code>（非虛，直接呼叫）。</li>
+<li>進入 <code>Bond::payment()</code>，執行 <code>this-&gt;payment(3)</code>；<code>payment(int)</code> 是虛函數 → 依物件的動態型別派發到 <code>FixedRateBond::payment(3)</code>。</li>
+<li><code>FixedRateBond::payment(3)</code> 用 <code>Bond::payment(3)</code>（加了 <code>Bond::</code> 限定，<strong>不做</strong>動態派發，避免無限遞迴）得到 1000，再加 50 → 1050。</li>
+</ol>
+<p><strong>額外學到的：</strong> 這是一個很常見的設計模式——父類別提供一個<strong>非虛的公開介面</strong>（<code>payment()</code>），裡面呼叫<strong>虛的實作</strong>（<code>payment(int)</code>），子類別只覆寫實作。這叫 NVI（Non-Virtual Interface）。另外 <code>Bond::payment(year)</code> 這種<strong>限定名稱</strong>的呼叫會關掉動態派發，是子類別「先做父類別那份、再加自己的」的標準寫法。</p>
+<h3 id="s2-0-2">（2）fixed.payment() 能不能編譯？怎麼改</h3>
+<p><strong>我怎麼想。</strong> 我原本以為可以：<code>FixedRateBond</code> 繼承自 <code>Bond</code>，<code>Bond</code> 明明有 <code>payment()</code>，子類別當然也有。實際把註解拿掉編譯，錯誤訊息說找不到「沒有參數的 <code>payment</code>」，候選只有 <code>payment(int)</code>：</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Bond</span><span class="w"> </span><span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">   </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">virtual</span></a><span class="w"> </span><span class="o">~</span><span class="n">Bond</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">default</span><span class="p">;</span>
+<span class="w">   </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">virtual</span></a><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="nf">payment</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">year</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">year</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mf">1000.0</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">   </span><span class="kt">double</span><span class="w"> </span><span class="nf">payment</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">payment</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<span class="p">};</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">FixedRateBond</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">Bond</span><span class="w"> </span><span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">   </span><span class="kt">double</span><span class="w"> </span><span class="n">payment</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">year</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">override</span></a><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">Bond</span><span class="o">::</span><span class="n">payment</span><span class="p">(</span><span class="n">year</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">50.0</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="p">};</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">   </span><span class="n">FixedRateBond</span><span class="w"> </span><span class="n">fixed</span><span class="p">;</span>
+<span class="w">   </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">fixed</span><span class="p">.</span><span class="n">payment</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out err" data-title="編譯錯誤訊息"><code>main.cpp:14:30: error: no matching function for call to ‘FixedRateBond::payment()’
+   14 |    std::cout &lt;&lt; fixed.payment() &lt;&lt; &#x27;\n&#x27;;
+      |                 ~~~~~~~~~~~~~^~
+main.cpp:10:11: note: candidate: ‘virtual double FixedRateBond::payment(int) const’
+   10 |    double payment(int year) const override { return Bond::payment(year) + 50.0; }
+      |           ^~~~~~~
+main.cpp:10:11: note:   candidate expects 1 argument, 0 provided</code></pre>
+<p>這就是上課講的<strong>遮蔽</strong>（name hiding）。我後來理解的順序是：編譯器做<strong>名稱查找</strong>時，從 <code>fixed</code> 的靜態型別 <code>FixedRateBond</code> 開始找名字 <code>payment</code>——在子類別裡就<strong>找到了</strong>（覆寫的那個 <code>payment(int)</code>），找到就<strong>停止</strong>，不會再往 <code>Bond</code> 找；父類別所有同名的 <code>payment</code> 都被遮住，接下來的重載決議只有 <code>payment(int)</code> 一個候選，參數對不上，所以失敗。重點是：<strong>覆寫一個多載版本，就會遮蔽父類別其他所有同名版本</strong>。</p>
+<p>我想到的修法有三個，問 AI 比較後選了第一個：</p>
+<table>
+<thead>
+<tr>
+<th>做法</th>
+<th>評估</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>在子類別加 <code>using Bond::payment;</code></td>
+<td>✓ 把父類別的 <code>payment</code> 宣告引入子類別的作用域，兩個版本一起參與重載；<code>payment(int)</code> 仍是覆寫，動態派發不變。<strong>最小修改</strong></td>
+</tr>
+<tr>
+<td>呼叫端改寫 <code>fixed.Bond::payment()</code></td>
+<td>能編譯，但要每個呼叫端都改，而且沒有改「類別本身」，題目要求修改衍生類別</td>
+</tr>
+<tr>
+<td>在子類別再寫一個 <code>double payment() const { return Bond::payment(); }</code></td>
+<td>能用，但多寫一個轉呼叫的函數，父類別以後改了還要同步</td>
+</tr>
+</tbody>
+</table>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++ 檔案：Q2_overload_hiding_fixed.cpp</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Bond</span><span class="w"> </span><span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">   </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">virtual</span></a><span class="w"> </span><span class="o">~</span><span class="n">Bond</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">default</span><span class="p">;</span>
+<span class="w">   </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">virtual</span></a><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="nf">payment</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">year</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="n">year</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mf">1000.0</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span>
+<span class="w">   </span><span class="kt">double</span><span class="w"> </span><span class="nf">payment</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="n">payment</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+<span class="w">   </span><span class="p">}</span>
+<span class="p">};</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">FixedRateBond</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">Bond</span><span class="w"> </span><span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">   </span><a class="fnref" href="ch08.html#s8-3" title="課程：8.3 覆寫、遮蔽與重載"><span class="k">using</span></a><span class="w"> </span><span class="n">Bond</span><span class="o">::</span><span class="n">payment</span><span class="p">;</span><span class="w">   </span><span class="c1">// 把 Bond 的所有 payment 引入，解除遮蔽</span>
+<span class="w">   </span><span class="kt">double</span><span class="w"> </span><span class="nf">payment</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">year</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">override</span></a><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="n">Bond</span><span class="o">::</span><span class="n">payment</span><span class="p">(</span><span class="n">year</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">50.0</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span>
+<span class="p">};</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">   </span><span class="n">FixedRateBond</span><span class="w"> </span><span class="n">fixed</span><span class="p">;</span>
+<span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="n">Bond</span><span class="o">&amp;</span><span class="w"> </span><span class="n">base</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fixed</span><span class="p">;</span>
+<span class="w">   </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">fixed</span><span class="p">.</span><span class="n">payment</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span><span class="w">   </span><span class="c1">// 子類別的 payment(int)</span>
+<span class="w">   </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">base</span><span class="p">.</span><span class="n">payment</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span><span class="w">    </span><span class="c1">// 動態派發 → FixedRateBond::payment(int)</span>
+<span class="w">   </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">base</span><span class="p">.</span><span class="n">payment</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span><span class="w">     </span><span class="c1">// Bond::payment() → this-&gt;payment(3) → 派發到子類別</span>
+<span class="w">   </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">fixed</span><span class="p">.</span><span class="n">payment</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span><span class="w">    </span><span class="c1">// 現在可以編譯：Bond::payment() 也被看見了</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>50
+1050
+1050
+1050</code></pre>
+<p><code>fixed.payment()</code> 印出 1050，和 <code>base.payment()</code> 一樣——證明動態派發行為沒有被破壞。注意 <code>using Bond::payment;</code> 要放在 <strong>public</strong> 區，否則引入的函數在子類別裡會變成 private。</p>
+<h3 id="s2-0-3">（3）三欄比較表</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>重載 overloading</th>
+<th>遮蔽 hiding</th>
+<th>覆寫 overriding</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>需要繼承嗎</td>
+<td>不需要（同一個作用域內）</td>
+<td>需要（子類別與父類別同名）</td>
+<td>需要</td>
+</tr>
+<tr>
+<td>需要 virtual 嗎</td>
+<td>不需要</td>
+<td>不需要（父類別不是 virtual 時，同名就只是遮蔽）</td>
+<td><strong>需要</strong>（父類別的函數必須是虛函數）</td>
+</tr>
+<tr>
+<td>參數要一致嗎</td>
+<td><strong>必須不同</strong>（個數或型別）</td>
+<td>不必：只要<strong>名字一樣</strong>就遮蔽</td>
+<td><strong>必須一致</strong>（名稱、參數型別、const、參考限定都相同；回傳型別相同或協變）</td>
+</tr>
+<tr>
+<td>影響哪個階段</td>
+<td>重載決議（編譯期選版本）</td>
+<td><strong>名稱查找</strong>（決定哪些宣告看得到）</td>
+<td><strong>虛函數派發</strong>（執行期依動態型別選版本）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="s2-0-4">（4）程式碼 B 的編譯錯誤</h3>
+<p><strong>我怎麼想。</strong> 看到錯誤訊息「marked 'override', but does not override」時，我第一反應是「名字一樣、參數也都是 int，怎麼會不算覆寫？」逐字比對兩個宣告才發現差一個 <code>const</code>：父類別是 <code>payment(int) const</code>，子類別是 <code>payment(int)</code>。<code>const</code> 是函數簽名的一部分（它改變了隱藏的 <code>this</code> 的型別：<code>const Bond*</code> vs <code>FixedRateBond*</code>），所以這是<strong>另一個函數</strong>，不是覆寫。</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++ 檔案：Q2_bad_override.cpp</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Bond</span><span class="w"> </span><span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">   </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">virtual</span></a><span class="w"> </span><span class="o">~</span><span class="n">Bond</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">default</span><span class="p">;</span>
+<span class="w">   </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">virtual</span></a><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="nf">payment</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">year</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">year</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mf">1000.0</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="p">};</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">FixedRateBond</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">Bond</span><span class="w"> </span><span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">   </span><span class="c1">// 故意保留錯誤：需說明原因並修正。</span>
+<span class="w">   </span><span class="kt">double</span><span class="w"> </span><span class="n">payment</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">year</span><span class="p">)</span><span class="w"> </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">override</span></a><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="mf">50.0</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Bond</span><span class="o">::</span><span class="n">payment</span><span class="p">(</span><span class="n">year</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<span class="p">};</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">   </span><span class="n">FixedRateBond</span><span class="w"> </span><span class="n">b</span><span class="p">;</span>
+<span class="w">   </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">payment</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out err" data-title="編譯錯誤訊息"><code>main.cpp:10:11: error: ‘double FixedRateBond::payment(int)’ marked ‘override’, but does not override
+   10 |    double payment(int year) override { return 50.0 + Bond::payment(year); }
+      |           ^~~~~~~
+main.cpp:5:19: warning: ‘virtual double Bond::payment(int) const’ was hidden [-Woverloaded-virtual=]
+    5 |    virtual double payment(int year) const { return year == 3 ? 1000.0 : 0.0; }
+      |                   ^~~~~~~
+main.cpp:10:11: note:   by ‘double FixedRateBond::payment(int)’
+   10 |    double payment(int year) override { return 50.0 + Bond::payment(year); }
+      |           ^~~~~~~</code></pre>
+<p>這時我才真正體會 <a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><code>override</code></a> 的價值：如果<strong>沒有</strong>寫 <a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><code>override</code></a>，這段程式會<strong>順利編譯</strong>，子類別多了一個非 const 的 <code>payment(int)</code>、同時遮蔽了父類別的版本；透過 <code>Bond&amp;</code> 呼叫時永遠執行父類別版本——錯誤要到執行結果不對時才會發現。<a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><code>override</code></a> 把它變成編譯錯誤。</p>
+<p>最小修改：補上 <code>const</code>。</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++ 檔案：Q2_bad_override_fixed.cpp</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Bond</span><span class="w"> </span><span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">   </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">virtual</span></a><span class="w"> </span><span class="o">~</span><span class="n">Bond</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">default</span><span class="p">;</span>
+<span class="w">   </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">virtual</span></a><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="nf">payment</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">year</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">year</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mf">1000.0</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="p">};</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">FixedRateBond</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">Bond</span><span class="w"> </span><span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">   </span><span class="kt">double</span><span class="w"> </span><span class="n">payment</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">year</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">override</span></a><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="mf">50.0</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Bond</span><span class="o">::</span><span class="n">payment</span><span class="p">(</span><span class="n">year</span><span class="p">);</span><span class="w"> </span><span class="p">}</span><span class="w">  </span><span class="c1">// 補上 const</span>
+<span class="p">};</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">   </span><span class="n">FixedRateBond</span><span class="w"> </span><span class="n">b</span><span class="p">;</span>
+<span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="n">Bond</span><span class="o">&amp;</span><span class="w"> </span><span class="n">base</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="p">;</span>
+<span class="w">   </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">payment</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span><span class="w">      </span><span class="c1">// 0 + 50</span>
+<span class="w">   </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">base</span><span class="p">.</span><span class="n">payment</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span><span class="w">   </span><span class="c1">// 透過父類別參考：真正覆寫 → 1000 + 50</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>50
+1050</code></pre>
+<p>第二行透過 <code>const Bond&amp;</code> 呼叫得到 1050，證明現在是<strong>真正的覆寫</strong>（會動態派發）。</p>
+<h3 id="s2-0-5">（5）三個階段的先後</h3>
+<p><strong>我怎麼想。</strong> 一開始我把這三個當成「三種不同的規則」，不知道它們的關係。做完（1）（2）（4）後發現它們是同一次函數呼叫的三個<strong>依序發生的步驟</strong>：</p>
+<ol>
+<li><strong>名稱查找</strong>（name lookup，編譯期）：從呼叫運算式的<strong>靜態型別</strong>的作用域開始往外找這個名字，<strong>在第一個找到的作用域就停止</strong>。遮蔽就在這一步發生——（2）的錯誤出在這裡。</li>
+<li><strong>重載決議</strong>（overload resolution，編譯期）：在上一步找到的那組同名函數中，依實參的型別與轉換規則選出最匹配的一個；<a class="fnref" href="ch08.html#s8-3" title="課程：8.3 覆寫、遮蔽與重載"><code>using</code></a> 宣告能讓父類別的版本進到這一組候選。</li>
+<li><strong>虛函數派發</strong>（virtual dispatch，執行期）：如果選中的是虛函數，而且不是用 <code>Bond::</code> 這種限定名稱呼叫，就在執行時依物件的<strong>動態型別</strong>查 vtable 決定實際執行的版本——（1）的 <code>base.payment(3)</code> 在這一步走到子類別。</li>
+</ol>
+<p>順序不能顛倒：派發只能在「已經選定的那個虛函數」的各個覆寫版本之間挑，所以前兩步失敗（例如被遮蔽）就根本走不到第三步。</p>
+<div class="box paste"><span class="tag">可直接貼到作業</span><button class="copy" type="button">複製這段</button><div class="ptext"><p>（1）輸出為 50、1050、1050。fixed.payment(2) 直接呼叫 FixedRateBond::payment(int)，Bond::payment(2) 為 0，加 50 得 50。base.payment(3) 雖透過 const Bond&amp;，但 payment(int) 為虛函數，依物件動態型別派發至 FixedRateBond::payment(3)，得 1050。base.payment() 先在 Bond 中選定非虛函數 Bond::payment()，其內部的 payment(3) 等同 this-&gt;payment(3)，this 指向的物件動態型別為 FixedRateBond，因此仍派發到 FixedRateBond::payment(int)，得 1050；子類別中的 Bond::payment(year) 為限定名稱呼叫，不進行動態派發，避免無限遞迴。
+（2）取消註解後無法編譯。名稱查找從 fixed 的靜態型別 FixedRateBond 開始，在子類別即找到 payment(int) 並停止，Bond 的所有同名 payment（包括 payment()）被遮蔽，重載決議只剩 payment(int)，無法匹配零個引數。修正方式是在 FixedRateBond 的 public 區加入 using Bond::payment;，將父類別的 payment 宣告引入子類別作用域；payment(int) const override 仍保留，動態派發不受影響。修正後 fixed.payment() 輸出 1050，與 base.payment() 相同。
+（3）重載：不需繼承、不需 virtual、參數必須不同，影響重載決議。遮蔽：發生於繼承、不需 virtual、只要名稱相同即遮蔽，影響名稱查找。覆寫：需要繼承且父類別函數為 virtual，名稱、參數、const 等簽名必須一致，影響執行期的虛函數派發。
+（4）錯誤根本原因是子類別的 payment(int) 少了 const，與 Bond::payment(int) const 的簽名不同，並未覆寫任何虛函數，因此標示 override 時編譯器報錯。最小修改為改成 double payment(int year) const override。若未寫 override，此程式會編譯成功但僅形成遮蔽，透過 Bond&amp; 呼叫仍執行父類別版本；修正後透過 const Bond&amp; 呼叫 payment(3) 得到 1050，驗證已真正覆寫。
+（5）一次成員函數呼叫依序經過：名稱查找（編譯期，從靜態型別的作用域開始，找到名稱即停止，遮蔽在此發生）→ 重載決議（編譯期，在找到的同名函數中依引數選出最佳版本）→ 虛函數派發（執行期，若選中的是虛函數且非限定名稱呼叫，依物件動態型別透過 vtable 決定實際版本）。前兩步失敗時不會進入第三步。</p></div></div></section><section class="sec" id="s3-0" data-label="3.0 第三題　切割與向下轉型（15 分）"><h2><span class="num">3.0</span>第三題　切割與向下轉型（15 分）</h2><details class="refbox" open><summary>對應課程內容（1 處）</summary><ul><li><a href="ch08.html#s8-2">8.2 覆寫虛函數與多型</a>（virtual、override、dynamic_cast）</li></ul></details><div class="box task"><span class="tag">題目</span><strong class="bt">題目程式 Q3</strong><p><code>Bond::value()</code> 回傳 100，<code>FixedRateBond::value()</code> 覆寫為 105，並多了 <code>couponRate()</code>。分別以指標、按值傳遞 <code>byValue(Bond b)</code>、按參考傳遞 <code>byReference(const Bond&amp; b)</code> 呼叫 <code>value()</code>，再對兩個指標做 <code>dynamic_cast&lt;FixedRateBond*&gt;</code>。（4）另外增加 <code>byPointer(const Bond* p)</code>。</p></div>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++ 檔案：Q3_slicing_cast.cpp</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="c1">// 簡化版；Bond 是可實例化的具體類別。</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Bond</span><span class="w"> </span><span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">   </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">virtual</span></a><span class="w"> </span><span class="o">~</span><span class="n">Bond</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">default</span><span class="p">;</span>
+<span class="w">   </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">virtual</span></a><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="nf">value</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="mf">100.0</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="p">};</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">FixedRateBond</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">Bond</span><span class="w"> </span><span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">   </span><span class="kt">double</span><span class="w"> </span><span class="n">value</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">override</span></a><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="mf">105.0</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">   </span><span class="kt">double</span><span class="w"> </span><span class="n">couponRate</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="mf">0.05</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="p">};</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">byValue</span><span class="p">(</span><span class="n">Bond</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">value</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">byReference</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Bond</span><span class="o">&amp;</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">value</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">byPointer</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Bond</span><span class="o">*</span><span class="w"> </span><span class="n">p</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">p</span><span class="o">-&gt;</span><span class="n">value</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w">   </span><span class="c1">// （4）新增</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">   </span><span class="n">FixedRateBond</span><span class="w"> </span><span class="n">fixed</span><span class="p">;</span>
+<span class="w">    </span><span class="n">Bond</span><span class="w"> </span><span class="n">basic</span><span class="p">;</span>
+<span class="w">    </span><span class="n">Bond</span><span class="o">*</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">fixed</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">p</span><span class="o">-&gt;</span><span class="n">value</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span>
+<span class="w">    </span><span class="n">byValue</span><span class="p">(</span><span class="n">fixed</span><span class="p">);</span>
+<span class="w">    </span><span class="n">byReference</span><span class="p">(</span><span class="n">fixed</span><span class="p">);</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">boolalpha</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">dynamic_cast</span></a><span class="o">&lt;</span><span class="n">FixedRateBond</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">nullptr</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span>
+<span class="w">    </span><span class="n">Bond</span><span class="o">*</span><span class="w"> </span><span class="n">pBasic</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">basic</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">dynamic_cast</span></a><span class="o">&lt;</span><span class="n">FixedRateBond</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">pBasic</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">nullptr</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span>
+<span class="w">    </span><span class="n">byPointer</span><span class="p">(</span><span class="o">&amp;</span><span class="n">fixed</span><span class="p">);</span><span class="w">     </span><span class="c1">// （4）不切割</span>
+<span class="w">    </span><span class="n">byPointer</span><span class="p">(</span><span class="o">&amp;</span><span class="n">basic</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>105
+100
+105
+true
+true
+105
+100</code></pre>
+<h3 id="s3-0-1">（1）五行輸出，區分編譯期型別與執行期型別</h3>
+<p><strong>我怎麼想。</strong> 我用一張表把每個運算式的「編譯器看到的型別」（靜態型別）和「物件實際是什麼」（動態型別）分開寫，答案就自然出來了。卡住的只有第 2 行：我一開始以為 <code>byValue(fixed)</code> 也是 105，因為「傳進去的明明是 fixed」——（2）會解釋為什麼是 100。</p>
+<table>
+<thead>
+<tr>
+<th>行</th>
+<th>運算式</th>
+<th>編譯期（靜態）型別</th>
+<th>執行期（動態）型別</th>
+<th>輸出</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>p-&gt;value()</code></td>
+<td><code>Bond*</code></td>
+<td><code>FixedRateBond</code></td>
+<td>105</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>byValue(fixed)</code> 內的 <code>b.value()</code></td>
+<td><code>Bond</code></td>
+<td><strong><code>Bond</code></strong>（被切割出的新物件）</td>
+<td>100</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>byReference(fixed)</code> 內的 <code>b.value()</code></td>
+<td><code>const Bond&amp;</code></td>
+<td><code>FixedRateBond</code></td>
+<td>105</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>dynamic_cast&lt;FixedRateBond*&gt;(p) != nullptr</code></td>
+<td><code>Bond*</code></td>
+<td><code>FixedRateBond</code> → 轉型成功</td>
+<td>true</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>dynamic_cast&lt;FixedRateBond*&gt;(pBasic) == nullptr</code></td>
+<td><code>Bond*</code></td>
+<td><code>Bond</code> → 轉型失敗得 nullptr</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<p>（第 6、7 行是（4）新增的 <code>byPointer</code>。）</p>
+<h3 id="s3-0-2">（2）按值與按參考為何不同？對金融商品集合的影響</h3>
+<p><strong>我怎麼想。</strong> 一開始我以為「按值」只是「多複製一份」，內容應該一樣。後來對照上課講的複製建構才想通：形式參數 <code>Bond b</code> 是一個<strong>全新的 <code>Bond</code> 物件</strong>，它是用 <code>Bond</code> 的複製建構函數、從 <code>fixed</code> 裡的「Bond 那一部分」複製出來的——子類別的部分直接被切掉，這叫<strong>物件切割</strong>（object slicing）。新物件從頭到尾就是一個 <code>Bond</code>，它的 vptr 指向 <code>Bond</code> 的 vtable，所以呼叫的是 <code>Bond::value()</code>。按參考傳遞則沒有產生新物件，<code>b</code> 只是 <code>fixed</code> 的別名，動態型別仍是 <code>FixedRateBond</code>。</p>
+<p>我問 AI「切割在實務上會造成什麼問題」，它舉的例子正好就是金融商品集合：如果用 <code>std::vector&lt;Bond&gt;</code> 存放各種債券，<code>push_back(FixedRateBond(...))</code> 時每個物件都被切成 <code>Bond</code>，計算投資組合價值時<strong>所有商品都用零息債的公式</strong>算，金額錯了程式卻不會報錯——這種靜默錯誤最危險。正確做法是存<strong>指標或智慧指標</strong>：<code>std::vector&lt;std::unique_ptr&lt;Bond&gt;&gt;</code>（或 <code>std::vector&lt;Bond*&gt;</code> 並自行管理生命週期），函數參數用 <code>const Bond&amp;</code> 或 <code>const Bond*</code>。我自己寫了一個小實驗確認：</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;memory&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;vector&gt;</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Bond</span><span class="w"> </span><span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">   </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">virtual</span></a><span class="w"> </span><span class="o">~</span><span class="n">Bond</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">default</span><span class="p">;</span>
+<span class="w">   </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">virtual</span></a><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="nf">value</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="mf">100.0</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="p">};</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">FixedRateBond</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">Bond</span><span class="w"> </span><span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">   </span><span class="kt">double</span><span class="w"> </span><span class="n">value</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">override</span></a><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="mf">105.0</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="p">};</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">   </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Bond</span><span class="o">&gt;</span><span class="w"> </span><span class="n">sliced</span><span class="p">;</span><span class="w">                       </span><span class="c1">// 錯誤示範：按值存放</span>
+<span class="w">   </span><span class="n">sliced</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">FixedRateBond</span><span class="p">());</span>
+<span class="w">   </span><span class="n">sliced</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">FixedRateBond</span><span class="p">());</span>
+<span class="w">   </span><span class="kt">double</span><span class="w"> </span><span class="n">total1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">   </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Bond</span><span class="o">&amp;</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">sliced</span><span class="p">)</span><span class="w"> </span><span class="n">total1</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">value</span><span class="p">();</span>
+
+<span class="w">   </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">Bond</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">book</span><span class="p">;</span><span class="w">        </span><span class="c1">// 正確：存指標</span>
+<span class="w">   </span><span class="n">book</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">FixedRateBond</span><span class="o">&gt;</span><span class="p">());</span>
+<span class="w">   </span><span class="n">book</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">FixedRateBond</span><span class="o">&gt;</span><span class="p">());</span>
+<span class="w">   </span><span class="kt">double</span><span class="w"> </span><span class="n">total2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">   </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">book</span><span class="p">)</span><span class="w"> </span><span class="n">total2</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">b</span><span class="o">-&gt;</span><span class="n">value</span><span class="p">();</span>
+
+<span class="w">   </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"按值存放的部位總值："</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">total1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"（被切割，少算了）</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">   </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"存指標的部位總值："</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">total2</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>按值存放的部位總值：200（被切割，少算了）
+存指標的部位總值：210</code></pre>
+<p><strong>額外學到的：</strong> 多型只透過<strong>參考或指標</strong>運作。把一個具體基底類別按值傳遞，是編譯器不會警告的錯誤；若基底類別本來就不打算被單獨使用，可以把它設計成抽象類別（有純虛函數），按值傳遞時就會直接編譯失敗。</p>
+<h3 id="s3-0-3">（3）兩次 dynamic_cast</h3>
+<p><strong>我怎麼想。</strong> 我原本以為 <a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><code>dynamic_cast</code></a> 只是比較「好看」的強制轉型。查了之後知道它和 <code>static_cast</code> 最大的不同是<strong>執行期檢查</strong>：它會查物件實際的動態型別（靠的是多型類別的執行期型別資訊，所以 <code>Bond</code> 必須至少有一個虛函數——這裡有虛解構函數）。</p>
+<ul>
+<li><code>p</code> 實際指向 <code>FixedRateBond</code>，轉成 <code>FixedRateBond*</code> 合法 → 回傳有效指標，<code>!= nullptr</code> 為 <strong>true</strong>。</li>
+<li><code>pBasic</code> 實際指向一個純 <code>Bond</code> 物件，它根本不是 <code>FixedRateBond</code> → 轉型失敗。<strong>指標版本</strong>的 <a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><code>dynamic_cast</code></a> 失敗時回傳 <strong><code>nullptr</code></strong>，所以 <code>== nullptr</code> 為 <strong>true</strong>。（若是參考版本 <code>dynamic_cast&lt;FixedRateBond&amp;&gt;(basic)</code>，失敗時會丟出 <code>std::bad_cast</code> 例外，因為沒有「空參考」可以回傳。）</li>
+</ul>
+<p>用 <code>static_cast&lt;FixedRateBond*&gt;(pBasic)</code> 則不檢查，會得到一個「指向不存在的子類別物件」的指標，之後呼叫 <code>couponRate()</code> 是未定義行為。</p>
+<h3 id="s3-0-4">（4）byPointer：不切割的呼叫方式</h3>
+<p><code>void byPointer(const Bond* p)</code> 已加在上面的程式中，輸出第 6、7 行：<code>byPointer(&amp;fixed)</code> 印 <strong>105</strong>（指標指向完整的 <code>FixedRateBond</code>，動態派發），<code>byPointer(&amp;basic)</code> 印 <strong>100</strong>。傳的是位址，不會複製物件，自然不會切割。</p>
+<div class="box paste"><span class="tag">可直接貼到作業</span><button class="copy" type="button">複製這段</button><div class="ptext"><p>（1）五行輸出依序為 105、100、105、true、true。p 的靜態型別為 Bond<em>、動態型別為 FixedRateBond，value() 為虛函數，輸出 105。byValue(fixed) 的參數 b 靜態與動態型別皆為 Bond（由 fixed 複製出的新 Bond 物件），輸出 100。byReference(fixed) 的 b 靜態型別為 const Bond&amp;、動態型別為 FixedRateBond，輸出 105。dynamic_cast<FixedRateBond*>(p) 成功，不為 nullptr，輸出 true；dynamic_cast<FixedRateBond*>(pBasic) 因 pBasic 實際指向 Bond 物件而失敗，結果為 nullptr，輸出 true。
+（2）按值傳遞時，形式參數 Bond b 是以 Bond 的複製建構函數從 fixed 的基底部分建立的新物件，衍生類別的部分被切除（object slicing），新物件的動態型別就是 Bond，因此呼叫 Bond::value()。按參考傳遞不產生新物件，b 只是 fixed 的別名，仍依動態型別派發到 FixedRateBond::value()。若金融商品集合以 std::vector<Bond> 按值存放，所有衍生商品都會被切割成 Bond，評價時全部套用基底類別的現金流公式，結果錯誤而程式不會報錯；我以小程式驗證，兩張固定票息債按值存放時總值為 200，存放 unique_ptr<Bond> 時為 210。集合應存放指標或智慧指標，函數參數使用 const Bond&amp; 或 const Bond</em>。
+（3）dynamic_cast 會在執行期依物件的實際動態型別檢查轉型是否合法（需要多型類別，Bond 具有虛擬解構函數）。p 指向 FixedRateBond 物件，轉型成功取得有效指標；pBasic 指向純 Bond 物件，不是 FixedRateBond，轉型失敗。指標版本失敗時回傳 nullptr；參考版本失敗時則丟出 std::bad_cast 例外。
+（4）新增 void byPointer(const Bond* p) { std::cout &lt;&lt; p-&gt;value() &lt;&lt; '\n'; }，以位址傳遞不複製物件、不發生切割。byPointer(&amp;fixed) 預期且實測輸出 105，byPointer(&amp;basic) 輸出 100。</p></div></div></section><section class="sec" id="s4-0" data-label="4.0 第四題　淺複製與三法則（20 分）"><h2><span class="num">4.0</span>第四題　淺複製與三法則（20 分）</h2><details class="refbox" open><summary>對應課程內容（2 處）</summary><ul><li><a href="ch06.html#s6-4">6.4 new 與 delete</a>（new、delete）</li><li><a href="ch04.html#s4-10">4.10 例外處理</a>（throw、try、catch）</li></ul></details><div class="box task"><span class="tag">題目</span><strong class="bt">題目程式 Q4（危險示例，不要求執行）</strong><p><code>RateCurve</code> 以原始指標 <code>double* rates_</code> 擁有 <code>new double[n]</code> 配置的陣列，解構函數 <code>delete[] rates_</code>，但沒有定義複製行為。<code>main</code> 中 <code>RateCurve b = a;</code> 後修改 <code>b</code>，再印 <code>a.at(0)</code>。</p></div>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++ 檔案：Q4_shallow_copy_DONT_RUN.cpp</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="c1">// 有意保留淺複製與重複釋放風險！</span>
+<span class="c1">// 請先閱讀並分析，不要求執行此版本。</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">RateCurve</span><span class="w"> </span><span class="p">{</span>
+<span class="w">   </span><span class="kt">int</span><span class="w"> </span><span class="n">n_</span><span class="p">;</span>
+<span class="w">   </span><span class="kt">double</span><span class="o">*</span><span class="w"> </span><span class="n">rates_</span><span class="p">;</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">   </span><span class="n">RateCurve</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">initial</span><span class="p">)</span>
+<span class="w">      </span><span class="o">:</span><span class="w"> </span><span class="n">n_</span><span class="p">(</span><span class="n">n</span><span class="p">),</span><span class="w"> </span><span class="n">rates_</span><span class="p">(</span><a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><span class="k">new</span></a><span class="w"> </span><span class="kt">double</span><span class="p">[</span><span class="n">n</span><span class="p">])</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">n_</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="n">rates_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">initial</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span>
+<span class="w">   </span><span class="o">~</span><span class="n">RateCurve</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><span class="k">delete</span></a><span class="p">[]</span><span class="w"> </span><span class="n">rates_</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">   </span><span class="kt">double</span><span class="w"> </span><span class="n">at</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">rates_</span><span class="p">[</span><span class="n">i</span><span class="p">];</span><span class="w"> </span><span class="p">}</span>
+<span class="w">   </span><span class="kt">void</span><span class="w"> </span><span class="n">set</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">value</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">rates_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">value</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="p">};</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">RateCurve</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mf">0.03</span><span class="p">);</span>
+<span class="w">    </span><span class="n">RateCurve</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">;</span>
+<span class="w">    </span><span class="n">b</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.08</span><span class="p">);</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">a</span><span class="p">.</span><span class="n">at</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span>
+<span class="w">    </span><span class="c1">// 離開作用域時，a、b 均會執行解構函數。</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="s4-0-1">（1）a 與 b 的 rates_ 指向何處</h3>
+<p><strong>我怎麼想。</strong> 我先畫記憶體圖。<code>RateCurve a(3, 0.03)</code> 在 heap 配置一塊 3 個 double 的陣列，<code>a.rates_</code> 存它的位址。<code>RateCurve b = a;</code> 是<strong>複製建構</strong>——類別沒有自己寫，編譯器產生的版本做的是<strong>逐一複製成員</strong>：<code>b.n_ = a.n_</code>、<code>b.rates_ = a.rates_</code>。我原本以為「複製物件」就是「複製一切」，但這裡複製的只是<strong>指標的值（位址）</strong>，heap 上那塊陣列並沒有被複製。</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">文字</span><pre><code>stack                          heap
+a: n_=3, rates_ ──┐
+                  ├──▶ [0.03, 0.03, 0.03]   ← 只有一塊
+b: n_=3, rates_ ──┘</code></pre></div>
+<p>所以有<strong>兩個物件</strong>（a、b 各自是獨立的 RateCurve，有不同的位址），卻共用<strong>同一份動態資源</strong>。<code>b.set(0, 0.08)</code> 透過 <code>b.rates_</code> 改了那塊陣列，<code>a.at(0)</code> 讀的是同一塊，所以會讀到 <strong>0.08</strong>，而不是 0.03——修改 b 意外改到了 a。</p>
+<h3 id="s4-0-2">（2）離開作用域時的記憶體問題</h3>
+<p><strong>我怎麼想。</strong> 我一開始想寫「程式會當機」，但想到題目說「不要假設必然正常或必然當機」，就把「會發生什麼」和「標準怎麼說」分開。離開 <code>main</code> 時，區域物件以<strong>建構的相反順序</strong>解構：先 <code>b</code>、再 <code>a</code>。</p>
+<ol>
+<li><code>b</code> 解構：<code>delete[] b.rates_</code>，那塊陣列被釋放。此時 <code>a.rates_</code> 變成<strong>懸空指標</strong>（dangling pointer）。</li>
+<li><code>a</code> 解構：<code>delete[] a.rates_</code>——對同一塊已釋放的記憶體<strong>再釋放一次</strong>，這是<strong>重複釋放</strong>（double delete / double free）。</li>
+</ol>
+<p>依 C++ 標準，對已釋放的記憶體再 <code>delete[]</code> 屬於<strong>未定義行為</strong>（undefined behavior）：可能直接中止、可能看起來正常結束、可能悄悄破壞 heap 讓之後的程式出錯，結果和編譯器、作業系統、最佳化設定有關，<strong>不能</strong>假設必然當機或必然正常。另外，如果在 <code>b</code> 解構之後還有人用 <code>a.at(0)</code>，那就是<strong>使用已釋放的記憶體</strong>（use-after-free），同樣是未定義行為。</p>
+<p>我沒有直接執行原版，而是問 AI「怎麼安全地證明它真的會重複釋放」。AI 建議用編譯器內建的 <strong>AddressSanitizer</strong>（<code>-fsanitize=address</code>）：它會在每次 <a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><code>delete</code></a> 時檢查，一發現重複釋放就<strong>立刻停止程式並報告位置</strong>，所以不會真的讓未定義行為擴散。下面是我在 Linux 上檢查的結果（Mac 的 clang++ 也支援同一個參數，這一步是選做的驗證，不是作業要求執行原版）：</p>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">RateCurve</span><span class="w"> </span><span class="p">{</span>
+<span class="w">   </span><span class="kt">int</span><span class="w"> </span><span class="n">n_</span><span class="p">;</span>
+<span class="w">   </span><span class="kt">double</span><span class="o">*</span><span class="w"> </span><span class="n">rates_</span><span class="p">;</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">   </span><span class="n">RateCurve</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">initial</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">n_</span><span class="p">(</span><span class="n">n</span><span class="p">),</span><span class="w"> </span><span class="n">rates_</span><span class="p">(</span><a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><span class="k">new</span></a><span class="w"> </span><span class="kt">double</span><span class="p">[</span><span class="n">n</span><span class="p">])</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">n_</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="n">rates_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">initial</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span>
+<span class="w">   </span><span class="o">~</span><span class="n">RateCurve</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><span class="k">delete</span></a><span class="p">[]</span><span class="w"> </span><span class="n">rates_</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">   </span><span class="kt">double</span><span class="w"> </span><span class="n">at</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">rates_</span><span class="p">[</span><span class="n">i</span><span class="p">];</span><span class="w"> </span><span class="p">}</span>
+<span class="w">   </span><span class="kt">void</span><span class="w"> </span><span class="n">set</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">value</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">rates_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">value</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="p">};</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">RateCurve</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mf">0.03</span><span class="p">);</span>
+<span class="w">    </span><span class="n">RateCurve</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">;</span>
+<span class="w">    </span><span class="n">b</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.08</span><span class="p">);</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">a</span><span class="p">.</span><span class="n">at</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>==5248==ERROR: AddressSanitizer: attempting double-free on 0x… in thread T0:
+    在 RateCurve::~RateCurve() main.cpp:9
+    在 main main.cpp:18
+0x… is located 0 bytes inside of 24-byte region [0x…,0x…)
+freed by thread T0 here:
+    在 RateCurve::~RateCurve() main.cpp:9
+    在 main main.cpp:18
+previously allocated by thread T0 here:
+    在 RateCurve::RateCurve(int, double) main.cpp:6
+    在 main main.cpp:14
+SUMMARY: AddressSanitizer: double-free ../../../../src/libsanitizer/asan/asan_new_delete.cpp:155 in operator delete[](void*)
+（程式結束，回傳值 1）</code></pre>
+<p>報告寫得很清楚：重複釋放發生在 <code>~RateCurve()</code>；同一塊記憶體<strong>先前</strong>已在 <code>main</code> 結束時被（b 的）<code>~RateCurve()</code> 釋放過，而它最初是在建構函數 <a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><code>new</code></a> 出來的。也證實了 <code>a.at(0)</code> 印出 0.08。</p>
+<h3 id="s4-0-3">（3）改寫 RateCurve：解構、複製建構、複製賦值</h3>
+<p><strong>我怎麼想。</strong> 這題要保留「自己管理動態陣列」的設計，所以不能偷懶改成 <code>std::vector</code>（那是零法則的做法，我放在最後當延伸）。我參考了上課講的<strong>三法則</strong>：只要類別自己寫了解構函數來釋放資源，通常就也要自己寫複製建構與複製賦值。</p>
+<ul>
+<li><strong>複製建構</strong>：簡單——新物件自己 <a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><code>new</code></a> 一塊同樣大小的陣列，把元素一個個複製過來（深複製）。</li>
+<li><strong>複製賦值</strong>：我的第一版是「先 <code>delete[] rates_</code>，再 <a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><code>new</code></a> 新陣列、複製」。寫完自己檢查兩個情境就發現問題：
+  1. <strong>自我賦值</strong> <code>c = c</code>：一開始就把自己的陣列刪了，接著要從 <code>other.rates_</code>（就是剛刪掉的那塊）複製，等於讀已釋放的記憶體。所以要先檢查 <code>if (this == &amp;other) return *this;</code>。
+  2. 我問 AI 還有沒有漏掉什麼，它提醒：如果「先刪舊的」之後 <a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><code>new</code></a> 失敗丟出例外（記憶體不足），物件會留下一個指向已釋放記憶體的 <code>rates_</code>，之後解構又會重複釋放。比較安全的順序是<strong>先配置並複製到新陣列，成功後才釋放舊陣列</strong>，最後再更新指標與長度。這也順便處理了「不同大小的曲線」：長度 <code>n_</code> 跟著新陣列一起更新。</li>
+<li><strong>建構函數</strong>：多加了 <code>n &lt;= 0</code> 的檢查；<code>at()</code>、<code>set()</code> 加上索引範圍檢查（原版越界存取也是未定義行為）。</li>
+</ul>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++ 檔案：Q4_rate_curve_fixed.cpp</span><pre><code><span class="c1">// 第四題（3）（4）：保留動態陣列，自己實作三法則（解構、複製建構、複製賦值）</span>
+<span class="c1">// 編譯：clang++ -std=c++17 -Wall -Wextra -pedantic Q4_rate_curve_fixed.cpp -o Q4</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdexcept&gt;</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">RateCurve</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">n_</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">double</span><span class="o">*</span><span class="w"> </span><span class="n">rates_</span><span class="p">;</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">    </span><span class="n">RateCurve</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">initial</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">n_</span><span class="p">(</span><span class="n">n</span><span class="p">),</span><span class="w"> </span><span class="n">rates_</span><span class="p">(</span><span class="nb">nullptr</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><a class="fnref" href="ch04.html#s4-10" title="課程：4.10 例外處理"><span class="k">throw</span></a><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">invalid_argument</span><span class="p">(</span><span class="s">"曲線長度必須是正整數"</span><span class="p">);</span>
+<span class="w">        </span><span class="n">rates_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><span class="k">new</span></a><span class="w"> </span><span class="kt">double</span><span class="p">[</span><span class="n">n_</span><span class="p">];</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">n_</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="n">rates_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">initial</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// 解構函數：new[] 配 delete[]</span>
+<span class="w">    </span><span class="o">~</span><span class="n">RateCurve</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><span class="k">delete</span></a><span class="p">[]</span><span class="w"> </span><span class="n">rates_</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// 複製建構：為新物件配置「自己的」陣列，再逐一複製（深複製）</span>
+<span class="w">    </span><span class="n">RateCurve</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">RateCurve</span><span class="o">&amp;</span><span class="w"> </span><span class="n">other</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">n_</span><span class="p">(</span><span class="n">other</span><span class="p">.</span><span class="n">n_</span><span class="p">),</span><span class="w"> </span><span class="n">rates_</span><span class="p">(</span><a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><span class="k">new</span></a><span class="w"> </span><span class="kt">double</span><span class="p">[</span><span class="n">other</span><span class="p">.</span><span class="n">n_</span><span class="p">])</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">n_</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="n">rates_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">other</span><span class="p">.</span><span class="n">rates_</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// 複製賦值：先配置新陣列並複製完成，再釋放舊陣列</span>
+<span class="w">    </span><span class="n">RateCurve</span><span class="o">&amp;</span><span class="w"> </span><span class="k">operator</span><span class="o">=</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">RateCurve</span><span class="o">&amp;</span><span class="w"> </span><span class="n">other</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">this</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="o">&amp;</span><span class="n">other</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="o">*</span><span class="k">this</span><span class="p">;</span><span class="w">            </span><span class="c1">// 自我賦值：什麼都不用做</span>
+<span class="w">        </span><span class="kt">double</span><span class="o">*</span><span class="w"> </span><span class="n">fresh</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><span class="k">new</span></a><span class="w"> </span><span class="kt">double</span><span class="p">[</span><span class="n">other</span><span class="p">.</span><span class="n">n_</span><span class="p">];</span><span class="w">       </span><span class="c1">// 若 new 失敗丟出例外，*this 完全沒被改到</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">other</span><span class="p">.</span><span class="n">n_</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="n">fresh</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">other</span><span class="p">.</span><span class="n">rates_</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+<span class="w">        </span><a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><span class="k">delete</span></a><span class="p">[]</span><span class="w"> </span><span class="n">rates_</span><span class="p">;</span><span class="w">                             </span><span class="c1">// 新資料準備好了才釋放舊的</span>
+<span class="w">        </span><span class="n">rates_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fresh</span><span class="p">;</span>
+<span class="w">        </span><span class="n">n_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">other</span><span class="p">.</span><span class="n">n_</span><span class="p">;</span><span class="w">                               </span><span class="c1">// 長度一起更新：處理不同大小的曲線</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="o">*</span><span class="k">this</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">n_</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">at</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">n_</span><span class="p">)</span><span class="w"> </span><a class="fnref" href="ch04.html#s4-10" title="課程：4.10 例外處理"><span class="k">throw</span></a><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">out_of_range</span><span class="p">(</span><span class="s">"索引超出曲線長度"</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">rates_</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="n">set</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">value</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">n_</span><span class="p">)</span><span class="w"> </span><a class="fnref" href="ch04.html#s4-10" title="課程：4.10 例外處理"><span class="k">throw</span></a><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">out_of_range</span><span class="p">(</span><span class="s">"索引超出曲線長度"</span><span class="p">);</span>
+<span class="w">        </span><span class="n">rates_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">value</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="o">*</span><span class="w"> </span><span class="n">data</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">rates_</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w">   </span><span class="c1">// 只用來印位址、驗證是否共用</span>
+<span class="p">};</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">show</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">RateCurve</span><span class="o">&amp;</span><span class="w"> </span><span class="n">c</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"（長度 "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">c</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"）："</span><span class="p">;</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">c</span><span class="p">.</span><span class="n">size</span><span class="p">();</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">c</span><span class="p">.</span><span class="n">at</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">' '</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"== 測試 1：複製建構後互不影響 ==</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">RateCurve</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mf">0.03</span><span class="p">);</span>
+<span class="w">    </span><span class="n">RateCurve</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">;</span><span class="w">                 </span><span class="c1">// 複製建構</span>
+<span class="w">    </span><span class="n">b</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.08</span><span class="p">);</span>
+<span class="w">    </span><span class="n">show</span><span class="p">(</span><span class="s">"a"</span><span class="p">,</span><span class="w"> </span><span class="n">a</span><span class="p">);</span>
+<span class="w">    </span><span class="n">show</span><span class="p">(</span><span class="s">"b"</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">);</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"a.at(0) 仍是 0.03？"</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">boolalpha</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="p">.</span><span class="n">at</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mf">0.03</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"兩者陣列位址不同？"</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="p">.</span><span class="n">data</span><span class="p">()</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">data</span><span class="p">())</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">== 測試 2：不同長度的曲線互相賦值 ==</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">RateCurve</span><span class="w"> </span><span class="n">shortCurve</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mf">0.01</span><span class="p">);</span>
+<span class="w">    </span><span class="n">RateCurve</span><span class="w"> </span><span class="n">longCurve</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mf">0.05</span><span class="p">);</span>
+<span class="w">    </span><span class="n">longCurve</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mf">0.09</span><span class="p">);</span>
+<span class="w">    </span><span class="n">shortCurve</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">longCurve</span><span class="p">;</span><span class="w">          </span><span class="c1">// 長度 2 → 5</span>
+<span class="w">    </span><span class="n">show</span><span class="p">(</span><span class="s">"shortCurve"</span><span class="p">,</span><span class="w"> </span><span class="n">shortCurve</span><span class="p">);</span>
+<span class="w">    </span><span class="n">longCurve</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.99</span><span class="p">);</span><span class="w">          </span><span class="c1">// 改原本那條</span>
+<span class="w">    </span><span class="n">show</span><span class="p">(</span><span class="s">"shortCurve（longCurve 改了之後）"</span><span class="p">,</span><span class="w"> </span><span class="n">shortCurve</span><span class="p">);</span>
+<span class="w">    </span><span class="n">RateCurve</span><span class="w"> </span><span class="n">big</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mf">0.02</span><span class="p">);</span>
+<span class="w">    </span><span class="n">big</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RateCurve</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mf">0.07</span><span class="p">);</span><span class="w">        </span><span class="c1">// 長度 4 → 1，右邊是臨時物件</span>
+<span class="w">    </span><span class="n">show</span><span class="p">(</span><span class="s">"big"</span><span class="p">,</span><span class="w"> </span><span class="n">big</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">== 測試 3：自我賦值 ==</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">RateCurve</span><span class="w"> </span><span class="n">c</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mf">0.04</span><span class="p">);</span>
+<span class="w">    </span><span class="n">c</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mf">0.06</span><span class="p">);</span>
+<span class="w">    </span><span class="n">RateCurve</span><span class="o">&amp;</span><span class="w"> </span><span class="n">alias</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c</span><span class="p">;</span>
+<span class="w">    </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">alias</span><span class="p">;</span><span class="w">                       </span><span class="c1">// 等於 c = c</span>
+<span class="w">    </span><span class="n">show</span><span class="p">(</span><span class="s">"c"</span><span class="p">,</span><span class="w"> </span><span class="n">c</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">== 測試 4：連續賦值 x = y = c ==</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">RateCurve</span><span class="w"> </span><span class="n">x</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">),</span><span class="w"> </span><span class="n">y</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">);</span>
+<span class="w">    </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c</span><span class="p">;</span>
+<span class="w">    </span><span class="n">show</span><span class="p">(</span><span class="s">"x"</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">);</span>
+<span class="w">    </span><span class="n">show</span><span class="p">(</span><span class="s">"y"</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">== 測試 5：非法長度 ==</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><a class="fnref" href="ch04.html#s4-10" title="課程：4.10 例外處理"><span class="k">try</span></a><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">RateCurve</span><span class="w"> </span><span class="n">bad</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.03</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><a class="fnref" href="ch04.html#s4-10" title="課程：4.10 例外處理"><span class="k">catch</span></a><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">invalid_argument</span><span class="o">&amp;</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"n = 0："</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">e</span><span class="p">.</span><span class="n">what</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w">                        </span><span class="c1">// 離開 main：每個物件各自 delete[] 自己的陣列</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>== 測試 1：複製建構後互不影響 ==
+a（長度 3）：0.03 0.03 0.03 
+b（長度 3）：0.08 0.03 0.03 
+a.at(0) 仍是 0.03？true
+兩者陣列位址不同？true
+
+== 測試 2：不同長度的曲線互相賦值 ==
+shortCurve（長度 5）：0.05 0.05 0.05 0.05 0.09 
+shortCurve（longCurve 改了之後）（長度 5）：0.05 0.05 0.05 0.05 0.09 
+big（長度 1）：0.07 
+
+== 測試 3：自我賦值 ==
+c（長度 3）：0.04 0.06 0.04 
+
+== 測試 4：連續賦值 x = y = c ==
+x（長度 3）：0.04 0.06 0.04 
+y（長度 3）：0.04 0.06 0.04 
+
+== 測試 5：非法長度 ==
+n = 0：曲線長度必須是正整數</code></pre>
+<h3 id="s4-0-4">（4）測試設計與結果</h3>
+<p>我設計的測試與對應要驗證的性質：</p>
+<table>
+<thead>
+<tr>
+<th>測試</th>
+<th>驗證什麼</th>
+<th>結果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. <code>b = a</code> 複製建構後改 <code>b</code></td>
+<td>深複製：兩物件互不影響，陣列位址不同</td>
+<td><code>a.at(0)</code> 仍為 0.03，位址不同 ✓</td>
+</tr>
+<tr>
+<td>2. 長度 2 ← 5、4 ← 1（臨時物件）</td>
+<td>不同大小賦值：長度與內容都正確更新；賦值後再改來源不影響目標</td>
+<td>長度變 5、1，內容正確，改 <code>longCurve</code> 不影響 ✓</td>
+</tr>
+<tr>
+<td>3. <code>c = c</code></td>
+<td>自我賦值不會刪掉自己的資料</td>
+<td>內容不變 ✓</td>
+</tr>
+<tr>
+<td>4. <code>x = y = c</code></td>
+<td><code>operator=</code> 回傳 <code>*this</code> 參考，可連續賦值</td>
+<td>x、y 都等於 c ✓</td>
+</tr>
+<tr>
+<td>5. 長度 0</td>
+<td>非法輸入被拒絕</td>
+<td>丟出 <code>invalid_argument</code> ✓</td>
+</tr>
+</tbody>
+</table>
+<p>此外我用 AddressSanitizer 編譯修正版再執行一次（<code>clang++ -std=c++17 -fsanitize=address -g Q4_rate_curve_fixed.cpp</code>），<strong>沒有任何錯誤報告</strong>——相對於原版一執行就報 double-free，這證明所有 <code>new[]</code> 都恰好對應一次 <code>delete[]</code>。</p>
+<p><strong>延伸（零法則）：</strong> 如果不限定要自己管理陣列，把 <code>double* rates_</code> 換成 <code>std::vector&lt;double&gt; rates_</code>，解構、複製建構、複製賦值都可以<strong>完全不寫</strong>，編譯器產生的版本就是正確的深複製——這是現代 C++ 更推薦的做法。這題讓我理解為什麼：自己寫三個函數要注意的細節（自我賦值、例外安全、長度同步）非常多。</p>
+<div class="box paste"><span class="tag">可直接貼到作業</span><button class="copy" type="button">複製這段</button><div class="ptext"><p>（1）RateCurve a(3, 0.03) 在 heap 配置一塊 3 個 double 的陣列，a.rates_ 儲存其位址。RateCurve b = a 呼叫編譯器產生的複製建構函數，逐一複製成員，b.rates_ 得到與 a.rates_ 相同的位址，heap 上的陣列並未被複製（淺複製）。因此 a 與 b 是兩個獨立的物件，卻共用同一份動態資源；b.set(0, 0.08) 修改的是共用陣列，a.at(0) 會讀到 0.08 而非 0.03。
+（2）離開作用域時依建構的相反順序先解構 b、再解構 a。b 的解構函數 delete[] 共用陣列後，a.rates_ 成為懸空指標；a 的解構函數再次 delete[] 同一位址，屬於重複釋放（double delete），依 C++ 標準為未定義行為，可能中止、看似正常結束或破壞 heap，不能假設必然當機或必然正常；若在 b 解構後仍存取 a.at()，則為使用已釋放記憶體（use-after-free），同樣是未定義行為。我未直接執行原版，而是以 AddressSanitizer（-fsanitize=address）編譯檢查，工具在第二次 delete[] 時即中止並回報 attempting double-free，與分析一致。
+（3）依三法則改寫：解構函數以 delete[] 釋放陣列；複製建構函數為新物件配置同樣大小的新陣列並逐一複製元素（深複製）；複製賦值運算子先檢查自我賦值（this == &amp;other），再配置新陣列並複製完成後才 delete[] 舊陣列、更新指標與長度 n_，最後回傳 *this。先配置後釋放可確保 new 失敗丟出例外時原物件不被破壞，同時處理不同長度曲線的賦值。另加入長度與索引的檢查。
+（4）測試一：b 由 a 複製建構後修改 b，a.at(0) 仍為 0.03 且兩者陣列位址不同；測試二：長度 2 的曲線被賦值為長度 5 的曲線、長度 4 的曲線被賦值為長度 1 的臨時物件，長度與內容皆正確，賦值後修改來源不影響目標；測試三：自我賦值 c = c 後內容不變；另測試連續賦值 x = y = c 與非法長度 0 會丟出例外。修正版以 AddressSanitizer 執行無任何錯誤，確認每次 new[] 都恰好對應一次 delete[]。</p></div></div></section><section class="sec" id="s5-0" data-label="5.0 第五題　債券評價與可切換的折現方法（35 分）"><h2><span class="num">5.0</span>第五題　債券評價與可切換的折現方法（35 分）</h2><details class="refbox" open><summary>對應課程內容（3 處）</summary><ul><li><a href="ch04.html#s4-10">4.10 例外處理</a>（throw、try、catch）</li><li><a href="ch08.html#s8-2">8.2 覆寫虛函數與多型</a>（virtual、override、dynamic_cast）</li><li><a href="ch06.html#s6-4">6.4 new 與 delete</a>（new、delete）</li></ul></details><div class="box task"><span class="tag">題目</span><strong class="bt">題目規格（摘要）</strong><p>實作 <code>Bond</code>（具體基底、零息債、<code>virtual payment(int t) const</code>、虛解構）、<code>FixedRateBond</code>、<code>StepUpBond</code>（第 t 年票息率 c₀ + (t−1)Δc）、<code>DiscountEngine</code>（具體基底、年複利 <code>virtual factor(int t) const</code>、虛解構）、<code>ContinuousDiscountEngine</code>（<code>exp(−yt)</code>）、<code>BondPricer</code>（以 <code>const Bond&amp;</code> 與折現引擎的參考或指標計算 NPV、可切換引擎、不擁有引擎）。<code>main</code> 至少三次 <a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><code>new</code></a> 建立三種債券、以 <code>Bond*</code> 計價並正確 <a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><code>delete</code></a>；完成六組必測資料（絕對誤差 ≤ 1e-6，非有限值不得通過）與至少兩組非法輸入測試。禁止以 switch、typeid 或大量 dynamic_cast 取代虛函數。</p></div>
+<h3 id="s5-0-1">設計的思考過程</h3>
+<p><strong>第一版想法：一個大函數。</strong> 我最先想到的是寫一個 <code>npv(type, F, T, c, y, method)</code>，裡面用 <code>if (type == &quot;fixed&quot;)</code>、<code>if (method == &quot;continuous&quot;)</code> 分情況算——這是我寫 R 的習慣，從頭寫到尾。但題目明確禁止 <code>switch(type)</code> 取代虛函數，而且我想到老師第一堂課說的：程序式寫法「彈性很小，換個模型就要在程式中間大改」。三種債券 × 兩種折現就有 6 種組合，再加一種商品就要改每一個 if。</p>
+<p><strong>第二版：照 QuantLib 的拆法。</strong> 回想第 8 章的策略模式：<strong>商品只負責「現金流是什麼」，引擎只負責「怎麼折現」，定價器把兩者組合起來</strong>。於是：
+- <code>Bond::payment(t)</code> 是虛函數：各種債券覆寫它，定價器不用知道是哪一種債券。
+- <code>DiscountEngine::factor(t)</code> 是虛函數：兩種折現方法覆寫它，定價器不用知道是哪一種折現。
+- <code>BondPricer::npv()</code> 只寫一次迴圈 <code>Σ payment(t) × factor(t)</code>，新增商品或折現方法都不用改它——這就是「降低耦合」。</p>
+<p><strong>卡住的地方 1：子類別怎麼重用父類別的「到期還本」？</strong> 我原本在 <code>FixedRateBond::payment</code> 裡寫 <code>if (t == T) return F * c + F;</code>。寫到 <code>StepUpBond</code> 又要寫一次，覺得重複。後來想到第二題剛學到的 <code>Bond::payment(t)</code>（限定名稱、不派發）：父類別的零息債版本剛好就是「到期日還本金、其他年份 0」，所以子類別寫成「<strong>票息 + <code>Bond::payment(t)</code></strong>」，本金的邏輯只寫在一個地方。</p>
+<p><strong>卡住的地方 2：引擎要用參考還是指標？</strong> 題目說定價器「不擁有引擎、可以切換引擎」。我第一個寫法是成員 <code>const DiscountEngine&amp; engine_;</code>，結果寫 <code>setEngine()</code> 時發現<strong>參考綁定之後不能改綁</strong>（第 2 章），只能用指標。所以改成 <code>const DiscountEngine* engine_</code>：建構和 <code>setEngine()</code> 都接收 <code>const DiscountEngine&amp;</code>（保證呼叫端給的是一個真的物件、不會是空指標），內部存它的位址。它是<strong>非擁有指標</strong>：定價器絕不 <a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><code>delete</code></a> 它，引擎由 <code>main</code> 建立和管理。</p>
+<p><strong>卡住的地方 3：非法輸入要在哪裡擋？</strong> 一開始我在 <code>npv()</code> 裡檢查殖利率是否為負，問 AI 後改成<strong>在建構函數裡檢查</strong>：不合法的物件根本不該被建立出來，之後所有成員函數都可以假設資料是合法的。檢查失敗就丟 <code>std::invalid_argument</code>。AI 也提醒我 NaN 的陷阱：<code>y &lt; 0</code> 對 NaN 是 false，<strong>NaN 會通過「非負」的檢查</strong>，所以要先用 <code>std::isfinite()</code> 擋掉 NaN 和無窮大。</p>
+<p><strong>卡住的地方 4：怎麼確認「非有限值不會被判為通過」？</strong> 我的比較函數一開始是 <code>std::abs(actual - expected) &lt;= 1e-6</code>。我想到 NaN 的任何比較都是 false，所以 NaN 剛好會 FAIL；但 AI 指出依賴這個「剛好」不夠明確，而且如果有人把條件改寫成 <code>!(diff &gt; tol)</code>，NaN 就會變成通過。所以我明確寫成 <code>std::isfinite(actual) &amp;&amp; std::abs(actual - expected) &lt;= TOL</code>，並在程式裡直接拿 NaN 和無窮大測試這個函數，印出它們都不通過。</p>
+<h3 id="s5-0-2">完整程式</h3>
+<div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++ 檔案：Q5_bond_pricer.cpp</span><pre><code><span class="c1">// 第五題：債券評價與可切換的折現方法（C++17）</span>
+<span class="c1">// 編譯：clang++ -std=c++17 -Wall -Wextra -pedantic Q5_bond_pricer.cpp -o Q5</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;cmath&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iomanip&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;limits&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdexcept&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string&gt;</span>
+
+<span class="c1">// ---------- 輸入檢查（建構時就擋掉不合法的參數）----------</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">requirePositive</span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">name</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">std</span><span class="o">::</span><span class="n">isfinite</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">)</span>
+<span class="w">        </span><a class="fnref" href="ch04.html#s4-10" title="課程：4.10 例外處理"><span class="k">throw</span></a><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">invalid_argument</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">" 必須是有限的正數"</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">requireNonNegative</span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">name</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">std</span><span class="o">::</span><span class="n">isfinite</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mf">0.0</span><span class="p">)</span>
+<span class="w">        </span><a class="fnref" href="ch04.html#s4-10" title="課程：4.10 例外處理"><span class="k">throw</span></a><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">invalid_argument</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">" 必須是有限且非負的數"</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">requirePositiveInt</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">name</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">        </span><a class="fnref" href="ch04.html#s4-10" title="課程：4.10 例外處理"><span class="k">throw</span></a><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">invalid_argument</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">" 必須是正整數"</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// ---------- 債券：具體基底類別（零息債）----------</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Bond</span><span class="w"> </span><span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">    </span><span class="n">Bond</span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="n">face</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">maturity</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">face_</span><span class="p">(</span><span class="n">face</span><span class="p">),</span><span class="w"> </span><span class="n">maturity_</span><span class="p">(</span><span class="n">maturity</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">requirePositive</span><span class="p">(</span><span class="n">face</span><span class="p">,</span><span class="w"> </span><span class="s">"面額 F"</span><span class="p">);</span>
+<span class="w">        </span><span class="n">requirePositiveInt</span><span class="p">(</span><span class="n">maturity</span><span class="p">,</span><span class="w"> </span><span class="s">"年期 T"</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">virtual</span></a><span class="w"> </span><span class="o">~</span><span class="n">Bond</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">default</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// 第 t 年年底的現金流；零息債只有到期日還本金</span>
+<span class="w">    </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">virtual</span></a><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="nf">payment</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">t</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">maturity_</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">face_</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="nf">face</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">face_</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="nf">maturity</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">maturity_</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+
+<span class="k">private</span><span class="o">:</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">face_</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">maturity_</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">FixedRateBond</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">Bond</span><span class="w"> </span><span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">    </span><span class="n">FixedRateBond</span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="n">face</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">maturity</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">coupon</span><span class="p">)</span>
+<span class="w">        </span><span class="o">:</span><span class="w"> </span><span class="n">Bond</span><span class="p">(</span><span class="n">face</span><span class="p">,</span><span class="w"> </span><span class="n">maturity</span><span class="p">),</span><span class="w"> </span><span class="n">coupon_</span><span class="p">(</span><span class="n">coupon</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">requireNonNegative</span><span class="p">(</span><span class="n">coupon</span><span class="p">,</span><span class="w"> </span><span class="s">"票息率 c"</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">payment</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">t</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">override</span></a><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">t</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">maturity</span><span class="p">())</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">face</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">coupon_</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Bond</span><span class="o">::</span><span class="n">payment</span><span class="p">(</span><span class="n">t</span><span class="p">);</span><span class="w">   </span><span class="c1">// 票息 + （到期時的）本金</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="k">private</span><span class="o">:</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">coupon_</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">StepUpBond</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">Bond</span><span class="w"> </span><span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">    </span><span class="n">StepUpBond</span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="n">face</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">maturity</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">c0</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">step</span><span class="p">)</span>
+<span class="w">        </span><span class="o">:</span><span class="w"> </span><span class="n">Bond</span><span class="p">(</span><span class="n">face</span><span class="p">,</span><span class="w"> </span><span class="n">maturity</span><span class="p">),</span><span class="w"> </span><span class="n">c0_</span><span class="p">(</span><span class="n">c0</span><span class="p">),</span><span class="w"> </span><span class="n">step_</span><span class="p">(</span><span class="n">step</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">requireNonNegative</span><span class="p">(</span><span class="n">c0</span><span class="p">,</span><span class="w"> </span><span class="s">"起始票息率 c0"</span><span class="p">);</span>
+<span class="w">        </span><span class="n">requireNonNegative</span><span class="p">(</span><span class="n">step</span><span class="p">,</span><span class="w"> </span><span class="s">"階梯增加率 dc"</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">payment</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">t</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">override</span></a><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">t</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">maturity</span><span class="p">())</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">rate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c0_</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">t</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">step_</span><span class="p">;</span><span class="w">          </span><span class="c1">// 第 t 年的票息率</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">face</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">rate</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Bond</span><span class="o">::</span><span class="n">payment</span><span class="p">(</span><span class="n">t</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="k">private</span><span class="o">:</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">c0_</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">step_</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="c1">// ---------- 折現引擎：具體基底類別（年複利）----------</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DiscountEngine</span><span class="w"> </span><span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">    </span><span class="k">explicit</span><span class="w"> </span><span class="n">DiscountEngine</span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="n">y</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">y_</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">requireNonNegative</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="s">"殖利率 y"</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">virtual</span></a><span class="w"> </span><span class="o">~</span><span class="n">DiscountEngine</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">default</span><span class="p">;</span>
+<span class="w">    </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">virtual</span></a><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="nf">factor</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">t</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="mf">1.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">pow</span><span class="p">(</span><span class="mf">1.0</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">y_</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="nf">yield</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">y_</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+
+<span class="k">private</span><span class="o">:</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">y_</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ContinuousDiscountEngine</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">DiscountEngine</span><span class="w"> </span><span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">    </span><span class="k">explicit</span><span class="w"> </span><span class="n">ContinuousDiscountEngine</span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="n">y</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">DiscountEngine</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="w"> </span><span class="p">{}</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">factor</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">t</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><span class="k">override</span></a><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">yield</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">t</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<span class="p">};</span>
+
+<span class="c1">// ---------- 定價器：不擁有引擎，只「借用」----------</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">BondPricer</span><span class="w"> </span><span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">    </span><span class="k">explicit</span><span class="w"> </span><span class="n">BondPricer</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">DiscountEngine</span><span class="o">&amp;</span><span class="w"> </span><span class="n">engine</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">engine_</span><span class="p">(</span><span class="o">&amp;</span><span class="n">engine</span><span class="p">)</span><span class="w"> </span><span class="p">{}</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="n">setEngine</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">DiscountEngine</span><span class="o">&amp;</span><span class="w"> </span><span class="n">engine</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">engine_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">engine</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">npv</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Bond</span><span class="o">&amp;</span><span class="w"> </span><span class="n">bond</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">sum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">bond</span><span class="p">.</span><span class="n">maturity</span><span class="p">();</span><span class="w"> </span><span class="o">++</span><span class="n">t</span><span class="p">)</span>
+<span class="w">            </span><span class="n">sum</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">bond</span><span class="p">.</span><span class="n">payment</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">engine_</span><span class="o">-&gt;</span><span class="n">factor</span><span class="p">(</span><span class="n">t</span><span class="p">);</span><span class="w">   </span><span class="c1">// 兩個虛函數呼叫</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">sum</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="k">private</span><span class="o">:</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">DiscountEngine</span><span class="o">*</span><span class="w"> </span><span class="n">engine_</span><span class="p">;</span><span class="w">   </span><span class="c1">// 非擁有（non-owning）指標：不負責 delete</span>
+<span class="p">};</span>
+
+<span class="c1">// ---------- 測試工具 ----------</span>
+<span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">TOL</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1e-6</span><span class="p">;</span>
+<span class="kt">int</span><span class="w"> </span><span class="n">passed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">failed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="kt">bool</span><span class="w"> </span><span class="nf">closeEnough</span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="n">actual</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">expected</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// 先確認是有限值：NaN 和 inf 一律不算通過</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">isfinite</span><span class="p">(</span><span class="n">actual</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">abs</span><span class="p">(</span><span class="n">actual</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">expected</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">TOL</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">check</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">actual</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">expected</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">ok</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">closeEnough</span><span class="p">(</span><span class="n">actual</span><span class="p">,</span><span class="w"> </span><span class="n">expected</span><span class="p">);</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><span class="n">ok</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s">"[PASS] "</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="s">"[FAIL] "</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">name</span>
+<span class="w">              </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"：計算 "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">actual</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"，預期 "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">expected</span>
+<span class="w">              </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"，誤差 "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">scientific</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setprecision</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">abs</span><span class="p">(</span><span class="n">actual</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">expected</span><span class="p">)</span>
+<span class="w">              </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">fixed</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setprecision</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span>
+<span class="w">    </span><span class="p">(</span><span class="n">ok</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">passed</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">failed</span><span class="p">)</span><span class="o">++</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">fixed</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setprecision</span><span class="p">(</span><span class="mi">6</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// 1. 折現引擎由 main 建立與管理（在 stack 上，整個 main 期間都有效）</span>
+<span class="w">    </span><span class="n">DiscountEngine</span><span class="w"> </span><span class="n">annual</span><span class="p">(</span><span class="mf">0.04</span><span class="p">);</span>
+<span class="w">    </span><span class="n">ContinuousDiscountEngine</span><span class="w"> </span><span class="n">continuous</span><span class="p">(</span><span class="mf">0.04</span><span class="p">);</span>
+<span class="w">    </span><span class="n">DiscountEngine</span><span class="w"> </span><span class="n">zeroYield</span><span class="p">(</span><span class="mf">0.0</span><span class="p">);</span>
+<span class="w">    </span><span class="n">BondPricer</span><span class="w"> </span><span class="n">pricer</span><span class="p">(</span><span class="n">annual</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// 2. 用 new 建立三種債券，以 Bond* 指向</span>
+<span class="w">    </span><span class="n">Bond</span><span class="o">*</span><span class="w"> </span><span class="n">zero</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><span class="k">new</span></a><span class="w"> </span><span class="n">Bond</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">);</span>
+<span class="w">    </span><span class="n">Bond</span><span class="o">*</span><span class="w"> </span><span class="n">fixed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><span class="k">new</span></a><span class="w"> </span><span class="n">FixedRateBond</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mf">0.05</span><span class="p">);</span>
+<span class="w">    </span><span class="n">Bond</span><span class="o">*</span><span class="w"> </span><span class="n">step</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><span class="k">new</span></a><span class="w"> </span><span class="n">StepUpBond</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mf">0.03</span><span class="p">,</span><span class="w"> </span><span class="mf">0.01</span><span class="p">);</span>
+<span class="w">    </span><span class="n">Bond</span><span class="o">*</span><span class="w"> </span><span class="n">par</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><span class="k">new</span></a><span class="w"> </span><span class="n">FixedRateBond</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mf">0.04</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"== 六組必測資料（容許誤差：絕對誤差 &lt;= 1e-6，且必須是有限值）==</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">check</span><span class="p">(</span><span class="s">"零息債／年複利"</span><span class="p">,</span><span class="w"> </span><span class="n">pricer</span><span class="p">.</span><span class="n">npv</span><span class="p">(</span><span class="o">*</span><span class="n">zero</span><span class="p">),</span><span class="w"> </span><span class="mf">888.996359</span><span class="p">);</span>
+<span class="w">    </span><span class="n">check</span><span class="p">(</span><span class="s">"固定票息債／年複利"</span><span class="p">,</span><span class="w"> </span><span class="n">pricer</span><span class="p">.</span><span class="n">npv</span><span class="p">(</span><span class="o">*</span><span class="n">fixed</span><span class="p">),</span><span class="w"> </span><span class="mf">1027.750910</span><span class="p">);</span>
+<span class="w">    </span><span class="n">check</span><span class="p">(</span><span class="s">"階梯票息債／年複利"</span><span class="p">,</span><span class="w"> </span><span class="n">pricer</span><span class="p">.</span><span class="n">npv</span><span class="p">(</span><span class="o">*</span><span class="n">step</span><span class="p">),</span><span class="w"> </span><span class="mf">999.274579</span><span class="p">);</span>
+<span class="w">    </span><span class="n">check</span><span class="p">(</span><span class="s">"平價驗算 c=y=4%"</span><span class="p">,</span><span class="w"> </span><span class="n">pricer</span><span class="p">.</span><span class="n">npv</span><span class="p">(</span><span class="o">*</span><span class="n">par</span><span class="p">),</span><span class="w"> </span><span class="mf">1000.000000</span><span class="p">);</span>
+<span class="w">    </span><span class="n">pricer</span><span class="p">.</span><span class="n">setEngine</span><span class="p">(</span><span class="n">zeroYield</span><span class="p">);</span><span class="w">                       </span><span class="c1">// 換引擎：債券類別不用改</span>
+<span class="w">    </span><span class="n">check</span><span class="p">(</span><span class="s">"固定票息債／零殖利率"</span><span class="p">,</span><span class="w"> </span><span class="n">pricer</span><span class="p">.</span><span class="n">npv</span><span class="p">(</span><span class="o">*</span><span class="n">fixed</span><span class="p">),</span><span class="w"> </span><span class="mf">1150.000000</span><span class="p">);</span>
+<span class="w">    </span><span class="n">pricer</span><span class="p">.</span><span class="n">setEngine</span><span class="p">(</span><span class="n">continuous</span><span class="p">);</span>
+<span class="w">    </span><span class="n">check</span><span class="p">(</span><span class="s">"固定票息債／連續複利"</span><span class="p">,</span><span class="w"> </span><span class="n">pricer</span><span class="p">.</span><span class="n">npv</span><span class="p">(</span><span class="o">*</span><span class="n">fixed</span><span class="p">),</span><span class="w"> </span><span class="mf">1025.461748</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">== 同一個迴圈、兩種引擎（執行期多型）==</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">Bond</span><span class="o">*</span><span class="w"> </span><span class="n">book</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="n">zero</span><span class="p">,</span><span class="w"> </span><span class="n">fixed</span><span class="p">,</span><span class="w"> </span><span class="n">step</span><span class="p">};</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">names</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s">"零息債"</span><span class="p">,</span><span class="w"> </span><span class="s">"固定票息債"</span><span class="p">,</span><span class="w"> </span><span class="s">"階梯票息債"</span><span class="p">};</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">DiscountEngine</span><span class="o">*</span><span class="w"> </span><span class="n">engines</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="o">&amp;</span><span class="n">annual</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">continuous</span><span class="p">};</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">engineNames</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s">"年複利"</span><span class="p">,</span><span class="w"> </span><span class="s">"連續複利"</span><span class="p">};</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">pricer</span><span class="p">.</span><span class="n">setEngine</span><span class="p">(</span><span class="o">*</span><span class="n">engines</span><span class="p">[</span><span class="n">e</span><span class="p">]);</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">engineNames</span><span class="p">[</span><span class="n">e</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"  "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">names</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"  NPV = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">pricer</span><span class="p">.</span><span class="n">npv</span><span class="p">(</span><span class="o">*</span><span class="n">book</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">== 非有限值不能被判為通過 ==</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"NaN 是否通過："</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">boolalpha</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">closeEnough</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">nan</span><span class="p">(</span><span class="s">""</span><span class="p">),</span><span class="w"> </span><span class="mf">888.996359</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"inf 是否通過："</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">closeEnough</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">numeric_limits</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;::</span><span class="n">infinity</span><span class="p">(),</span><span class="w"> </span><span class="mf">888.996359</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">== 非法輸入 ==</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><a class="fnref" href="ch04.html#s4-10" title="課程：4.10 例外處理"><span class="k">try</span></a><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Bond</span><span class="w"> </span><span class="n">bad</span><span class="p">(</span><span class="mi">-1000</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><a class="fnref" href="ch04.html#s4-10" title="課程：4.10 例外處理"><span class="k">catch</span></a><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">invalid_argument</span><span class="o">&amp;</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"F = -1000："</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">e</span><span class="p">.</span><span class="n">what</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><a class="fnref" href="ch04.html#s4-10" title="課程：4.10 例外處理"><span class="k">try</span></a><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">FixedRateBond</span><span class="w"> </span><span class="n">bad</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.05</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><a class="fnref" href="ch04.html#s4-10" title="課程：4.10 例外處理"><span class="k">catch</span></a><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">invalid_argument</span><span class="o">&amp;</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"T = 0："</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">e</span><span class="p">.</span><span class="n">what</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><a class="fnref" href="ch04.html#s4-10" title="課程：4.10 例外處理"><span class="k">try</span></a><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">StepUpBond</span><span class="w"> </span><span class="n">bad</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mf">0.03</span><span class="p">,</span><span class="w"> </span><span class="mf">-0.01</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><a class="fnref" href="ch04.html#s4-10" title="課程：4.10 例外處理"><span class="k">catch</span></a><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">invalid_argument</span><span class="o">&amp;</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"dc = -1%："</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">e</span><span class="p">.</span><span class="n">what</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><a class="fnref" href="ch04.html#s4-10" title="課程：4.10 例外處理"><span class="k">try</span></a><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">DiscountEngine</span><span class="w"> </span><span class="n">bad</span><span class="p">(</span><span class="mf">-0.02</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><a class="fnref" href="ch04.html#s4-10" title="課程：4.10 例外處理"><span class="k">catch</span></a><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">invalid_argument</span><span class="o">&amp;</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"y = -2%："</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">e</span><span class="p">.</span><span class="n">what</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><a class="fnref" href="ch04.html#s4-10" title="課程：4.10 例外處理"><span class="k">try</span></a><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">ContinuousDiscountEngine</span><span class="w"> </span><span class="n">bad</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">nan</span><span class="p">(</span><span class="s">""</span><span class="p">));</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><a class="fnref" href="ch04.html#s4-10" title="課程：4.10 例外處理"><span class="k">catch</span></a><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">invalid_argument</span><span class="o">&amp;</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"y = NaN："</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">e</span><span class="p">.</span><span class="n">what</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// 3. 釋放 new 出來的債券；delete 後設為 nullptr，避免懸空指標</span>
+<span class="w">    </span><a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><span class="k">delete</span></a><span class="w"> </span><span class="n">zero</span><span class="p">;</span><span class="w">  </span><span class="n">zero</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">nullptr</span><span class="p">;</span>
+<span class="w">    </span><a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><span class="k">delete</span></a><span class="w"> </span><span class="n">fixed</span><span class="p">;</span><span class="w"> </span><span class="n">fixed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">nullptr</span><span class="p">;</span>
+<span class="w">    </span><a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><span class="k">delete</span></a><span class="w"> </span><span class="n">step</span><span class="p">;</span><span class="w">  </span><span class="n">step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">nullptr</span><span class="p">;</span>
+<span class="w">    </span><a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><span class="k">delete</span></a><span class="w"> </span><span class="n">par</span><span class="p">;</span><span class="w">   </span><span class="n">par</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">nullptr</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">通過 "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">passed</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" 組，失敗 "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">failed</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" 組</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">failed</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<pre class="out" data-title="執行結果"><code>== 六組必測資料（容許誤差：絕對誤差 &lt;= 1e-6，且必須是有限值）==
+[PASS] 零息債／年複利：計算 888.996359，預期 888.996359，誤差 3.29e-07
+[PASS] 固定票息債／年複利：計算 1027.750910，預期 1027.750910，誤差 3.32e-07
+[PASS] 階梯票息債／年複利：計算 999.274579，預期 999.274579，誤差 2.87e-08
+[PASS] 平價驗算 c=y=4%：計算 1000.000000，預期 1000.000000，誤差 0.00e+00
+[PASS] 固定票息債／零殖利率：計算 1150.000000，預期 1150.000000，誤差 0.00e+00
+[PASS] 固定票息債／連續複利：計算 1025.461748，預期 1025.461748，誤差 1.70e-07
+
+== 同一個迴圈、兩種引擎（執行期多型）==
+年複利  零息債  NPV = 888.996359
+年複利  固定票息債  NPV = 1027.750910
+年複利  階梯票息債  NPV = 999.274579
+連續複利  零息債  NPV = 886.920437
+連續複利  固定票息債  NPV = 1025.461748
+連續複利  階梯票息債  NPV = 997.014796
+
+== 非有限值不能被判為通過 ==
+NaN 是否通過：false
+inf 是否通過：false
+
+== 非法輸入 ==
+F = -1000：面額 F 必須是有限的正數
+T = 0：年期 T 必須是正整數
+dc = -1%：階梯增加率 dc 必須是有限且非負的數
+y = -2%：殖利率 y 必須是有限且非負的數
+y = NaN：殖利率 y 必須是有限且非負的數
+
+通過 6 組，失敗 0 組</code></pre>
+<h3 id="s5-0-3">手算驗證一組</h3>
+<p>為了確定程式「算的就是題目的公式」，而不是剛好湊到答案，我用固定票息債／年複利手算一次：現金流是 50、50、1050，</p>
+\[P=\frac{50}{1.04}+\frac{50}{1.04^2}+\frac{1050}{1.04^3}=48.076923+46.227811+933.446176=1027.750910\]
+<p>和程式一致。平價驗算（c = y = 4%）得到 1000 也合理：票息率等於殖利率時，債券以面額交易。零殖利率時折現因子都是 1，NPV 就是現金流總和 50 + 50 + 1050 = 1150。</p>
+<h3 id="s5-0-4">設計說明（報告需要的論述）</h3>
+<ul>
+<li><strong>多型如何降低耦合：</strong> <code>BondPricer::npv()</code> 只依賴兩個介面——<code>Bond::payment(int) const</code> 和 <code>DiscountEngine::factor(int) const</code>。它不知道、也不需要知道傳進來的是哪一種債券或哪一種折現法；呼叫時由虛函數依物件的動態型別決定實際算法。新增一種債券（例如浮動利率債）只要寫一個覆寫 <code>payment</code> 的子類別；新增一種折現法（例如半年複利）只要寫一個覆寫 <code>factor</code> 的子類別；<code>BondPricer</code> 和其他類別<strong>一行都不用改</strong>。這和老師上課講的 QuantLib「Instrument 不知道怎麼算，Engine 才是演算法」是同一個想法。</li>
+<li><strong>生命週期與所有權：</strong></li>
+<li>債券：<code>main</code> 用 <a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><code>new</code></a> 建立、以 <code>Bond*</code> 持有，<strong>由 main 擁有</strong>；用完以 <a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><code>delete</code></a> 釋放。因為 <code>Bond</code> 有虛解構函數，透過 <code>Bond*</code> 刪除子類別物件時會正確呼叫子類別的解構函數（第一題（3）的教訓）。每個 <a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><code>new</code></a> 恰好一個 <a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><code>delete</code></a>（避免洩漏與重複釋放），<a class="fnref" href="ch06.html#s6-4" title="課程：6.4 new 與 delete"><code>delete</code></a> 後立刻設為 <code>nullptr</code>（避免懸空指標被誤用）。</li>
+<li>引擎：在 <code>main</code> 的 stack 上建立，<strong>由 main 擁有</strong>，離開 <code>main</code> 時自動解構；它們的生命期涵蓋所有計價動作。</li>
+<li><code>BondPricer</code>：只<strong>借用</strong>引擎（非擁有指標），不負責釋放；呼叫端必須保證「引擎比定價器活得久」。如果把一個臨時的引擎物件傳給 <code>setEngine()</code>，之後再計價就是懸空指標——這是這種設計需要文件說明的限制。若要讓定價器共同擁有引擎，可以改用 <code>std::shared_ptr&lt;const DiscountEngine&gt;</code>（第 6 章）。</li>
+<li><strong>為什麼不用 switch／typeid：</strong> 那會讓 <code>BondPricer</code> 必須認識每一種債券與折現法，每新增一種就要修改它，違反題目要求，也失去多型的意義。本程式沒有使用任何 <code>switch</code>、<code>typeid</code> 或 <a class="fnref" href="ch08.html#s8-2" title="課程：8.2 覆寫虛函數與多型"><code>dynamic_cast</code></a>。</li>
+<li><strong>數值驗證條件：</strong> 六組全部以「計算值為有限值，且與參考值的絕對誤差 ≤ 1e-6」判定通過；實測最大誤差約 3.3 × 10⁻⁷（參考值本身只給到小數第 6 位）。NaN 與無窮大經過同一個判斷函數都回傳 false。</li>
+</ul>
+<div class="box paste"><span class="tag">可直接貼到作業</span><button class="copy" type="button">複製這段</button><div class="ptext"><p>設計上將「現金流」與「折現方法」分離：Bond 為具體基底類別（零息債，僅到期日支付面額），具有虛擬解構函數與 virtual double payment(int t) const；FixedRateBond 與 StepUpBond 以 override 覆寫 payment，票息分別為 F×c 與 F×(c0+(t−1)Δc)，並以 Bond::payment(t) 重用到期還本的邏輯。DiscountEngine 為具體基底類別，儲存殖利率 y，virtual double factor(int t) const 計算 1/(1+y)^t；ContinuousDiscountEngine 以 override 改為 exp(−yt)。BondPricer 以 const Bond&amp; 接收債券，內部保存 const DiscountEngine<em>（以參考傳入、以指標保存，才能用 setEngine() 切換），NPV 為 Σ payment(t)×factor(t)，兩者皆透過虛函數於執行期決定實際算法，未使用 switch、typeid 或 dynamic_cast。因此新增債券種類或折現方法只需新增子類別，BondPricer 與既有類別不需修改，降低了債券與折現方法之間的耦合。
+所有參數在建構函數中檢查：F 必須為有限正數、T 為正整數、票息率、階梯增加率與殖利率必須為有限非負數，不合法即丟出 std::invalid_argument；檢查先使用 std::isfinite()，避免 NaN 因比較皆為 false 而通過非負檢查。
+記憶體管理方面，main 以 new 建立 Bond、FixedRateBond、StepUpBond（另建立一張平價驗算用的 FixedRateBond），以 Bond</em> 指向並由 main 擁有，計價完成後逐一 delete 並設為 nullptr；Bond 具有虛擬解構函數，透過 Bond* 刪除衍生類別物件時會正確呼叫衍生類別的解構函數。折現引擎建立於 main 的 stack 上，由 main 擁有並在整個計價期間有效；BondPricer 只保存非擁有指標，不負責釋放引擎，使用者須確保引擎的生命期長於定價器的使用期間。
+測試以「計算值為有限值且與參考值絕對誤差不大於 1e-6」判定通過，六組必測資料（零息債年複利 888.996359、固定票息債年複利 1027.750910、階梯票息債年複利 999.274579、平價驗算 1000、固定票息債零殖利率 1150、固定票息債連續複利 1025.461748）全部通過，最大絕對誤差約 3.3×10⁻⁷；並以 NaN 與無窮大測試判斷函數，皆判定為不通過。非法輸入測試包含 F=−1000、T=0、Δc=−1%、y=−2% 與 y=NaN，皆由建構函數丟出例外並印出錯誤訊息。另以固定票息債年複利手算 50/1.04+50/1.04²+1050/1.04³=1027.750910，與程式結果一致。</p></div></div></section><section class="sec" id="s6-0" data-label="6.0 AI 使用紀錄與自行驗證"><h2><span class="num">6.0</span>AI 使用紀錄與自行驗證</h2><p>作業要求列出 AI 使用紀錄與至少兩項自行驗證。下面是依照這份解答的實際製作過程整理的草稿，<strong>繳交前請依你自己實際的使用情形修改</strong>（例如換成你自己問過的問題、你自己跑過的指令）。</p>
+<ul>
+<li><strong>使用工具：</strong> Claude（Anthropic）。</li>
+<li><strong>具代表性的提問：</strong>
+  1. 「在 Bond 的建構函數裡呼叫虛函數 identify()，為什麼印出的是 Bond 而不是 Fixed？」
+  2. 「Bond::payment() 不是虛函數，它裡面呼叫的 payment(3) 會不會動態派發？」
+  3. 「子類別覆寫 payment(int) 後，為什麼 fixed.payment() 找不到父類別的 payment()？有哪些修法？」
+  4. 「怎麼在不直接執行危險程式的情況下，證明 RateCurve 會重複釋放？」
+  5. 「複製賦值運算子『先刪後配』有什麼問題？」</li>
+<li><strong>採用的建議：</strong> 用 <code>using Bond::payment;</code> 解除遮蔽（比較三種修法後採用）；以 AddressSanitizer 檢查重複釋放；複製賦值改成「先配置新陣列再釋放舊陣列」；參數檢查放在建構函數並先用 <code>std::isfinite()</code> 擋 NaN；測試判斷式明確加上 <code>std::isfinite()</code>。</li>
+<li><strong>否定或修改的建議／自己的判斷：</strong> 第二題（2）不採用「在子類別再寫一個轉呼叫的 <code>payment()</code>」，因為重複程式碼、父類別改了要同步；第一題（3）不寫固定輸出，只以編譯器警告與標準規定說明未定義行為；第四題保留動態陣列設計（題目要求），<code>std::vector</code> 只作為延伸說明。</li>
+<li><strong>自行驗證：</strong>
+  1. 每一題的修正版都以 <code>clang++ -std=c++17 -Wall -Wextra -pedantic</code> 在自己的 Mac 上編譯、執行，輸出與推導一致，且沒有任何警告。
+  2. 第二題（2）實際取消註解編譯，確認錯誤訊息確實是找不到零個引數的 <code>payment</code>；第二題（4）補上 const 前後各編譯一次。
+  3. 第四題原版以 <code>-fsanitize=address</code> 編譯，確認回報 double-free；修正版同樣以 AddressSanitizer 執行，沒有任何錯誤。
+  4. 第五題手算固定票息債的 NPV（1027.750910），並用 NaN、無窮大測試比較函數不會判為通過。</li>
+</ul></section>
+<nav class="pager"><span></span><span></span></nav></main>
+<script src="assets/katex/katex.min.js"></script><script src="assets/katex/auto-render.min.js"></script>
+<script src="assets/search.js?v=d491be5e"></script>
+<script src="assets/site.js?v=99d8caa2"></script>
+</body></html>
