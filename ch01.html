@@ -1,20 +1,24 @@
 <!doctype html>
 <html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>第 1 章 C++ 簡介與第一支程式｜金融程式計算：C++課程筆記</title>
+<title>第 1 章 C++ 簡介與第一支程式｜金融程式計算：C++</title>
+<meta name="color-scheme" content="light dark">
+<script>try{var t=localStorage.getItem('notes:theme')||(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 <link rel="stylesheet" href="assets/katex/katex.min.css">
-<link rel="stylesheet" href="assets/style.css?v=f08507d8">
-</head><body data-page="ch01" data-mode="course">
-<div class="topbar"><a class="brand" href="index.html">金融程式計算：C++｜課程筆記</a><div class="pickers">
-<nav class="mode" aria-label="切換課程或作業"><a href="ch01.html" data-mode="course" class=on>課程</a><a href="hw01.html" data-mode="hw">作業</a></nav><label for="unitSelect">選擇單元</label><select id="unitSelect" aria-label="選擇單元"><option value="index.html">首頁：課程介紹與使用說明</option><option value="ch01.html" selected>第 1 章　C++ 簡介與第一支程式</option><option value="ch02.html">第 2 章　資料型態、變數與記憶體</option><option value="ch03.html">第 3 章　陣列、指標與字串</option><option value="ch04.html">第 4 章　表達式、運算子與流程控制</option><option value="ch05.html">第 5 章　函數</option><option value="ch06.html">第 6 章　命名空間、預處理與記憶體管理</option><option value="ch07.html">第 7 章　類別 class（一）：封裝、建構與物件的一生</option><option value="ch08.html">第 8 章　類別 class（二）：繼承、多型與設計模式</option><option value="ch09.html">第 9 章　模板與泛型</option><option value="ch10.html">第 10 章　課程總結：從語法到量化程式庫</option></select></div></div>
-<main class="wrap"><header class="ch-head"><h1>第 1 章　C++ 簡介與第一支程式</h1><details class="ch-toc"><summary>本章目錄（9 節）</summary><ol><li><a href="#s1-1"><span>1.1</span>C++ 是什麼</a></li><li><a href="#s1-2"><span>1.2</span>編譯式語言：和 R、Python 有什麼不同</a></li><li><a href="#s1-3"><span>1.3</span>第一支程式：Hello Quant World</a></li><li><a href="#s1-4"><span>1.4</span>語法的基本規矩與錯誤訊息</a></li><li><a href="#s1-5"><span>1.5</span>輸出到螢幕：std::cout</a></li><li><a href="#s1-6"><span>1.6</span>從原始碼到執行檔：建構的過程</a></li><li><a href="#s1-7"><span>1.7</span>專案結構與 CMake</a></li><li><a href="#s1-8"><span>1.8</span>第一個金融小程式：複利與現值</a></li><li><a href="#s1-9"><span>1.9</span>本章小結</a></li></ol></details></header>
+<link rel="stylesheet" href="assets/style.css?v=2772ac91">
+
+</head><body data-page="ch01" data-mode="course" data-course="cf" data-key="cf">
+<a class="skip" href="#main">跳到主要內容</a>
+<header class="topbar"><a class="brand" href="index.html" aria-label="金融程式計算：C++｜課程筆記首頁"><span class="logo" aria-hidden="true">C++</span><span>金融程式計算：C++</span><span class="sub">｜課程筆記</span></a>
+<div class="pickers"><nav class="mode" aria-label="切換課程或作業"><a href="ch01.html" data-mode="course" class=on>課程</a><a href="hw01.html" data-mode="hw">作業</a></nav><label for="unitSelect">選擇單元</label><select id="unitSelect" aria-label="選擇單元"><option value="index.html">首頁：課程介紹與使用說明</option><option value="ch01.html" selected>第 1 章　C++ 簡介與第一支程式</option><option value="ch02.html">第 2 章　資料型態、變數與記憶體</option><option value="ch03.html">第 3 章　陣列、指標與字串</option><option value="ch04.html">第 4 章　表達式、運算子與流程控制</option><option value="ch05.html">第 5 章　函數</option><option value="ch06.html">第 6 章　命名空間、預處理與記憶體管理</option><option value="ch07.html">第 7 章　類別 class（一）：封裝、建構與物件的一生</option><option value="ch08.html">第 8 章　類別 class（二）：繼承、多型與設計模式</option><option value="ch09.html">第 9 章　模板與泛型</option><option value="ch10.html">第 10 章　課程總結：從語法到量化程式庫</option></select></div></header>
+<main class="wrap" id="main"><nav class="crumbs" aria-label="目前位置"><a href="index.html">首頁</a><span class="sep">›</span><span>課程筆記</span><span class="sep">›</span><span>第 1 章</span></nav><header class="ch-head"><p class=eyebrow>第 1 章</p><h1>C++ 簡介與第一支程式</h1><p class="ch-meta"><span>9 節</span><span>Concept Check 21 題</span><span>閱讀約 35 分鐘</span></p><details class="ch-toc"><summary>本章目錄（9 節）</summary><ol><li><a href="#s1-1"><span>1.1</span>C++ 是什麼</a></li><li><a href="#s1-2"><span>1.2</span>編譯式語言：和 R、Python 有什麼不同</a></li><li><a href="#s1-3"><span>1.3</span>第一支程式：Hello Quant World</a></li><li><a href="#s1-4"><span>1.4</span>語法的基本規矩與錯誤訊息</a></li><li><a href="#s1-5"><span>1.5</span>輸出到螢幕：std::cout</a></li><li><a href="#s1-6"><span>1.6</span>從原始碼到執行檔：建構的過程</a></li><li><a href="#s1-7"><span>1.7</span>專案結構與 CMake</a></li><li><a href="#s1-8"><span>1.8</span>第一個金融小程式：複利與現值</a></li><li><a href="#s1-9"><span>1.9</span>本章小結</a></li></ol></details></header>
 <div class="ch-intro"><p>這一章從零開始：C++ 是什麼、為什麼金融業還在大量使用它、程式是怎麼從你打的文字變成可以執行的程式，並寫出第一支 C++ 程式。如果你學過 R，會看到很多對照：R 是「打一行跑一行」，C++ 是「整份寫好、翻譯成機器碼，再一次執行」。</p></div><section class="sec" id="s1-1" data-label="1.1 C++ 是什麼"><h2><span class="num">1.1</span>C++ 是什麼</h2><h3 id="s1-1-1">一句話介紹</h3>
-<p>C++ 是 1980 年代由 Bjarne Stroustrup 在 AT&amp;T 貝爾實驗室，以 C 語言為基礎發展出來的程式語言。它保留了 C 的「貼近硬體、執行很快」，再加上<strong>類別（class）</strong>、<strong>模板（template）</strong>、<strong>運算子多載</strong>、<strong>虛擬函數</strong>等功能，讓大型程式也能寫得有條理。</p>
+<p>C++ 是 1980 年代由 Bjarne Stroustrup 在 AT&amp;T 貝爾實驗室，以 C 語言為基礎發展出來的程式語言。它保留了 C 的「貼近硬體、執行很快」，再加上<strong><span class="gl" tabindex="0" role="button" data-g="類別">類別</span>（class）</strong>、<strong><span class="gl" tabindex="0" role="button" data-g="模板">模板</span>（template）</strong>、<strong>運算子多載</strong>、<strong>虛擬函數</strong>等功能，讓大型程式也能寫得有條理。</p>
 <p>老師講義整理的特性：</p>
 <ul>
-<li><strong>C 是 C++ 的子集合</strong>：大部分 C 程式拿到 C++ 也能編譯。</li>
-<li><strong>同時有低階與高階的特性</strong>：可以直接操作記憶體位址（低階），也可以用類別、模板把概念包裝起來（高階）。</li>
+<li><strong>C 是 C++ 的子集合</strong>：大部分 C 程式拿到 C++ 也能<span class="gl" tabindex="0" role="button" data-g="編譯">編譯</span>。</li>
+<li><strong>同時有低階與高階的特性</strong>：可以直接操作記憶體<span class="gl" tabindex="0" role="button" data-g="位址">位址</span>（低階），也可以用類別、模板把概念包裝起來（高階）。</li>
 <li><strong>執行速度快</strong>：適合高效能計算、即時處理——這正是金融業需要的。</li>
-<li><strong>支援多種寫法（範式）</strong>：程序導向、物件導向、泛型程式設計、函數式程式設計。</li>
+<li><strong>支援多種寫法（範式）</strong>：程序導向、物件導向、泛型程式設計、<span class="gl" tabindex="0" role="button" data-g="函數">函數</span>式程式設計。</li>
 <li><strong>能和很多程式庫整合</strong>：Boost、Eigen（矩陣運算）、OpenMP（平行運算）、CUDA（GPU），以及這門課的主角 <strong>QuantLib</strong>（開源的量化金融程式庫）。</li>
 </ul>
 <h3 id="s1-1-2">版本：傳統 C++ 與現代 C++</h3>
@@ -35,7 +39,7 @@
 <tr>
 <td><strong>C++11</strong></td>
 <td>2011</td>
-<td>大改版，從這裡開始稱為「<strong>現代 C++</strong>」：<code>auto</code>、範圍 for、智慧指標、lambda</td>
+<td>大改版，從這裡開始稱為「<strong>現代 C++</strong>」：<code>auto</code>、範圍 for、智慧指標、<span class="gl" tabindex="0" role="button" data-g="lambda">lambda</span></td>
 </tr>
 <tr>
 <td>C++14</td>
@@ -45,7 +49,7 @@
 <tr>
 <td>C++17</td>
 <td>2017</td>
-<td><code>std::optional</code>、<code>if constexpr</code>、結構化綁定</td>
+<td><code>std::optional</code>、<code>if constexpr</code>、<span class="gl" tabindex="0" role="button" data-g="結構">結構</span>化綁定</td>
 </tr>
 <tr>
 <td>C++20</td>
@@ -64,13 +68,13 @@
 </tr>
 </tbody>
 </table>
-<p>老師特別提醒：「現代 C++」不只是版本號，而是一種<strong>寫法風格</strong>——讓編譯器幫你推導型別、讓資源自動管理（RAII）、多用標準程式庫，少自己手動管理記憶體。這份筆記的程式都用 C++20 編譯。</p>
+<p>老師特別提醒：「現代 C++」不只是版本號，而是一種<strong>寫法風格</strong>——讓編譯器幫你推導型別、讓資源自動管理（<span class="gl" tabindex="0" role="button" data-g="RAII">RAII</span>）、多用標準程式庫，少自己手動管理記憶體。這份筆記的程式都用 C++20 編譯。</p>
 <div class="box fin"><span class="tag">金融應用</span><strong class="bt">為什麼金融業用 C++</strong><p>銀行的定價引擎、風險系統、高頻交易系統大多用 C++ 寫：一個風險報表可能要對幾十萬筆部位、上千個情境重新評價，速度差 10 倍就是「下班前算得完」和「算不完」的差別。QuantLib 就是用 C++ 寫的，Python 的 QuantLib 套件其實是在呼叫底層的 C++ 程式。常見的分工是：研究、畫圖用 Python／R，正式上線的計算核心用 C++。</p></div>
 <h3 id="s1-1-3">老師的課程規劃</h3>
 <ul>
 <li><strong>金融計算程式運用（一）</strong>：「初階 C++」，語法基礎＋財務案例。</li>
 <li><strong>金融計算程式運用（二）</strong>：物件導向、模板、C++ 標準程式庫，以及 QuantLib 原始碼的閱讀。</li>
-<li>參考書：Armstrong《C++ for Financial Mathematics》、Pitt-Francis &amp; Whiteley《Guide to Scientific Computing in C++》、Lippman《C++ Primer》、Duffy《Financial Instrument Pricing Using C++》。</li>
+<li><span class="gl" tabindex="0" role="button" data-g="參考">參考</span>書：Armstrong《C++ for Financial Mathematics》、Pitt-Francis &amp; Whiteley《Guide to Scientific Computing in C++》、Lippman《C++ Primer》、Duffy《Financial Instrument Pricing Using C++》。</li>
 </ul><section class="cc" id="cc-s1-1"><h3 class="cc-h">Concept Check：1.1 C++ 是什麼</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s1-1-1" data-label="1.1 C++ 是什麼 Q1"><div class="q-meta"><h4><a href="#q-s1-1-1">Q1</a></h4><span class="q-kind">選擇｜易</span><span class="q-title">C++ 的由來</span></div><div class="q-text"><p>C++ 是以哪一個語言為基礎發展出來的？</p></div><ol class="opts"><li><b>(A)</b><span>C，再加入類別、模板等功能</span></li><li><b>(B)</b><span>Java，再加入指標功能</span></li><li><b>(C)</b><span>Python，再加入編譯功能</span></li><li><b>(D)</b><span>Fortran，再加入物件導向</span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (A)</strong><p>C，再加入類別、模板等功能</p></div><div class="why"><p class="sh">解析</p><p>C++ 由 Bjarne Stroustrup 在 C 的基礎上加入類別、模板、運算子多載等功能；C 可視為 C++ 的子集合。Java、Python 都比 C++ 晚出現。</p></div></div></article><article class="q" id="q-s1-1-2" data-label="1.1 C++ 是什麼 Q2"><div class="q-meta"><h4><a href="#q-s1-1-2">Q2</a></h4><span class="q-kind">選擇｜易</span><span class="q-title">現代 C++</span></div><div class="q-text"><p>一般所說的「現代 C++」是從哪一個版本開始？</p></div><ol class="opts"><li><b>(A)</b><span>C++11</span></li><li><b>(B)</b><span>C++03</span></li><li><b>(C)</b><span>C++98</span></li><li><b>(D)</b><span>C++20</span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (A)</strong><p>C++11</p></div><div class="why"><p class="sh">解析</p><p>C++11 是一次大改版（auto、範圍 for、智慧指標、lambda 等），之後的版本一般都稱為現代 C++；C++98/03 稱為傳統 C++。</p></div></div></article><article class="q" id="q-s1-1-3" data-label="1.1 C++ 是什麼 Q3"><div class="q-meta"><h4><a href="#q-s1-1-3">Q3</a></h4><span class="q-kind">簡答｜中</span><span class="q-title">為什麼金融用 C++</span></div><div class="q-text"><p>用自己的話說明：為什麼量化金融的計算核心（例如定價、風險引擎）常用 C++ 撰寫？</p></div><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案</strong><p>C++ 是編譯式語言，編譯後直接變成機器碼執行，速度比直譯式語言快很多；又能控制記憶體使用，適合大量重複的數值計算（例如對大量部位、大量情境重新評價、蒙地卡羅模擬）。它也有成熟的金融程式庫 QuantLib 和數值程式庫（Eigen、Boost），並能用類別與模板把金融商品、定價方法整理成結構清楚的大型程式。</p></div></div></article></section></section><section class="sec" id="s1-2" data-label="1.2 編譯式語言：和 R、Python 有什麼不同"><h2><span class="num">1.2</span>編譯式語言：和 R、Python 有什麼不同</h2><h3 id="s1-2-1">直譯 vs 編譯</h3>
 <table>
 <thead>
@@ -98,8 +102,8 @@
 </tr>
 <tr>
 <td>型別</td>
-<td>變數可以隨時裝不同型別的東西</td>
-<td><strong>強型別</strong>：每個變數一開始就要宣告型別，不能亂換</td>
+<td><span class="gl" tabindex="0" role="button" data-g="變數">變數</span>可以隨時裝不同型別的東西</td>
+<td><strong>強型別</strong>：每個變數一開始就要<span class="gl" tabindex="0" role="button" data-g="宣告">宣告</span>型別，不能亂換</td>
 </tr>
 <tr>
 <td>試東西</td>
@@ -127,7 +131,7 @@ total</code></pre></div>
 <span class="p">}</span>
 </code></pre></div>
 <pre class="out" data-title="執行結果"><code>5050</code></pre>
-<p>差別一眼可見：C++ 要寫 <code>#include</code>、要有 <code>main()</code>、變數前面要寫型別 <code>int</code>、每個敘述結尾要有分號 <code>;</code>、輸出要用 <code>std::cout</code>。這些「儀式」每一個都有它的道理，接下來會一一說明。</p><section class="cc" id="cc-s1-2"><h3 class="cc-h">Concept Check：1.2 編譯式語言：和 R、Python 有什麼不同</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s1-2-1" data-label="1.2 編譯式語言：和 R、Python 有什麼不同 Q1"><div class="q-meta"><h4><a href="#q-s1-2-1">Q1</a></h4><span class="q-kind">選擇｜易</span><span class="q-title">編譯式語言</span></div><div class="q-text"><p>關於 C++ 是「編譯式語言」，下列敘述何者正確？</p></div><ol class="opts"><li><b>(A)</b><span>程式會一行一行邊翻譯邊執行，不會產生執行檔</span></li><li><b>(B)</b><span>編譯只會檢查縮排，型別錯誤要執行時才會發現</span></li><li><b>(C)</b><span>程式寫完不用任何處理，作業系統可以直接讀 .cpp 檔</span></li><li><b>(D)</b><span>執行前先由編譯器把原始碼翻成機器碼，產生執行檔</span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (D)</strong><p>執行前先由編譯器把原始碼翻成機器碼，產生執行檔</p></div><div class="why"><p class="sh">解析</p><p>C++ 的原始碼（.cpp）要先經過編譯、連結產生執行檔，才能執行。型別錯誤、語法錯誤大多在編譯時就會被抓出來。(A) 是直譯式語言的做法。</p></div></div></article><article class="q" id="q-s1-2-2" data-label="1.2 編譯式語言：和 R、Python 有什麼不同 Q2"><div class="q-meta"><h4><a href="#q-s1-2-2">Q2</a></h4><span class="q-kind">簡答｜中</span><span class="q-title">強型別</span></div><div class="q-text"><p>C++ 是「強型別語言」，這是什麼意思？對寫程式有什麼好處與麻煩？</p></div><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案</strong><p>每個變數、每個物件在使用前都必須宣告型別（例如 int、double），之後只能裝那種型別的資料。好處是很多錯誤（例如把文字當數字相加）在編譯時就會被發現，編譯器也能依型別產生更快的機器碼；麻煩是要多寫型別、不能像 R 一樣隨手把變數改裝別種資料，型別不合時要明確轉換。</p></div></div></article></section></section><section class="sec" id="s1-3" data-label="1.3 第一支程式：Hello Quant World"><h2><span class="num">1.3</span>第一支程式：Hello Quant World</h2><p>老師講義的第一支程式：</p>
+<p>差別一眼可見：C++ 要寫 <code>#include</code>、要有 <code>main()</code>、變數前面要寫型別 <code>int</code>、每個<span class="gl" tabindex="0" role="button" data-g="敘述">敘述</span>結尾要有分號 <code>;</code>、輸出要用 <code>std::cout</code>。這些「儀式」每一個都有它的道理，接下來會一一說明。</p><section class="cc" id="cc-s1-2"><h3 class="cc-h">Concept Check：1.2 編譯式語言：和 R、Python 有什麼不同</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s1-2-1" data-label="1.2 編譯式語言：和 R、Python 有什麼不同 Q1"><div class="q-meta"><h4><a href="#q-s1-2-1">Q1</a></h4><span class="q-kind">選擇｜易</span><span class="q-title">編譯式語言</span></div><div class="q-text"><p>關於 C++ 是「編譯式語言」，下列敘述何者正確？</p></div><ol class="opts"><li><b>(A)</b><span>程式會一行一行邊翻譯邊執行，不會產生執行檔</span></li><li><b>(B)</b><span>編譯只會檢查縮排，型別錯誤要執行時才會發現</span></li><li><b>(C)</b><span>程式寫完不用任何處理，作業系統可以直接讀 .cpp 檔</span></li><li><b>(D)</b><span>執行前先由編譯器把原始碼翻成機器碼，產生執行檔</span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (D)</strong><p>執行前先由編譯器把原始碼翻成機器碼，產生執行檔</p></div><div class="why"><p class="sh">解析</p><p>C++ 的原始碼（.cpp）要先經過編譯、連結產生執行檔，才能執行。型別錯誤、語法錯誤大多在編譯時就會被抓出來。(A) 是直譯式語言的做法。</p></div></div></article><article class="q" id="q-s1-2-2" data-label="1.2 編譯式語言：和 R、Python 有什麼不同 Q2"><div class="q-meta"><h4><a href="#q-s1-2-2">Q2</a></h4><span class="q-kind">簡答｜中</span><span class="q-title">強型別</span></div><div class="q-text"><p>C++ 是「強型別語言」，這是什麼意思？對寫程式有什麼好處與麻煩？</p></div><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案</strong><p>每個變數、每個物件在使用前都必須宣告型別（例如 int、double），之後只能裝那種型別的資料。好處是很多錯誤（例如把文字當數字相加）在編譯時就會被發現，編譯器也能依型別產生更快的機器碼；麻煩是要多寫型別、不能像 R 一樣隨手把變數改裝別種資料，型別不合時要明確轉換。</p></div></div></article></section></section><section class="sec" id="s1-3" data-label="1.3 第一支程式：Hello Quant World"><h2><span class="num">1.3</span>第一支程式：Hello Quant World</h2><p>老師講義的第一支程式：</p>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="c1">// test.cpp，放入 src 資料夾</span>
 <span class="c1">// 這是單行註解</span>
 
@@ -148,10 +152,10 @@ total</code></pre></div>
 <p>逐行拆解：</p>
 <ul>
 <li><code>//</code> 後面到行尾是<strong>單行註解</strong>；<code>/* ... */</code> 之間是<strong>多行註解</strong>。註解是寫給人看的，編譯器會整個忽略。</li>
-<li><code>#include &lt;iostream&gt;</code>：告訴編譯器「我要用 iostream（input/output stream，輸入輸出）程式庫」。<code>&lt; &gt;</code> 裡是<strong>標頭檔</strong>名稱。<code>#</code> 開頭的指令叫<strong>前處理指令</strong>，要單獨寫一行、放在所有函數外面（通常是檔案最上面）。</li>
+<li><code>#include &lt;iostream&gt;</code>：告訴編譯器「我要用 iostream（input/output stream，輸入輸出）程式庫」。<code>&lt; &gt;</code> 裡是<strong>標頭檔</strong>名稱。<code>#</code> 開頭的指令叫<strong><span class="gl" tabindex="0" role="button" data-g="前處理">前處理</span>指令</strong>，要單獨寫一行、放在所有函數外面（通常是檔案最上面）。</li>
 <li><code>int main(...)</code>：<strong>main 函數</strong>是程式的<strong>入口點</strong>，執行程式時就是從 main 的第一行開始跑。一個程式有、而且只能有一個 main。<ul>
-<li><code>int</code> 是 main 的<strong>回傳型態</strong>，規定必須是 int（整數）。</li>
-<li>括號裡的 <code>int argc, char* argv[]</code> 是「命令列參數」（執行程式時在後面附加的文字），初學時用不到，可以寫成空的 <code>int main()</code>。</li>
+<li><code>int</code> 是 main 的<strong>回傳<span class="gl" tabindex="0" role="button" data-g="型態">型態</span></strong>，規定必須是 int（整數）。</li>
+<li>括號裡的 <code>int argc, char* argv[]</code> 是「命令列<span class="gl" tabindex="0" role="button" data-g="參數">參數</span>」（執行程式時在後面附加的文字），初學時用不到，可以寫成空的 <code>int main()</code>。</li>
 </ul>
 </li>
 <li><code>{</code> 到 <code>}</code>：<strong>函數體</strong>，main 要做的事都寫在這對大括號裡。</li>
@@ -316,14 +320,14 @@ main.cpp:1:1: note: ‘std::endl’ is defined in header ‘&lt;ostream&gt;’; 
 1 + 2 = 3
 第一段第二段</code></pre>
 <ul>
-<li><code>std::cout</code>（character output）是代表「螢幕輸出」的物件。</li>
-<li><code>&lt;&lt;</code> 是<strong>輸出運算子</strong>，可以想成箭頭：把右邊的東西「推進」左邊的 cout。可以一路串下去。</li>
+<li><code>std::cout</code>（character output）是代表「螢幕輸出」的<span class="gl" tabindex="0" role="button" data-g="物件">物件</span>。</li>
+<li><code>&lt;&lt;</code> 是<strong>輸出<span class="gl" tabindex="0" role="button" data-g="運算子">運算子</span></strong>，可以想成箭頭：把右邊的東西「推進」左邊的 cout。可以一路串下去。</li>
 <li>文字要用<strong>雙引號</strong> <code>&quot;...&quot;</code>；數字、算式不用，會先算好再印。</li>
 <li><code>std::endl</code> 和 <code>&quot;\n&quot;</code> 都會換行。差別是 <code>endl</code> 還會「<strong>立刻把緩衝區的內容寫出去</strong>」（flush），大量輸出時比 <code>\n</code> 慢一點。一般印結果兩者都可以。</li>
 <li>沒有換行的話，下一次輸出會接在同一行後面（第三行的「第一段第二段」）。</li>
 </ul>
 <h3 id="s1-5-2">std:: 是什麼：命名空間</h3>
-<p><code>std</code> 是<strong>標準程式庫的命名空間</strong>（namespace）。命名空間像「姓氏」：標準程式庫的東西都姓 std，寫成 <code>std::cout</code>、<code>std::endl</code>、<code>std::string</code>。這樣你自己寫一個叫 <code>count</code> 的變數，也不會和別人的名字撞在一起。</p>
+<p><code>std</code> 是<strong>標準程式庫的<span class="gl" tabindex="0" role="button" data-g="命名空間">命名空間</span></strong>（namespace）。命名空間像「姓氏」：標準程式庫的東西都姓 std，寫成 <code>std::cout</code>、<code>std::endl</code>、<code>std::string</code>。這樣你自己寫一個叫 <code>count</code> 的變數，也不會和別人的名字撞在一起。</p>
 <p>很多教學會在開頭寫 <code>using namespace std;</code>，之後就可以省略 <code>std::</code>：</p>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
 <span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="p">;</span><span class="w">    </span><span class="c1">// 之後可以省略 std::</span>
@@ -334,7 +338,7 @@ main.cpp:1:1: note: ‘std::endl’ is defined in header ‘&lt;ostream&gt;’; 
 <span class="p">}</span>
 </code></pre></div>
 <pre class="out" data-title="執行結果"><code>不用寫 std:: 了</code></pre>
-<p>方便，但在大型專案（例如 QuantLib）裡，大家會刻意<strong>不這樣寫</strong>：標準程式庫有上千個名字，全部「打開」容易和自己或其他程式庫的名字衝突。老師的講義都寫 <code>std::</code>，這份筆記也一樣。</p>
+<p>方便，但在大型專案（例如 <span class="gl" tabindex="0" role="button" data-g="QuantLib">QuantLib</span>）裡，大家會刻意<strong>不這樣寫</strong>：標準程式庫有上千個名字，全部「打開」容易和自己或其他程式庫的名字衝突。老師的講義都寫 <code>std::</code>，這份筆記也一樣。</p>
 <h3 id="s1-5-3">跳脫字元</h3>
 <table>
 <thead>
@@ -424,7 +428,7 @@ main.cpp:1:1: note: ‘std::endl’ is defined in header ‘&lt;ostream&gt;’; 
 <p>你按下「建置」或打 <code>g++ main.cpp -o main</code> 時，其實發生了好幾件事：</p>
 <ol>
 <li><strong>編輯</strong>（editor）：你把想法寫成原始碼 <code>main.cpp</code>。</li>
-<li><strong>前處理</strong>（preprocessor）：處理所有 <code>#</code> 開頭的指令——把 <code>#include</code> 的標頭檔內容<strong>整份複製貼上</strong>進來、展開 <code>#define</code> 巨集、刪掉註解、處理 <code>#ifdef</code>／<code>#ifndef</code> 條件。</li>
+<li><strong>前處理</strong>（preprocessor）：處理所有 <code>#</code> 開頭的指令——把 <code>#include</code> 的<span class="gl" tabindex="0" role="button" data-g="標頭檔">標頭檔</span>內容<strong>整份複製貼上</strong>進來、展開 <code>#define</code> 巨集、刪掉註解、處理 <code>#ifdef</code>／<code>#ifndef</code> 條件。</li>
 <li><strong>編譯</strong>（compiler）：把前處理後的程式翻譯成組合語言，再變成<strong>目標檔</strong>（<code>.o</code>／<code>.obj</code>）。每個 <code>.cpp</code> 各自編譯成一個目標檔。語法錯誤在這裡被抓出來。</li>
 <li><strong>連結</strong>（linker）：把所有目標檔和用到的程式庫<strong>接起來</strong>，產生<strong>執行檔</strong>。如果某個函數只有宣告、找不到實作，會在這裡出錯。</li>
 </ol>
@@ -456,7 +460,7 @@ g++ main.o -o main                      # 只做連結</code></pre></div>
 
 <span class="cp">#endif</span>
 </code></pre></div>
-<p>原始檔放<strong>定義</strong>（真正的計算）：</p>
+<p><span class="gl" tabindex="0" role="button" data-g="原始檔">原始檔</span>放<strong>定義</strong>（真正的計算）：</p>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++ 檔案：finance.cpp</span><pre><code><span class="c1">// finance.cpp：定義</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">"finance.h"</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;cmath&gt;</span>
@@ -519,7 +523,7 @@ set_target_properties(MyApp PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_D
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">終端機</span><pre><code>cmake -S . -B build -G Ninja    # 讀 CMakeLists.txt，在 build 資料夾產生 Ninja 建構檔
 cmake --build build             # 真正編譯、連結
 ./bin/MyApp                     # 執行</code></pre></div>
-<p>老師講義的完整版本還會加入 QuantLib：用 <code>add_subdirectory()</code> 把 <code>external/QuantLib-1.37</code> 一起建構，再用 <code>target_link_libraries(MyApp PRIVATE ql_library)</code> 把 QuantLib 連結進來（第一次建構 QuantLib 要花不少時間，是正常的）。</p>
+<p>老師講義的完整版本還會加入 QuantLib：用 <code>add_subdirectory()</code> 把 <code>external/QuantLib-1.37</code> 一起建構，再用 <code>target_link_libraries(MyApp PRIVATE ql_library)</code> 把 QuantLib <span class="gl" tabindex="0" role="button" data-g="連結">連結</span>進來（第一次建構 QuantLib 要花不少時間，是正常的）。</p>
 <div class="box key"><span class="tag">重點</span><strong class="bt">初學時的建議</strong><p>前幾章的練習都是單一檔案，直接 <code>g++ -std=c++20 -Wall main.cpp -o main</code> 就好，或在 VS Code 按執行。等到第 7 章類別開始拆成 <code>.h</code>／<code>.cpp</code>，以及要使用 QuantLib 時，再用 CMake。</p></div><section class="cc" id="cc-s1-7"><h3 class="cc-h">Concept Check：1.7 專案結構與 CMake</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s1-7-1" data-label="1.7 專案結構與 CMake Q1"><div class="q-meta"><h4><a href="#q-s1-7-1">Q1</a></h4><span class="q-kind">選擇｜中</span><span class="q-title">CMake 的角色</span></div><div class="q-text"><p>關於 CMake，下列何者正確？</p></div><ol class="opts"><li><b>(A)</b><span>CMake 是一種 C++ 編譯器，取代 g++</span></li><li><b>(B)</b><span>使用 CMake 後就不需要編譯器了</span></li><li><b>(C)</b><span>CMake 只能在 Windows 的 Visual Studio 使用</span></li><li><b>(D)</b><span>CMake 依 CMakeLists.txt 產生各平台的建構檔</span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (D)</strong><p>CMake 依 CMakeLists.txt 產生各平台的建構檔</p></div><div class="why"><p class="sh">解析</p><p>CMake 本身不編譯程式；它讀 CMakeLists.txt，產生 Makefile、Visual Studio 專案或 build.ninja，再由 make／Ninja／MSBuild 呼叫真正的編譯器。</p></div></div></article><article class="q" id="q-s1-7-2" data-label="1.7 專案結構與 CMake Q2"><div class="q-meta"><h4><a href="#q-s1-7-2">Q2</a></h4><span class="q-kind">填空｜易</span><span class="q-title">CMake 設定檔</span></div><div class="q-text"><p>CMake 的設定檔檔名是 <strong><em>_</em>_；在其中產生執行檔的指令是 </strong>____。</p></div><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案</strong><p><code>CMakeLists.txt</code>；<code>add_executable()</code></p></div></div></article></section></section><section class="sec" id="s1-8" data-label="1.8 第一個金融小程式：複利與現值"><h2><span class="num">1.8</span>第一個金融小程式：複利與現值</h2><p>把這一章學到的組起來，做一個有用的小工具：給定本金、年利率、年數，計算到期金額與「到期拿 1,000 元」的現值。</p>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iomanip&gt;</span>
@@ -596,11 +600,13 @@ cmake --build build             # 真正編譯、連結
 <li>程式從 <code>main</code> 開始執行；<code>#include</code> 引入程式庫；敘述以 <code>;</code> 結尾；<code>{ }</code> 圍出區塊；區分大小寫。</li>
 <li>輸出：<code>std::cout &lt;&lt; ... &lt;&lt; std::endl;</code>；<code>\n</code>、<code>\t</code> 跳脫字元；<code>&lt;iomanip&gt;</code> 的 <code>fixed</code>、<code>setprecision</code>、<code>setw</code> 控制格式。</li>
 <li>建構過程：<strong>前處理</strong>（展開 #include、#define）→ <strong>編譯</strong>（每個 .cpp 變成目標檔，抓語法錯誤）→ <strong>連結</strong>（接成執行檔，<code>undefined reference</code> 是連結錯誤）。</li>
-<li>多檔案：宣告放 <code>.h</code>（加 include guard），定義放 <code>.cpp</code>；專案大了用 CMake（＋Ninja）管理建構。</li>
+<li>多檔案：宣告放 <code>.h</code>（加 include guard），定義放 <code>.cpp</code>；專案大了用 <span class="gl" tabindex="0" role="button" data-g="CMake">CMake</span>（＋Ninja）管理建構。</li>
 <li>編譯錯誤先看第一個 error 和行號；能執行但結果不對是邏輯錯誤，要自己驗算。</li>
 </ul></section>
-<nav class="pager"><span></span><a class="next" href="ch02.html">第 2 章 →</a></nav></main>
+<nav class="pager" aria-label="上一頁與下一頁"><a class="next" href="ch02.html"><small>下一章 →</small>第 2 章　資料型態、變數與記憶體</a></nav></main>
+<footer class="site-foot"><span>金融程式計算：C++｜課程筆記</span></footer>
 <script src="assets/katex/katex.min.js"></script><script src="assets/katex/auto-render.min.js"></script>
-<script src="assets/search.js?v=d491be5e"></script>
-<script src="assets/site.js?v=99d8caa2"></script>
+<script src="assets/search.js?v=e155388e"></script>
+<script src="assets/glossary.js?v=943f81c7"></script>
+<script src="assets/site.js?v=f42ce8f5"></script>
 </body></html>

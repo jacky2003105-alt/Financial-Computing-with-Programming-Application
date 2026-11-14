@@ -1,13 +1,17 @@
 <!doctype html>
 <html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>第 7 章 類別 class（一）：封裝、建構與物件的一生｜金融程式計算：C++課程筆記</title>
+<title>第 7 章 類別 class（一）：封裝、建構與物件的一生｜金融程式計算：C++</title>
+<meta name="color-scheme" content="light dark">
+<script>try{var t=localStorage.getItem('notes:theme')||(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 <link rel="stylesheet" href="assets/katex/katex.min.css">
-<link rel="stylesheet" href="assets/style.css?v=f08507d8">
-</head><body data-page="ch07" data-mode="course">
-<div class="topbar"><a class="brand" href="index.html">金融程式計算：C++｜課程筆記</a><div class="pickers">
-<nav class="mode" aria-label="切換課程或作業"><a href="ch01.html" data-mode="course" class=on>課程</a><a href="hw01.html" data-mode="hw">作業</a></nav><label for="unitSelect">選擇單元</label><select id="unitSelect" aria-label="選擇單元"><option value="index.html">首頁：課程介紹與使用說明</option><option value="ch01.html">第 1 章　C++ 簡介與第一支程式</option><option value="ch02.html">第 2 章　資料型態、變數與記憶體</option><option value="ch03.html">第 3 章　陣列、指標與字串</option><option value="ch04.html">第 4 章　表達式、運算子與流程控制</option><option value="ch05.html">第 5 章　函數</option><option value="ch06.html">第 6 章　命名空間、預處理與記憶體管理</option><option value="ch07.html" selected>第 7 章　類別 class（一）：封裝、建構與物件的一生</option><option value="ch08.html">第 8 章　類別 class（二）：繼承、多型與設計模式</option><option value="ch09.html">第 9 章　模板與泛型</option><option value="ch10.html">第 10 章　課程總結：從語法到量化程式庫</option></select></div></div>
-<main class="wrap"><header class="ch-head"><h1>第 7 章　類別 class（一）：封裝、建構與物件的一生</h1><details class="ch-toc"><summary>本章目錄（9 節）</summary><ol><li><a href="#s7-1"><span>7.1</span>類別與物件</a></li><li><a href="#s7-2"><span>7.2</span>把類別拆成 .h 與 .cpp</a></li><li><a href="#s7-3"><span>7.3</span>建構函數</a></li><li><a href="#s7-4"><span>7.4</span>const 成員函數、mutable、this</a></li><li><a href="#s7-5"><span>7.5</span>static 成員：屬於類別，不屬於物件</a></li><li><a href="#s7-6"><span>7.6</span>運算子重載</a></li><li><a href="#s7-7"><span>7.7</span>物件的一生：複製與解構</a></li><li><a href="#s7-8"><span>7.8</span>綜合範例：一個完整的 Bond 類別</a></li><li><a href="#s7-9"><span>7.9</span>本章小結</a></li></ol></details></header>
-<div class="ch-intro"><p>這一章進入本學期的核心：<strong>類別</strong>（class）。到目前為止，資料（變數、struct）和操作資料的程式（函數）是分開的；類別把兩者<strong>打包</strong>成一個自己定義的新型態——例如 <code>Bond</code> 不只記得面額和票面利率，還知道怎麼算自己的價格與存續期間。本章對應講義六的前半：成員變數與成員函數、<code>public</code>／<code>private</code>、建構函數（含 <code>explicit</code> 與初始化列表）、<code>const</code> 成員函數、<code>this</code>、<code>static</code> 成員、運算子重載，以及物件的複製與解構。下一章再談繼承與多型。</p></div><section class="sec" id="s7-1" data-label="7.1 類別與物件"><h2><span class="num">7.1</span>類別與物件</h2><h3 id="s7-1-1">藍圖與實體</h3>
+<link rel="stylesheet" href="assets/style.css?v=2772ac91">
+
+</head><body data-page="ch07" data-mode="course" data-course="cf" data-key="cf">
+<a class="skip" href="#main">跳到主要內容</a>
+<header class="topbar"><a class="brand" href="index.html" aria-label="金融程式計算：C++｜課程筆記首頁"><span class="logo" aria-hidden="true">C++</span><span>金融程式計算：C++</span><span class="sub">｜課程筆記</span></a>
+<div class="pickers"><nav class="mode" aria-label="切換課程或作業"><a href="ch01.html" data-mode="course" class=on>課程</a><a href="hw01.html" data-mode="hw">作業</a></nav><label for="unitSelect">選擇單元</label><select id="unitSelect" aria-label="選擇單元"><option value="index.html">首頁：課程介紹與使用說明</option><option value="ch01.html">第 1 章　C++ 簡介與第一支程式</option><option value="ch02.html">第 2 章　資料型態、變數與記憶體</option><option value="ch03.html">第 3 章　陣列、指標與字串</option><option value="ch04.html">第 4 章　表達式、運算子與流程控制</option><option value="ch05.html">第 5 章　函數</option><option value="ch06.html">第 6 章　命名空間、預處理與記憶體管理</option><option value="ch07.html" selected>第 7 章　類別 class（一）：封裝、建構與物件的一生</option><option value="ch08.html">第 8 章　類別 class（二）：繼承、多型與設計模式</option><option value="ch09.html">第 9 章　模板與泛型</option><option value="ch10.html">第 10 章　課程總結：從語法到量化程式庫</option></select></div></header>
+<main class="wrap" id="main"><nav class="crumbs" aria-label="目前位置"><a href="index.html">首頁</a><span class="sep">›</span><span>課程筆記</span><span class="sep">›</span><span>第 7 章</span></nav><header class="ch-head"><p class=eyebrow>第 7 章</p><h1>類別 class（一）：封裝、建構與物件的一生</h1><p class="ch-meta"><span>9 節</span><span>Concept Check 19 題</span><span>閱讀約 74 分鐘</span></p><details class="ch-toc"><summary>本章目錄（9 節）</summary><ol><li><a href="#s7-1"><span>7.1</span>類別與物件</a></li><li><a href="#s7-2"><span>7.2</span>把類別拆成 .h 與 .cpp</a></li><li><a href="#s7-3"><span>7.3</span>建構函數</a></li><li><a href="#s7-4"><span>7.4</span>const 成員函數、mutable、this</a></li><li><a href="#s7-5"><span>7.5</span>static 成員：屬於類別，不屬於物件</a></li><li><a href="#s7-6"><span>7.6</span>運算子重載</a></li><li><a href="#s7-7"><span>7.7</span>物件的一生：複製與解構</a></li><li><a href="#s7-8"><span>7.8</span>綜合範例：一個完整的 Bond 類別</a></li><li><a href="#s7-9"><span>7.9</span>本章小結</a></li></ol></details></header>
+<div class="ch-intro"><p>這一章進入本學期的核心：<strong>類別</strong>（class）。到目前為止，資料（<span class="gl" tabindex="0" role="button" data-g="變數">變數</span>、struct）和操作資料的程式（<span class="gl" tabindex="0" role="button" data-g="函數">函數</span>）是分開的；類別把兩者<strong>打包</strong>成一個自己定義的新<span class="gl" tabindex="0" role="button" data-g="型態">型態</span>——例如 <code>Bond</code> 不只記得<span class="gl" tabindex="0" role="button" data-g="面額">面額</span>和票面利率，還知道怎麼算自己的價格與存續期間。本章對應講義六的前半：成員變數與成員函數、<code>public</code>／<code>private</code>、建構函數（含 <code>explicit</code> 與<span class="gl" tabindex="0" role="button" data-g="初始化">初始化</span>列表）、<code>const</code> 成員函數、<code>this</code>、<code>static</code> 成員、運算子重載，以及<span class="gl" tabindex="0" role="button" data-g="物件">物件</span>的複製與解構。下一章再談<span class="gl" tabindex="0" role="button" data-g="繼承">繼承</span>與<span class="gl" tabindex="0" role="button" data-g="多型">多型</span>。</p></div><section class="sec" id="s7-1" data-label="7.1 類別與物件"><h2><span class="num">7.1</span>類別與物件</h2><h3 id="s7-1-1">藍圖與實體</h3>
 <ul>
 <li><strong>類別</strong>（class）：使用者<strong>自己定義的型態</strong>，是一張「藍圖」，描述這種東西有哪些<strong>屬性</strong>（成員變數）和<strong>行為</strong>（成員函數）。</li>
 <li><strong>物件</strong>（object）：依照藍圖建立出來的<strong>實體</strong>（instance）。建立物件的動作叫<strong>實例化</strong>；只有實例化時，才會真的在記憶體中配置空間。</li>
@@ -37,7 +41,7 @@
 </tbody>
 </table>
 <p>C 語言沒有類別，這是 C++ 最大的擴充。</p>
-<div class="box teacher"><span class="tag">老師上課怎麼說</span><strong class="bt">程序式 vs 物件導向</strong><p>學期第一堂課，老師先比較兩種寫程式的方式：以前寫 R、Python 多半是「<strong>程序式</strong>」——要完成一個任務就從頭寫到尾：載入套件、準備市場資料、帶進模型計算、輸出結果。這樣很快能拿到答案，但<strong>彈性很小</strong>：換一個模型、換一種數值方法，就得在程式中間大改。物件導向用類別把資料和操作包起來、用繼承重用程式碼，維護比較容易、彈性比較高；之後的<strong>模板</strong>又是第三種寫法（泛型），現代的程式庫（包括 QuantLib）大量使用模板。老師也提醒：類別只是「藍圖」，沒有佔記憶體；按照藍圖產生出來的<strong>物件</strong>才真的在記憶體中佔空間——就像第 2 章 int 佔 4 bytes、double 佔 8 bytes 一樣。</p></div>
+<div class="box teacher"><span class="tag">老師上課怎麼說</span><strong class="bt">程序式 vs 物件導向</strong><p>學期第一堂課，老師先比較兩種寫程式的方式：以前寫 R、Python 多半是「<strong>程序式</strong>」——要完成一個任務就從頭寫到尾：載入套件、準備市場資料、帶進模型計算、輸出結果。這樣很快能拿到答案，但<strong>彈性很小</strong>：換一個模型、換一種數值方法，就得在程式中間大改。物件導向用類別把資料和操作包起來、用繼承重用程式碼，維護比較容易、彈性比較高；之後的<strong>模板</strong>又是第三種寫法（泛型），現代的程式庫（包括 <span class="gl" tabindex="0" role="button" data-g="QuantLib">QuantLib</span>）大量使用模板。老師也提醒：類別只是「藍圖」，沒有佔記憶體；按照藍圖產生出來的<strong>物件</strong>才真的在記憶體中佔空間——就像第 2 章 int 佔 4 bytes、double 佔 8 bytes 一樣。</p></div>
 <h3 id="s7-1-2">第一個類別：老師的 Time</h3>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
 
@@ -68,11 +72,11 @@
 <pre class="out" data-title="執行結果"><code>11:14:5
 30</code></pre>
 <ul>
-<li>用 <code>物件.成員</code> 存取成員；用指標時寫 <code>指標-&gt;成員</code>。</li>
+<li>用 <code>物件.成員</code> 存取成員；用<span class="gl" tabindex="0" role="button" data-g="指標">指標</span>時寫 <code>指標-&gt;成員</code>。</li>
 </ul>
-<div class="box teacher"><span class="tag">老師上課怎麼說</span><strong class="bt">老師上課的 student 例子</strong><p>第一堂課老師用講義的 <code>struct student { int number; char name[100]; void func(){}; };</code> 說明：大括號裡就是這張<strong>藍圖</strong>要有什麼東西，就像蓋房子先決定要不要花園、停車位、圍牆。老師提醒「C++ 的<strong>大括號非常重要</strong>」——Python 用縮排表示層級，C++ 靠大括號劃出範圍。<code>char name[100]</code> 是一個字元陣列，100 是寫給讀程式的人看的上限（之後若要存進資料庫，欄位長度可能就有限制）。用指標存取時，<code>(*p).number</code> 的<strong>小括號一定要加</strong>：<code>.</code> 的優先順序比 <code>*</code> 高，不加會變成對 <code>p.number</code> 解參考而出錯；所以 C++ 提供了更乾淨的 <code>p-&gt;number</code>，兩者意思一樣。</p></div>
+<div class="box teacher"><span class="tag">老師上課怎麼說</span><strong class="bt">老師上課的 student 例子</strong><p>第一堂課老師用講義的 <code>struct student { int number; char name[100]; void func(){}; };</code> 說明：大括號裡就是這張<strong>藍圖</strong>要有什麼東西，就像蓋房子先決定要不要花園、停車位、圍牆。老師提醒「C++ 的<strong>大括號非常重要</strong>」——Python 用縮排表示層級，C++ 靠大括號劃出範圍。<code>char name[100]</code> 是一個字元<span class="gl" tabindex="0" role="button" data-g="陣列">陣列</span>，100 是寫給讀程式的人看的上限（之後若要存進資料庫，欄位長度可能就有限制）。用指標存取時，<code>(*p).number</code> 的<strong>小括號一定要加</strong>：<code>.</code> 的優先順序比 <code>*</code> 高，不加會變成對 <code>p.number</code> 解<span class="gl" tabindex="0" role="button" data-g="參考">參考</span>而出錯；所以 C++ 提供了更乾淨的 <code>p-&gt;number</code>，兩者意思一樣。</p></div>
 <ul>
-<li>類別本身就是一個作用域：成員函數裡可以直接用 <code>Hour</code>，它指的就是「呼叫這個函數的那個物件的 Hour」。</li>
+<li>類別本身就是一個<span class="gl" tabindex="0" role="button" data-g="作用域">作用域</span>：成員函數裡可以直接用 <code>Hour</code>，它指的就是「呼叫這個函數的那個物件的 Hour」。</li>
 <li>老師說這個例子「基本上非常不 OK」——成員變數全部公開、而且必須記得手動呼叫 <code>initTime</code>——只是為了先說明概念。接下來幾節會一步步把它改好。</li>
 </ul>
 <h3 id="s7-1-3">public、private 與 class／struct 的差別</h3>
@@ -149,7 +153,7 @@ main.cpp:2:12: note: declared private here
 </tr>
 </tbody>
 </table>
-<p>老師的慣例：<strong>只有資料、沒有成員函數的</strong>用 <code>struct</code>；<strong>有成員函數的</strong>用 <code>class</code>。不要混用，程式比較清楚。</p><section class="cc" id="cc-s7-1"><h3 class="cc-h">Concept Check：7.1 類別與物件</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s7-1-1" data-label="7.1 類別與物件 Q1"><div class="q-meta"><h4><a href="#q-s7-1-1">Q1</a></h4><span class="q-kind">選擇｜易</span><span class="q-title">class 與 struct</span></div><div class="q-text"><p>在 C++ 中，<code>class</code> 和 <code>struct</code> 最主要的差別是？</p></div><ol class="opts"><li><b>(A)</b><span>struct 裡面不能定義任何成員函數</span></li><li><b>(B)</b><span>兩者成員預設的存取權限不同</span></li><li><b>(C)</b><span>class 的物件一定會被配置在堆積上</span></li><li><b>(D)</b><span>struct 只能宣告，不能被實例化成物件</span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (B)</strong><p>兩者成員預設的存取權限不同</p></div><div class="why"><p class="sh">解析</p><p>C++ 的 struct 與 class 幾乎完全相同，只差在預設存取權：class 為 private、struct 為 public（繼承時的預設等級也一樣不同）。</p></div></div></article><article class="q" id="q-s7-1-2" data-label="7.1 類別與物件 Q2"><div class="q-meta"><h4><a href="#q-s7-1-2">Q2</a></h4><span class="q-kind">選擇｜中</span><span class="q-title">封裝</span></div><div class="q-text"><p>把 <code>balance</code> 設為 private、只提供 <code>deposit()</code> 與 <code>get_balance()</code> 的主要好處是？</p></div><ol class="opts"><li><b>(A)</b><span>只能經由有檢查的介面修改，且實作可自由調整</span></li><li><b>(B)</b><span>存取 private 成員的程式執行速度比較快</span></li><li><b>(C)</b><span>private 成員不佔用物件的記憶體空間</span></li><li><b>(D)</b><span>有 private 成員的類別就不需要建構函數</span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (A)</strong><p>只能經由有檢查的介面修改，且實作可自由調整</p></div><div class="why"><p class="sh">解析</p><p>封裝的目的是保護資料的正確性（只能經由介面修改）並隔離介面與實作。</p></div></div></article></section></section><section class="sec" id="s7-2" data-label="7.2 把類別拆成 .h 與 .cpp"><h2><span class="num">7.2</span>把類別拆成 .h 與 .cpp</h2><p>實務上，類別的<strong>定義</strong>放在標頭檔（檔名通常和類別同名，例如 <code>MyTime.h</code>），成員函數的<strong>實作</strong>放在原始檔（<code>MyTime.cpp</code>）。要使用這個類別的檔案就 <code>#include &quot;MyTime.h&quot;</code>：</p>
+<p>老師的慣例：<strong>只有資料、沒有成員函數的</strong>用 <code>struct</code>；<strong>有成員函數的</strong>用 <code>class</code>。不要混用，程式比較清楚。</p><section class="cc" id="cc-s7-1"><h3 class="cc-h">Concept Check：7.1 類別與物件</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s7-1-1" data-label="7.1 類別與物件 Q1"><div class="q-meta"><h4><a href="#q-s7-1-1">Q1</a></h4><span class="q-kind">選擇｜易</span><span class="q-title">class 與 struct</span></div><div class="q-text"><p>在 C++ 中，<code>class</code> 和 <code>struct</code> 最主要的差別是？</p></div><ol class="opts"><li><b>(A)</b><span>struct 裡面不能定義任何成員函數</span></li><li><b>(B)</b><span>兩者成員預設的存取權限不同</span></li><li><b>(C)</b><span>class 的物件一定會被配置在堆積上</span></li><li><b>(D)</b><span>struct 只能宣告，不能被實例化成物件</span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (B)</strong><p>兩者成員預設的存取權限不同</p></div><div class="why"><p class="sh">解析</p><p>C++ 的 struct 與 class 幾乎完全相同，只差在預設存取權：class 為 private、struct 為 public（繼承時的預設等級也一樣不同）。</p></div></div></article><article class="q" id="q-s7-1-2" data-label="7.1 類別與物件 Q2"><div class="q-meta"><h4><a href="#q-s7-1-2">Q2</a></h4><span class="q-kind">選擇｜中</span><span class="q-title">封裝</span></div><div class="q-text"><p>把 <code>balance</code> 設為 private、只提供 <code>deposit()</code> 與 <code>get_balance()</code> 的主要好處是？</p></div><ol class="opts"><li><b>(A)</b><span>只能經由有檢查的介面修改，且實作可自由調整</span></li><li><b>(B)</b><span>存取 private 成員的程式執行速度比較快</span></li><li><b>(C)</b><span>private 成員不佔用物件的記憶體空間</span></li><li><b>(D)</b><span>有 private 成員的類別就不需要建構函數</span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (A)</strong><p>只能經由有檢查的介面修改，且實作可自由調整</p></div><div class="why"><p class="sh">解析</p><p>封裝的目的是保護資料的正確性（只能經由介面修改）並隔離介面與實作。</p></div></div></article></section></section><section class="sec" id="s7-2" data-label="7.2 把類別拆成 .h 與 .cpp"><h2><span class="num">7.2</span>把類別拆成 .h 與 .cpp</h2><p>實務上，類別的<strong>定義</strong>放在<span class="gl" tabindex="0" role="button" data-g="標頭檔">標頭檔</span>（檔名通常和類別同名，例如 <code>MyTime.h</code>），成員函數的<strong>實作</strong>放在<span class="gl" tabindex="0" role="button" data-g="原始檔">原始檔</span>（<code>MyTime.cpp</code>）。要使用這個類別的檔案就 <code>#include &quot;MyTime.h&quot;</code>：</p>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++ 檔案：MyTime.h</span><pre><code><span class="c1">// MyTime.h：類別定義（介面）</span>
 <span class="cp">#ifndef MYTIME_H</span>
 <span class="cp">#define MYTIME_H</span>
@@ -191,11 +195,11 @@ main.cpp:2:12: note: declared private here
 </code></pre></div>
 <pre class="out" data-title="執行結果"><code>9:30:0</code></pre>
 <ul>
-<li>在類別外實作成員函數時，名稱前面要加 <code>類別名::</code>（作用域運算子），否則編譯器會以為那是一個普通函數。</li>
+<li>在類別外實作成員函數時，名稱前面要加 <code>類別名::</code>（作用域<span class="gl" tabindex="0" role="button" data-g="運算子">運算子</span>），否則編譯器會以為那是一個普通函數。</li>
 <li>寫在類別<strong>定義內部</strong>的成員函數，會自動被視為 <code>inline</code>（第 5 章）；簡短的函數（像 getter）常直接寫在類別裡。</li>
 <li>老師提醒一個特殊之處：函數和變數在整個程式中只能<strong>定義一次</strong>，但類別定義可以出現在多個 .cpp 中（透過 include），只要內容一致——所以類別定義可以放在標頭檔。</li>
 </ul>
-<div class="box teacher"><span class="tag">老師上課怎麼說</span><strong class="bt">分離編譯：為什麼要 include 標頭檔</strong><p>老師在 VS Code 示範：把 Time 的使用程式貼進 main 後，編譯器說它不認識 Time——因為 C++ 是<strong>分離編譯</strong>，每個 .cpp 各自獨立編譯，編譯 test.cpp 時必須透過 <code>#include &quot;MyTime.h&quot;</code> 讓它知道 Time 這張藍圖長什麼樣子（自己寫的標頭檔用雙引號，官方的用角括號）。接著老師把 <code>initTime</code> 的<strong>實作</strong>註解掉，只留宣告：只是少了一個函數，卻冒出十幾個錯誤。老師的建議：自己練習時就是要這樣<strong>做實驗</strong>——故意拿掉一行看會發生什麼，「程式能跑」不代表你懂了；看到幾十個錯誤也不要慌，可能只是一兩個根本原因。</p></div><section class="cc" id="cc-s7-2"><h3 class="cc-h">Concept Check：7.2 把類別拆成 .h 與 .cpp</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s7-2-1" data-label="7.2 把類別拆成 .h 與 .cpp Q1"><div class="q-meta"><h4><a href="#q-s7-2-1">Q1</a></h4><span class="q-kind">選擇｜易</span><span class="q-title">類別外實作</span></div><div class="q-text"><p><code>Bond</code> 類別中宣告了 <code>double price(double y);</code>，在 Bond.cpp 中實作它的正確開頭是？</p></div><ol class="opts"><li><b>(A)</b><span><code>double price(double y) {</code></span></li><li><b>(B)</b><span><code>double Bond.price(double y) {</code></span></li><li><b>(C)</b><span><code>double Bond::price(double y) {</code></span></li><li><b>(D)</b><span><code>Bond::double price(double y) {</code></span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (C)</strong><code>double Bond::price(double y) {</code></div><div class="why"><p class="sh">解析</p><p>在類別外實作成員函數要寫 <code>回傳型態 類別名::函數名(參數)</code>。(A) 會變成定義一個與 Bond 無關的普通函數。</p></div></div></article></section></section><section class="sec" id="s7-3" data-label="7.3 建構函數"><h2><span class="num">7.3</span>建構函數</h2><h3 id="s7-3-1">讓物件一誕生就是正確的</h3>
+<div class="box teacher"><span class="tag">老師上課怎麼說</span><strong class="bt">分離<span class="gl" tabindex="0" role="button" data-g="編譯">編譯</span>：為什麼要 include 標頭檔</strong><p>老師在 VS Code 示範：把 Time 的使用程式貼進 main 後，編譯器說它不認識 Time——因為 C++ 是<strong>分離編譯</strong>，每個 .cpp 各自獨立編譯，編譯 test.cpp 時必須透過 <code>#include &quot;MyTime.h&quot;</code> 讓它知道 Time 這張藍圖長什麼樣子（自己寫的標頭檔用雙引號，官方的用角括號）。接著老師把 <code>initTime</code> 的<strong>實作</strong>註解掉，只留<span class="gl" tabindex="0" role="button" data-g="宣告">宣告</span>：只是少了一個函數，卻冒出十幾個錯誤。老師的建議：自己練習時就是要這樣<strong>做實驗</strong>——故意拿掉一行看會發生什麼，「程式能跑」不代表你懂了；看到幾十個錯誤也不要慌，可能只是一兩個根本原因。</p></div><section class="cc" id="cc-s7-2"><h3 class="cc-h">Concept Check：7.2 把類別拆成 .h 與 .cpp</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s7-2-1" data-label="7.2 把類別拆成 .h 與 .cpp Q1"><div class="q-meta"><h4><a href="#q-s7-2-1">Q1</a></h4><span class="q-kind">選擇｜易</span><span class="q-title">類別外實作</span></div><div class="q-text"><p><code>Bond</code> 類別中宣告了 <code>double price(double y);</code>，在 Bond.cpp 中實作它的正確開頭是？</p></div><ol class="opts"><li><b>(A)</b><span><code>double price(double y) {</code></span></li><li><b>(B)</b><span><code>double Bond.price(double y) {</code></span></li><li><b>(C)</b><span><code>double Bond::price(double y) {</code></span></li><li><b>(D)</b><span><code>Bond::double price(double y) {</code></span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (C)</strong><code>double Bond::price(double y) {</code></div><div class="why"><p class="sh">解析</p><p>在類別外實作成員函數要寫 <code>回傳型態 類別名::函數名(參數)</code>。(A) 會變成定義一個與 Bond 無關的普通函數。</p></div></div></article></section></section><section class="sec" id="s7-3" data-label="7.3 建構函數"><h2><span class="num">7.3</span>建構函數</h2><h3 id="s7-3-1">讓物件一誕生就是正確的</h3>
 <p><code>initTime</code> 的問題是：<strong>忘了呼叫它，物件的成員就是垃圾值</strong>。<strong>建構函數</strong>（constructor）解決這個問題——它是一個特殊的成員函數，<strong>名稱和類別相同、沒有回傳型態</strong>，在物件建立時由系統<strong>自動呼叫</strong>：</p>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
 
@@ -223,9 +227,9 @@ main.cpp:2:12: note: declared private here
 建構了 15:0:0</code></pre>
 <ul>
 <li>建構函數的任務：<strong>初始化物件的成員變數</strong>。</li>
-<li>沒有回傳值、不能寫 void、不能手動呼叫（<code>t1.Time(1,2,3)</code> 是錯的）。</li>
+<li>沒有回<span class="gl" tabindex="0" role="button" data-g="傳值">傳值</span>、不能寫 void、不能手動呼叫（<code>t1.Time(1,2,3)</code> 是錯的）。</li>
 <li>通常是 public（否則外界無法建立物件）。</li>
-<li>有參數時，建立物件就必須給對應的實參：</li>
+<li>有<span class="gl" tabindex="0" role="button" data-g="參數">參數</span>時，建立物件就必須給對應的實參：</li>
 </ul>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="k">class</span><span class="w"> </span><span class="nc">Time</span><span class="w"> </span><span class="p">{</span>
 <span class="k">public</span><span class="o">:</span>
@@ -253,7 +257,7 @@ main.cpp:1:7: note: candidate: ‘constexpr Time::Time(Time&amp;&amp;)’
 main.cpp:1:7: note:   candidate expects 1 argument, 0 provided
 main.cpp:8:10: warning: unused variable ‘t’ [-Wunused-variable]</code></pre>
 <h3 id="s7-3-2">多個建構函數與預設建構函數</h3>
-<p>建構函數也可以<strong>重載</strong>：提供好幾種建立物件的方式。不帶參數的叫<strong>預設建構函數</strong>（default constructor）：</p>
+<p>建構函數也可以<strong><span class="gl" tabindex="0" role="button" data-g="重載">重載</span></strong>：提供好幾種建立物件的方式。不帶參數的叫<strong>預設建構函數</strong>（default constructor）：</p>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
 
 <span class="k">class</span><span class="w"> </span><span class="nc">Time</span><span class="w"> </span><span class="p">{</span>
@@ -393,7 +397,7 @@ main.cpp:11:11: warning: unused variable ‘bad’ [-Wunused-variable]
 </code></pre></div>
 <pre class="out" data-title="執行結果"><code>A12345：面額 100，票面利率 1.75%，5 年</code></pre>
 <ul>
-<li>初始化列表在<strong>進入函數體之前</strong>就完成初始化；寫在函數體裡的 <code>face_ = face;</code> 則是「先預設初始化、再賦值」。對 <code>int</code>、<code>double</code> 差別不大，對 string、vector 等類別型態的成員，初始化列表<strong>效率較好</strong>（少一次建構＋賦值）。</li>
+<li>初始化列表在<strong>進入函數體之前</strong>就完成初始化；寫在函數體裡的 <code>face_ = face;</code> 則是「先預設初始化、再賦值」。對 <code>int</code>、<code>double</code> 差別不大，對 string、<span class="gl" tabindex="0" role="button" data-g="vector">vector</span> 等類別型態的成員，初始化列表<strong>效率較好</strong>（少一次建構＋賦值）。</li>
 <li><strong>有些成員只能用初始化列表</strong>：<code>const</code> 成員、<strong>參考</strong>成員（它們必須在誕生時就有值）、沒有預設建構函數的類別型態成員、父類別（第 8 章）。</li>
 </ul>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="k">class</span><span class="w"> </span><span class="nc">Trade</span><span class="w"> </span><span class="p">{</span>
@@ -448,7 +452,7 @@ main.cpp:4:13: error: assignment of read-only member ‘Trade::id_’</code></pr
 <ul>
 <li><strong>初始化的順序是成員在類別中宣告的順序</strong>，不是初始化列表寫的順序。如果一個成員的初值依賴另一個成員，要特別注意宣告順序（編譯器開 <code>-Wall</code> 會警告 <code>-Wreorder</code>）。</li>
 </ul>
-<div class="box key exam"><span class="tag">老師上課強調</span><strong class="bt">列表初始化一定要知道</strong><p>老師上課說「列表初始化要不要知道？<strong>一定要知道</strong>」：除了效率比較好，<code>const</code> 成員與參考成員<strong>非得</strong>用列表初始化不可——這和上學期講 const 變數時一樣，const 一定要在誕生時給初值。老師用一個 <code>Car</code> 類別示範：<code>const int id</code>（一定要用初始化列表）、一個參考成員（也一定要），<code>std::string model</code> 與 <code>Engine engine</code>（類別型態的成員）則不強制，但建議也寫在初始化列表裡，「所有重要的資訊通通都寫在那裡」。</p></div>
+<div class="box key exam"><span class="tag">老師上課強調</span><strong class="bt">列表初始化一定要知道</strong><p>老師上課說「列表初始化要不要知道？<strong>一定要知道</strong>」：除了效率比較好，<code>const</code> 成員與參考成員<strong>非得</strong>用列表初始化不可——這和上學期講 <span class="gl" tabindex="0" role="button" data-g="const">const</span> 變數時一樣，const 一定要在誕生時給初值。老師用一個 <code>Car</code> 類別示範：<code>const int id</code>（一定要用初始化列表）、一個參考成員（也一定要），<code>std::string model</code> 與 <code>Engine engine</code>（類別型態的成員）則不強制，但建議也寫在初始化列表裡，「所有重要的資訊通通都寫在那裡」。</p></div>
 <ul>
 <li>老師上課提醒的閱讀技巧：看別人的原始碼（例如 QuantLib）時，常看到建構函數有一大串初始化列表，後面接著<strong>空的大括號</strong> <code>{}</code>——意思是所有工作都在初始化列表做完了，但建構函數的實作一定要有函數體，所以大括號還是要寫。</li>
 </ul>
@@ -641,14 +645,14 @@ main.cpp:5:14: error: assignment of member ‘Time::Hour’ in read-only object
 <span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre></div>
-<pre class="out" data-title="執行結果"><code>Lin 餘額 850（物件位址 0x7fff231d8230）
-a 的位址      0x7fff231d8230</code></pre>
+<pre class="out" data-title="執行結果"><code>Lin 餘額 850（物件位址 0x7fffca5eed70）
+a 的位址      0x7fffca5eed70</code></pre>
 <ul>
 <li><code>this</code> 是指標，<code>*this</code> 是物件本身。</li>
 <li>回傳 <code>*this</code> 的參考，就能把呼叫串起來：<code>a.deposit(1000).withdraw(200)</code>（<strong>鏈式呼叫</strong>，method chaining）。老師講義的 <code>mytime.rtnhour(3).rtnminute(5)</code> 也是這樣。</li>
 <li>在一般成員函數中，<code>this</code> 的型態是 <code>Time* const</code>（不能改指向別的物件）；在 const 成員函數中是 <code>const Time* const</code>——這就是 const 成員函數不能改成員的原因。</li>
 </ul>
-<div class="box teacher"><span class="tag">老師上課怎麼說</span><strong class="bt">this 是哪一種 const？</strong><p>老師在課堂上問：成員函數加上 const 之後，裡面的 <code>this</code> 是哪一種指標？先複習第 2 章：<code>const int n</code> 的 const 描述 n 本身不能改，是 <strong>top-level</strong>；指標與參考是存取資料的「<strong>第二條路</strong>（間接管道）」，low-level const 的意思是「不能透過這條間接管道去改」。this 本來就不能改指向別的物件（top-level const）；const 成員函數再加上一層 low-level const，於是不能透過 this 修改物件——這就是 const 成員函數改不了成員變數的原因。</p></div>
+<div class="box teacher"><span class="tag">老師上課怎麼說</span><strong class="bt"><span class="gl" tabindex="0" role="button" data-g="this">this</span> 是哪一種 const？</strong><p>老師在課堂上問：成員函數加上 const 之後，裡面的 <code>this</code> 是哪一種指標？先複習第 2 章：<code>const int n</code> 的 const 描述 n 本身不能改，是 <strong>top-level</strong>；指標與參考是存取資料的「<strong>第二條路</strong>（間接管道）」，low-level const 的意思是「不能透過這條間接管道去改」。this 本來就不能改指向別的物件（top-level const）；const 成員函數再加上一層 low-level const，於是不能透過 this 修改物件——這就是 const 成員函數改不了成員變數的原因。</p></div>
 <ul>
 <li><code>this</code> 是保留字，不能當變數名；static 成員函數沒有 this（下一節）。</li>
 </ul><section class="cc" id="cc-s7-4"><h3 class="cc-h">Concept Check：7.4 const 成員函數、mutable、this</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s7-4-1" data-label="7.4 const 成員函數、mutable、this Q1"><div class="q-meta"><h4><a href="#q-s7-4-1">Q1</a></h4><span class="q-kind">選擇｜中</span><span class="q-title">const 物件</span></div><div class="q-text"><p>函數參數寫成 <code>void report(const Portfolio &amp;p)</code>，在函數裡可以呼叫 p 的哪些成員函數？</p></div><ol class="opts"><li><b>(A)</b><span>所有 public 成員函數，不論有沒有 const</span></li><li><b>(B)</b><span>只有宣告為 const 的成員函數</span></li><li><b>(C)</b><span>只有 static 成員函數</span></li><li><b>(D)</b><span>不能呼叫任何成員函數</span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (B)</strong><p>只有宣告為 const 的成員函數</p></div><div class="why"><p class="sh">解析</p><p>透過 const 參考看到的物件是 const 的，只能呼叫保證不修改物件的 const 成員函數。</p></div></div></article><article class="q" id="q-s7-4-2" data-label="7.4 const 成員函數、mutable、this Q2"><div class="q-meta"><h4><a href="#q-s7-4-2">Q2</a></h4><span class="q-kind">預測輸出｜中</span><span class="q-title">鏈式呼叫</span></div><div class="q-text"><p>下面程式印出什麼？</p>
@@ -706,7 +710,7 @@ a 的位址      0x7fff231d8230</code></pre>
 區塊外 2
 d.id = 5001</code></pre>
 <ul>
-<li>類別內的 <code>static int count_;</code> 只是<strong>宣告</strong>；還必須在<strong>某一個 .cpp</strong> 的類別外<strong>定義</strong>一次：<code>int Trade::count_ = 0;</code>（不加 static），否則連結時會出現 <code>undefined reference</code>。</li>
+<li>類別內的 <code>static int count_;</code> 只是<strong>宣告</strong>；還必須在<strong>某一個 .cpp</strong> 的類別外<strong>定義</strong>一次：<code>int Trade::count_ = 0;</code>（不加 static），否則<span class="gl" tabindex="0" role="button" data-g="連結">連結</span>時會出現 <code>undefined reference</code>。</li>
 <li>存取方式：<code>類別名::成員</code>（建議）或 <code>物件.成員</code>。</li>
 <li>static 成員變數存在<strong>靜態儲存區</strong>，程式開始就存在、結束才消失，和有沒有物件無關。</li>
 <li>常用於：物件計數、共用設定（如所有債券共用的計息慣例）、產生唯一編號。</li>
@@ -818,7 +822,7 @@ main.cpp:3:9: note: declared here
 <li>static 函數若需要操作某個物件，必須<strong>明確把物件傳進來</strong>（例如 <code>static void show(const Example &amp;obj)</code>）。</li>
 <li>類別外實作 static 成員函數時<strong>不再寫 static</strong>。</li>
 </ul>
-<div class="box teacher"><span class="tag">老師上課怎麼說</span><strong class="bt">QuantLib 的 static 成員函數</strong><p>老師舉的實例：QuantLib 的日期類別有 <code>Date::isLeap(year)</code>（是否為閏年）這種 static 成員函數——判斷某一年是不是閏年，根本不需要任何一個日期物件，所以直接用「類別名::函數名」呼叫；把它放在 Date 底下，使用者一看就知道它屬於日期相關的工具。老師也預告：之後的<strong>單例</strong>（Singleton）設計模式也會用到 static 成員函數（第 8 章）。</p></div>
+<div class="box teacher"><span class="tag">老師上課怎麼說</span><strong class="bt">QuantLib 的 static 成員函數</strong><p>老師舉的實例：QuantLib 的日期類別有 <code>Date::isLeap(year)</code>（是否為閏年）這種 static 成員函數——判斷某一年是不是閏年，根本不需要任何一個日期物件，所以直接用「類別名::函數名」呼叫；把它放在 Date 底下，使用者一看就知道它屬於日期相關的工具。老師也預告：之後的<strong>單例</strong>（Singleton）<span class="gl" tabindex="0" role="button" data-g="設計模式">設計模式</span>也會用到 static 成員函數（第 8 章）。</p></div>
 <ul>
 <li>老師上課的說法：使用 static 成員函數的主要目的不是省記憶體，而是<strong>表達「這個功能不依賴任何物件」</strong>，並把相關的工具函數<strong>歸類</strong>在同一個類別名稱底下，使用者一看 <code>Rates::to_continuous</code> 就知道它屬於哪一類。</li>
 </ul>
@@ -942,7 +946,7 @@ main.cpp:3:9: note: declared here
 <span class="p">}</span>
 </code></pre></div>
 <pre class="out" data-title="執行結果"><code>9 15 9
-0x7fff2c4345b0 0x7fff2c4345b8</code></pre>
+0x7ffdff3daea0 0x7ffdff3daea8</code></pre>
 <ul>
 <li><strong>複製建構</strong>：用一個既有物件<strong>建立新物件</strong>——<code>Time t2 = t1;</code>、<code>Time t3(t1);</code>、傳值給函數、函數回傳物件時。</li>
 <li><strong>複製賦值</strong>：把一個物件的內容<strong>複製給另一個已經存在的物件</strong>——<code>t5 = t1;</code>。</li>
@@ -1002,12 +1006,12 @@ main 結束前
 <ol>
 <li>區域物件<strong>離開作用域</strong>時；</li>
 <li>對 <code>new</code> 出來的物件 <strong><code>delete</code></strong> 時；</li>
-<li><strong>容器</strong>（vector 等）被銷毀或移除元素時，對每個元素；</li>
+<li><strong><span class="gl" tabindex="0" role="button" data-g="容器">容器</span></strong>（vector 等）被銷毀或移除元素時，對每個元素；</li>
 <li><strong>程式結束</strong>時，對全域與 static 物件。</li>
 </ol>
 <p>同一個作用域裡，<strong>先建構的後解構</strong>（像疊盤子）。</p>
 <h3 id="s7-7-3">淺複製的危險與深複製</h3>
-<p>如果類別用<strong>裸指標擁有</strong>一塊動態記憶體，編譯器自動產生的「逐一複製成員」就會出事——它複製的是<strong>指標的值（位址）</strong>，不是指標指向的資料，兩個物件會共用同一塊記憶體（<strong>淺複製</strong>）：</p>
+<p>如果類別用<strong>裸指標擁有</strong>一塊動態記憶體，編譯器自動產生的「逐一複製成員」就會出事——它複製的是<strong>指標的值（<span class="gl" tabindex="0" role="button" data-g="位址">位址</span>）</strong>，不是指標指向的資料，兩個物件會共用同一塊記憶體（<strong>淺複製</strong>）：</p>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
 
 <span class="k">class</span><span class="w"> </span><span class="nc">Series</span><span class="w"> </span><span class="p">{</span><span class="w">                           </span><span class="c1">// 錯誤示範：只有建構與解構，沒有處理複製</span>
@@ -1034,7 +1038,7 @@ main 結束前
 <span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w">                            </span><span class="c1">// s1 解構時再 delete[] 一次：重複釋放</span>
 <span class="p">}</span>
 </code></pre></div>
-<pre class="out" data-title="執行結果"><code>s1.data_ = 0x5631ac7752b0，s2.data_ = 0x5631ac7752b0
+<pre class="out" data-title="執行結果"><code>s1.data_ = 0x55907eea72b0，s2.data_ = 0x55907eea72b0
 s1[0] = 999
 s1 現在指向已釋放的記憶體……
 free(): double free detected in tcache 2
@@ -1095,7 +1099,7 @@ free(): double free detected in tcache 2
 <div class="box key"><span class="tag">重點</span><strong class="bt">三法則與零法則</strong><p><strong>三法則</strong>（rule of three）：如果一個類別需要自己寫<strong>解構函數</strong>、<strong>複製建構函數</strong>、<strong>複製賦值運算子</strong>其中任何一個，通常三個都需要。
 <strong>零法則</strong>（rule of zero）：更好的做法是<strong>根本不要用裸指標擁有資源</strong>——成員改用 <code>std::vector&lt;double&gt;</code>、<code>std::string</code>、<code>std::unique_ptr</code>，它們自己會正確地複製（或禁止複製）與釋放，你一個特殊成員函數都不用寫。上面的 <code>Series</code> 只要把 <code>double *data_</code> 換成 <code>std::vector&lt;double&gt; data_</code>，所有問題自動消失。</p></div>
 <h3 id="s7-7-4">RAII：資源的一生綁在物件上</h3>
-<p>建構時取得資源、解構時釋放資源——這個 C++ 的核心慣用法叫 <strong>RAII</strong>（Resource Acquisition Is Initialization）。老師上課的例子是一個 <code>FileHandler</code> 類別：private 成員是一個 <code>std::ofstream</code>，<strong>建構函數開檔、解構函數關檔</strong>，兩者是對稱的操作；物件在 main 的大括號裡建立，程式離開大括號時物件被刪除，解構函數就自動把檔案關掉。老師也提醒：用 <code>new</code> 配置卻沒有在解構函數 <code>delete</code> 的話，你以為程式會幫你回收沒用到的記憶體，「但其實沒有」，可用的記憶體就會越來越少——記憶體洩漏。<code>std::vector</code>（記憶體）、<code>std::ifstream</code>（檔案）、<code>std::unique_ptr</code>（動態物件）都是 RAII：只要物件離開作用域，資源一定會被釋放，即使中途發生例外也一樣。這就是為什麼第 6 章的檔案不用手動 close、智慧指標不用手動 delete。</p><section class="cc" id="cc-s7-7"><h3 class="cc-h">Concept Check：7.7 物件的一生：複製與解構</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s7-7-1" data-label="7.7 物件的一生：複製與解構 Q1"><div class="q-meta"><h4><a href="#q-s7-7-1">Q1</a></h4><span class="q-kind">選擇｜易</span><span class="q-title">複製建構與複製賦值</span></div><div class="q-text"><p>下列哪一行呼叫的是<strong>複製賦值運算子</strong>？（a、b 都是 Bond 物件）</p></div><ol class="opts"><li><b>(A)</b><span><code>Bond c = a;</code></span></li><li><b>(B)</b><span><code>Bond d(a);</code></span></li><li><b>(C)</b><span><code>b = a;</code></span></li><li><b>(D)</b><span><code>Bond e{a};</code></span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (C)</strong><code>b = a;</code></div><div class="why"><p class="sh">解析</p><p>b 已經存在，<code>b = a</code> 是把 a 的內容賦值給 b；其他三個都是在建立新物件，呼叫複製建構函數。</p></div></div></article><article class="q" id="q-s7-7-2" data-label="7.7 物件的一生：複製與解構 Q2"><div class="q-meta"><h4><a href="#q-s7-7-2">Q2</a></h4><span class="q-kind">預測輸出｜中</span><span class="q-title">解構順序</span></div><div class="q-text"><p>下面程式印出什麼？</p>
+<p>建構時取得資源、解構時釋放資源——這個 C++ 的核心慣用法叫 <strong>RAII</strong>（Resource Acquisition Is Initialization）。老師上課的例子是一個 <code>FileHandler</code> 類別：private 成員是一個 <code>std::ofstream</code>，<strong>建構函數開檔、解構函數關檔</strong>，兩者是對稱的操作；物件在 main 的大括號裡建立，程式離開大括號時物件被刪除，解構函數就自動把檔案關掉。老師也提醒：用 <code>new</code> 配置卻沒有在解構函數 <code>delete</code> 的話，你以為程式會幫你回收沒用到的記憶體，「但其實沒有」，可用的記憶體就會越來越少——<span class="gl" tabindex="0" role="button" data-g="記憶體洩漏">記憶體洩漏</span>。<code>std::vector</code>（記憶體）、<code>std::ifstream</code>（檔案）、<code>std::unique_ptr</code>（動態物件）都是 RAII：只要物件離開作用域，資源一定會被釋放，即使中途發生<span class="gl" tabindex="0" role="button" data-g="例外">例外</span>也一樣。這就是為什麼第 6 章的檔案不用手動 close、智慧指標不用手動 delete。</p><section class="cc" id="cc-s7-7"><h3 class="cc-h">Concept Check：7.7 物件的一生：複製與解構</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s7-7-1" data-label="7.7 物件的一生：複製與解構 Q1"><div class="q-meta"><h4><a href="#q-s7-7-1">Q1</a></h4><span class="q-kind">選擇｜易</span><span class="q-title">複製建構與複製賦值</span></div><div class="q-text"><p>下列哪一行呼叫的是<strong>複製賦值運算子</strong>？（a、b 都是 Bond 物件）</p></div><ol class="opts"><li><b>(A)</b><span><code>Bond c = a;</code></span></li><li><b>(B)</b><span><code>Bond d(a);</code></span></li><li><b>(C)</b><span><code>b = a;</code></span></li><li><b>(D)</b><span><code>Bond e{a};</code></span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (C)</strong><code>b = a;</code></div><div class="why"><p class="sh">解析</p><p>b 已經存在，<code>b = a</code> 是把 a 的內容賦值給 b；其他三個都是在建立新物件，呼叫複製建構函數。</p></div></div></article><article class="q" id="q-s7-7-2" data-label="7.7 物件的一生：複製與解構 Q2"><div class="q-meta"><h4><a href="#q-s7-7-2">Q2</a></h4><span class="q-kind">預測輸出｜中</span><span class="q-title">解構順序</span></div><div class="q-text"><p>下面程式印出什麼？</p>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
 <span class="k">struct</span><span class="w"> </span><span class="nc">T</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="n">c</span><span class="p">;</span>
@@ -1259,17 +1263,19 @@ Bond(US10Y)  殖利率 2% 價格 120.3012  修正存續期間 8.3497  反推殖�
 <pre class="out" data-title="執行結果"><code>D = 9.06874，C = 95.2263
 近似變動 -8.59261%，實際變動 -8.61047%</code></pre></div><div class="why"><p class="sh">解析</p><p>因為 price 是 public 的 const 成員函數，不改類別也能寫出凸性；若要做成成員函數，就在 Bond.h 加宣告 <code>double convexity(double ytm) const;</code>，在 Bond.cpp 寫 <code>double Bond::convexity(double y) const { ... }</code>。「與類別相關但不需要存取 private」的功能寫成普通函數也是老師講義提到的做法。</p></div></div></article></section></section><section class="sec" id="s7-9" data-label="7.9 本章小結"><h2><span class="num">7.9</span>本章小結</h2><ul>
 <li><strong>類別</strong>是自訂型態（藍圖），<strong>物件</strong>是實體；成員變數＋成員函數；<code>.</code> 與 <code>-&gt;</code> 存取。</li>
-<li><strong>封裝</strong>：<code>public</code> 是介面、<code>private</code> 是實作；class 預設 private、struct 預設 public。</li>
+<li><strong><span class="gl" tabindex="0" role="button" data-g="封裝">封裝</span></strong>：<code>public</code> 是介面、<code>private</code> 是實作；class 預設 private、struct 預設 public。</li>
 <li>類別定義放 <code>.h</code>、成員函數實作放 <code>.cpp</code>，類別外實作要寫 <code>類別名::</code>。</li>
 <li><strong>建構函數</strong>：與類別同名、無回傳型態、自動呼叫、可重載；寫了任何建構函數就沒有自動的預設建構函數；<code>Time t();</code> 是函數宣告。</li>
 <li><strong>explicit</strong> 禁止單參數建構函數的隱式轉換；<strong>初始化列表</strong> <code>: a_(x), b_(y) {}</code> 效率較好，const 與參考成員必須用它，初始化順序依宣告順序；類別內初始值；<code>= default</code>、<code>= delete</code>。</li>
 <li><strong>const 成員函數</strong>不修改物件，const 物件只能呼叫它；<code>mutable</code> 例外；<strong>this</strong> 指向目前物件，回傳 <code>*this</code> 可鏈式呼叫。</li>
 <li><strong>static 成員</strong>屬於類別：變數全體共用（類別外定義一次）、函數沒有 this，用 <code>類別名::</code> 呼叫。</li>
 <li><strong>運算子重載</strong>：<code>operator==</code>、<code>operator&lt;</code>、<code>operator+</code>、非成員的 <code>operator&lt;&lt;</code>。</li>
-<li><strong>複製建構</strong> vs <strong>複製賦值</strong>（目標是否已存在）；<strong>解構函數</strong> <code>~類別名()</code> 依建構的相反順序執行；裸指標成員要深複製（三法則），更好的是改用 vector／智慧指標（零法則）；RAII。</li>
+<li><strong>複製建構</strong> vs <strong>複製賦值</strong>（目標是否已存在）；<strong>解構函數</strong> <code>~類別名()</code> 依建構的相反順序執行；裸指標成員要<span class="gl" tabindex="0" role="button" data-g="深複製">深複製</span>（<span class="gl" tabindex="0" role="button" data-g="三法則">三法則</span>），更好的是改用 vector／智慧指標（零法則）；<span class="gl" tabindex="0" role="button" data-g="RAII">RAII</span>。</li>
 </ul></section>
-<nav class="pager"><a class="prev" href="ch06.html">← 第 6 章</a><a class="next" href="ch08.html">第 8 章 →</a></nav></main>
+<nav class="pager" aria-label="上一頁與下一頁"><a class="prev" href="ch06.html"><small>← 上一章</small>第 6 章　命名空間、預處理與記憶體管理</a><a class="next" href="ch08.html"><small>下一章 →</small>第 8 章　類別 class（二）：繼承、多型與設計模式</a></nav></main>
+<footer class="site-foot"><span>金融程式計算：C++｜課程筆記</span></footer>
 <script src="assets/katex/katex.min.js"></script><script src="assets/katex/auto-render.min.js"></script>
-<script src="assets/search.js?v=d491be5e"></script>
-<script src="assets/site.js?v=99d8caa2"></script>
+<script src="assets/search.js?v=e155388e"></script>
+<script src="assets/glossary.js?v=943f81c7"></script>
+<script src="assets/site.js?v=f42ce8f5"></script>
 </body></html>

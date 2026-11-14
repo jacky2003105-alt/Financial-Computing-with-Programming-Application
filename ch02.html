@@ -1,14 +1,18 @@
 <!doctype html>
 <html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>第 2 章 資料型態、變數與記憶體｜金融程式計算：C++課程筆記</title>
+<title>第 2 章 資料型態、變數與記憶體｜金融程式計算：C++</title>
+<meta name="color-scheme" content="light dark">
+<script>try{var t=localStorage.getItem('notes:theme')||(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 <link rel="stylesheet" href="assets/katex/katex.min.css">
-<link rel="stylesheet" href="assets/style.css?v=f08507d8">
-</head><body data-page="ch02" data-mode="course">
-<div class="topbar"><a class="brand" href="index.html">金融程式計算：C++｜課程筆記</a><div class="pickers">
-<nav class="mode" aria-label="切換課程或作業"><a href="ch01.html" data-mode="course" class=on>課程</a><a href="hw01.html" data-mode="hw">作業</a></nav><label for="unitSelect">選擇單元</label><select id="unitSelect" aria-label="選擇單元"><option value="index.html">首頁：課程介紹與使用說明</option><option value="ch01.html">第 1 章　C++ 簡介與第一支程式</option><option value="ch02.html" selected>第 2 章　資料型態、變數與記憶體</option><option value="ch03.html">第 3 章　陣列、指標與字串</option><option value="ch04.html">第 4 章　表達式、運算子與流程控制</option><option value="ch05.html">第 5 章　函數</option><option value="ch06.html">第 6 章　命名空間、預處理與記憶體管理</option><option value="ch07.html">第 7 章　類別 class（一）：封裝、建構與物件的一生</option><option value="ch08.html">第 8 章　類別 class（二）：繼承、多型與設計模式</option><option value="ch09.html">第 9 章　模板與泛型</option><option value="ch10.html">第 10 章　課程總結：從語法到量化程式庫</option></select></div></div>
-<main class="wrap"><header class="ch-head"><h1>第 2 章　資料型態、變數與記憶體</h1><details class="ch-toc"><summary>本章目錄（11 節）</summary><ol><li><a href="#s2-1"><span>2.1</span>型態：資料長什麼樣子</a></li><li><a href="#s2-2"><span>2.2</span>變數：有名字的一塊記憶體</a></li><li><a href="#s2-3"><span>2.3</span>整數與浮點數的陷阱</a></li><li><a href="#s2-4"><span>2.4</span>常數與字面值</a></li><li><a href="#s2-5"><span>2.5</span>從鍵盤輸入：std::cin</a></li><li><a href="#s2-6"><span>2.6</span>變數與記憶體：位址</a></li><li><a href="#s2-7"><span>2.7</span>參考：替變數取別名</a></li><li><a href="#s2-8"><span>2.8</span>指標：存放位址的變數</a></li><li><a href="#s2-9"><span>2.9</span>const 與指標、右值參考</a></li><li><a href="#s2-10"><span>2.10</span>自訂型態：struct、enum、union</a></li><li><a href="#s2-11"><span>2.11</span>本章小結</a></li></ol></details></header>
-<div class="ch-intro"><p>這一章對應老師的講義二：C++ 怎麼存資料。從「型態」和「變數」開始，接著是常數、鍵盤輸入，然後進入 C++ 和 R、Python 最不一樣的地方——<strong>記憶體位址、參考與指標</strong>，最後用 <code>struct</code>、<code>enum</code> 自己定義型態。這一章是後面所有內容（陣列、函數、類別）的地基，指標的部分第一次看不懂很正常，先把「位址」的圖像建立起來。</p></div><section class="sec" id="s2-1" data-label="2.1 型態：資料長什麼樣子"><h2><span class="num">2.1</span>型態：資料長什麼樣子</h2><h3 id="s2-1-1">強型別</h3>
-<p>C++ 是<strong>強型別語言</strong>：每個變數、每個物件在使用前都要先說清楚它的<strong>型態</strong>（type）。型態決定兩件事：</p>
+<link rel="stylesheet" href="assets/style.css?v=2772ac91">
+
+</head><body data-page="ch02" data-mode="course" data-course="cf" data-key="cf">
+<a class="skip" href="#main">跳到主要內容</a>
+<header class="topbar"><a class="brand" href="index.html" aria-label="金融程式計算：C++｜課程筆記首頁"><span class="logo" aria-hidden="true">C++</span><span>金融程式計算：C++</span><span class="sub">｜課程筆記</span></a>
+<div class="pickers"><nav class="mode" aria-label="切換課程或作業"><a href="ch01.html" data-mode="course" class=on>課程</a><a href="hw01.html" data-mode="hw">作業</a></nav><label for="unitSelect">選擇單元</label><select id="unitSelect" aria-label="選擇單元"><option value="index.html">首頁：課程介紹與使用說明</option><option value="ch01.html">第 1 章　C++ 簡介與第一支程式</option><option value="ch02.html" selected>第 2 章　資料型態、變數與記憶體</option><option value="ch03.html">第 3 章　陣列、指標與字串</option><option value="ch04.html">第 4 章　表達式、運算子與流程控制</option><option value="ch05.html">第 5 章　函數</option><option value="ch06.html">第 6 章　命名空間、預處理與記憶體管理</option><option value="ch07.html">第 7 章　類別 class（一）：封裝、建構與物件的一生</option><option value="ch08.html">第 8 章　類別 class（二）：繼承、多型與設計模式</option><option value="ch09.html">第 9 章　模板與泛型</option><option value="ch10.html">第 10 章　課程總結：從語法到量化程式庫</option></select></div></header>
+<main class="wrap" id="main"><nav class="crumbs" aria-label="目前位置"><a href="index.html">首頁</a><span class="sep">›</span><span>課程筆記</span><span class="sep">›</span><span>第 2 章</span></nav><header class="ch-head"><p class=eyebrow>第 2 章</p><h1>資料型態、變數與記憶體</h1><p class="ch-meta"><span>11 節</span><span>Concept Check 30 題</span><span>閱讀約 58 分鐘</span></p><details class="ch-toc"><summary>本章目錄（11 節）</summary><ol><li><a href="#s2-1"><span>2.1</span>型態：資料長什麼樣子</a></li><li><a href="#s2-2"><span>2.2</span>變數：有名字的一塊記憶體</a></li><li><a href="#s2-3"><span>2.3</span>整數與浮點數的陷阱</a></li><li><a href="#s2-4"><span>2.4</span>常數與字面值</a></li><li><a href="#s2-5"><span>2.5</span>從鍵盤輸入：std::cin</a></li><li><a href="#s2-6"><span>2.6</span>變數與記憶體：位址</a></li><li><a href="#s2-7"><span>2.7</span>參考：替變數取別名</a></li><li><a href="#s2-8"><span>2.8</span>指標：存放位址的變數</a></li><li><a href="#s2-9"><span>2.9</span>const 與指標、右值參考</a></li><li><a href="#s2-10"><span>2.10</span>自訂型態：struct、enum、union</a></li><li><a href="#s2-11"><span>2.11</span>本章小結</a></li></ol></details></header>
+<div class="ch-intro"><p>這一章對應老師的講義二：C++ 怎麼存資料。從「<span class="gl" tabindex="0" role="button" data-g="型態">型態</span>」和「<span class="gl" tabindex="0" role="button" data-g="變數">變數</span>」開始，接著是常數、鍵盤輸入，然後進入 C++ 和 R、Python 最不一樣的地方——<strong>記憶體<span class="gl" tabindex="0" role="button" data-g="位址">位址</span>、<span class="gl" tabindex="0" role="button" data-g="參考">參考</span>與<span class="gl" tabindex="0" role="button" data-g="指標">指標</span></strong>，最後用 <code>struct</code>、<code>enum</code> 自己定義型態。這一章是後面所有內容（<span class="gl" tabindex="0" role="button" data-g="陣列">陣列</span>、<span class="gl" tabindex="0" role="button" data-g="函數">函數</span>、<span class="gl" tabindex="0" role="button" data-g="類別">類別</span>）的地基，指標的部分第一次看不懂很正常，先把「位址」的圖像建立起來。</p></div><section class="sec" id="s2-1" data-label="2.1 型態：資料長什麼樣子"><h2><span class="num">2.1</span>型態：資料長什麼樣子</h2><h3 id="s2-1-1">強型別</h3>
+<p>C++ 是<strong>強型別語言</strong>：每個變數、每個<span class="gl" tabindex="0" role="button" data-g="物件">物件</span>在使用前都要先說清楚它的<strong>型態</strong>（type）。型態決定兩件事：</p>
 <ol>
 <li>這筆資料在記憶體中佔<strong>多大的空間</strong>；</li>
 <li>可以對它做<strong>哪些操作</strong>（整數可以相除取餘數，文字可以相接…）。</li>
@@ -46,7 +50,7 @@
 <tr>
 <td>空</td>
 <td><code>void</code></td>
-<td>「沒有回傳值」的函數</td>
+<td>「沒有回<span class="gl" tabindex="0" role="button" data-g="傳值">傳值</span>」的函數</td>
 </tr>
 <tr>
 <td>複合型態</td>
@@ -134,7 +138,7 @@ float  有效位數約 6 位</code></pre>
 <pre class="out" data-title="執行結果"><code>市值 = 102000</code></pre>
 <ul>
 <li><strong>初始化</strong>只發生一次，在變數誕生的那一刻；<strong>賦值</strong>可以發生很多次。</li>
-<li>老師強調：<strong>一定要初始化</strong>。在函數裡宣告卻沒給初值的變數，內容是「上一個使用這塊記憶體的人留下的垃圾值」，讀它是未定義行為：</li>
+<li>老師強調：<strong>一定要初始化</strong>。在函數裡<span class="gl" tabindex="0" role="button" data-g="宣告">宣告</span>卻沒給初值的變數，內容是「上一個使用這塊記憶體的人留下的垃圾值」，讀它是<span class="gl" tabindex="0" role="button" data-g="未定義行為">未定義行為</span>：</li>
 </ul>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
 
@@ -150,7 +154,7 @@ float  有效位數約 6 位</code></pre>
 main.cpp:4:9: note: ‘count’ was declared here
     4 |     int count;                       // 沒有初始化！
       |         ^~~~~</code></pre>
-<pre class="out" data-title="執行結果"><code>32764</code></pre>
+<pre class="out" data-title="執行結果"><code>32767</code></pre>
 <p>編譯器（打開 <code>-Wall</code>）會警告 <code>is used uninitialized</code>。印出來的數字每台電腦、每次執行都可能不同（有時剛好是 0，別被騙了）。</p>
 <h3 id="s2-2-2">四種初始化寫法</h3>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
@@ -166,7 +170,7 @@ main.cpp:4:9: note: ‘count’ was declared here
 <span class="p">}</span>
 </code></pre></div>
 <pre class="out" data-title="執行結果"><code>10 20 30 40 0</code></pre>
-<p>大括號 <code>{}</code> 有一個好處：<strong>不允許會遺失資料的轉換</strong>（narrowing）。例如把 3.14159 塞進 int：（若右邊是 double 變數而非字面值，g++ 預設只給警告，加上 <code>-pedantic-errors</code> 才會變成錯誤；其他編譯器如 clang、MSVC 直接報錯。）</p>
+<p>大括號 <code>{}</code> 有一個好處：<strong>不允許會遺失資料的轉換</strong>（narrowing）。例如把 3.14159 塞進 int：（若右邊是 double 變數而非<span class="gl" tabindex="0" role="button" data-g="字面值">字面值</span>，g++ 預設只給警告，加上 <code>-pedantic-errors</code> 才會變成錯誤；其他編譯器如 clang、MSVC 直接報錯。）</p>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">a</span><span class="p">{</span><span class="mf">3.1415926</span><span class="p">};</span><span class="w">   </span><span class="c1">// 大括號：編譯器拒絕，避免悄悄遺失小數</span>
 <span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
@@ -398,7 +402,7 @@ main.cpp:4:15: error: uninitialized ‘const k’ [-fpermissive]
       |               ^
 main.cpp:4:15: warning: unused variable ‘k’ [-Wunused-variable]</code></pre>
 <ul>
-<li><code>const</code> 物件<strong>必須初始化</strong>，之後任何修改都會被編譯器擋下來。</li>
+<li><code>const</code> 物件<strong>必須<span class="gl" tabindex="0" role="button" data-g="初始化">初始化</span></strong>，之後任何修改都會被編譯器擋下來。</li>
 <li>好處：(1) 把「魔術數字」取名字，程式更好讀；(2) 防止自己不小心改掉；(3) 稅率改了只要改一個地方。</li>
 </ul>
 <h3 id="s2-4-5">constexpr：編譯時就算好</h3>
@@ -416,7 +420,7 @@ main.cpp:4:15: warning: unused variable ‘k’ [-Wunused-variable]</code></pre>
 </code></pre></div>
 <pre class="out" data-title="執行結果"><code>年化變異數 = 0.1008</code></pre>
 <ul>
-<li><code>const</code>：執行期間不能改。<code>constexpr</code>：值<strong>在編譯時就要能算出來</strong>（更嚴格）。</li>
+<li><code>const</code>：執行期間不能改。<code>constexpr</code>：值<strong>在<span class="gl" tabindex="0" role="button" data-g="編譯">編譯</span>時就要能算出來</strong>（更嚴格）。</li>
 <li>老師的原則：能在編譯期算的就在編譯期算——效能更好，也更安全。所有 constexpr 都是 const，反過來不一定：<code>const int n = get_size();</code> 是 const，但要執行才知道值，不能是 constexpr。</li>
 </ul><section class="cc" id="cc-s2-4"><h3 class="cc-h">Concept Check：2.4 常數與字面值</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s2-4-1" data-label="2.4 常數與字面值 Q1"><div class="q-meta"><h4><a href="#q-s2-4-1">Q1</a></h4><span class="q-kind">選擇｜易</span><span class="q-title">字元與字串</span></div><div class="q-text"><p>關於 <code>&#x27;a&#x27;</code> 與 <code>&quot;a&quot;</code>，下列何者正確？</p></div><ol class="opts"><li><b>(A)</b><span>兩者完全相同，都是字元，都佔 1 byte</span></li><li><b>(B)</b><span>"a" 比 'a' 多一個結尾的 '\0'，共 2 bytes</span></li><li><b>(C)</b><span>'a' 是字串，"a" 是字元，兩者都佔 1 byte</span></li><li><b>(D)</b><span>"a" 只佔 1 byte，'a' 因為是字元佔 2 bytes</span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (B)</strong><p>"a" 比 'a' 多一個結尾的 '\0'，共 2 bytes</p></div><div class="why"><p class="sh">解析</p><p>單引號是字元，雙引號是字串；C 風格字串結尾會自動加上結束字元 '\0'。</p></div></div></article><article class="q" id="q-s2-4-2" data-label="2.4 常數與字面值 Q2"><div class="q-meta"><h4><a href="#q-s2-4-2">Q2</a></h4><span class="q-kind">預測輸出｜中</span><span class="q-title">八進位陷阱</span></div><div class="q-text"><p>下面程式印出什麼？</p>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
@@ -459,7 +463,7 @@ main.cpp:4:15: warning: unused variable ‘k’ [-Wunused-variable]</code></pre>
 <pre class="out" data-title="執行結果"><code>請輸入本金、年利率、年數：
 到期本利和 = 1280084.54</code></pre>
 <ul>
-<li><code>std::cin</code>（character input）代表鍵盤輸入；<code>&gt;&gt;</code> 是<strong>輸入運算子</strong>，方向和 <code>&lt;&lt;</code> 相反：把輸入的值「流進」右邊的變數。</li>
+<li><code>std::cin</code>（character input）代表鍵盤輸入；<code>&gt;&gt;</code> 是<strong>輸入<span class="gl" tabindex="0" role="button" data-g="運算子">運算子</span></strong>，方向和 <code>&lt;&lt;</code> 相反：把輸入的值「流進」右邊的變數。</li>
 <li>會依變數的型態解讀輸入：讀進 <code>double</code> 就解讀成小數。</li>
 <li>多個值可以用空白或換行分隔。上面「鍵盤輸入」那一格是網站代替你打的內容。</li>
 </ul>
@@ -504,9 +508,9 @@ main.cpp:4:15: warning: unused variable ‘k’ [-Wunused-variable]</code></pre>
 <span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre></div>
-<pre class="out" data-title="執行結果"><code>shares 的值 = 1000，位址 = 0x7ffd1413fdfc
-price  的值 = 101.5，位址 = 0x7ffd1413fe00
-grade  的位址 = 0x7ffd1413fdfb</code></pre>
+<pre class="out" data-title="執行結果"><code>shares 的值 = 1000，位址 = 0x7ffc5ea8a44c
+price  的值 = 101.5，位址 = 0x7ffc5ea8a450
+grade  的位址 = 0x7ffc5ea8a44b</code></pre>
 <ul>
 <li>位址用<strong>十六進位</strong>顯示（0x 開頭），每次執行可能不同——作業系統每次分配的位置不一樣。</li>
 <li><code>char</code> 的位址要轉成 <code>void*</code> 才會印出位址，否則 cout 會把它當成字串去印（第 3 章字元陣列會說明）。</li>
@@ -594,7 +598,7 @@ main.cpp:4:10: warning: unused variable ‘r2’ [-Wunused-variable]
 <span class="p">}</span>
 </code></pre></div>
 <pre class="out" data-title="執行結果"><code>帳戶餘額：10290</code></pre>
-<p>函數拿到的是 <code>account</code> 的別名，所以在函數裡改 <code>balance</code> 就是改 <code>account</code>。第 5 章會詳細比較「傳值」和「傳參考」。</p><section class="cc" id="cc-s2-7"><h3 class="cc-h">Concept Check：2.7 參考：替變數取別名</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s2-7-1" data-label="2.7 參考：替變數取別名 Q1"><div class="q-meta"><h4><a href="#q-s2-7-1">Q1</a></h4><span class="q-kind">預測輸出｜中</span><span class="q-title">參考改值</span></div><div class="q-text"><p>下面程式印出什麼？</p>
+<p>函數拿到的是 <code>account</code> 的別名，所以在函數裡改 <code>balance</code> 就是改 <code>account</code>。第 5 章會詳細比較「傳值」和「<span class="gl" tabindex="0" role="button" data-g="傳參考">傳參考</span>」。</p><section class="cc" id="cc-s2-7"><h3 class="cc-h">Concept Check：2.7 參考：替變數取別名</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s2-7-1" data-label="2.7 參考：替變數取別名 Q1"><div class="q-meta"><h4><a href="#q-s2-7-1">Q1</a></h4><span class="q-kind">預測輸出｜中</span><span class="q-title">參考改值</span></div><div class="q-text"><p>下面程式印出什麼？</p>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
 <span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">8</span><span class="p">;</span>
@@ -634,11 +638,11 @@ main.cpp:4:10: warning: unused variable ‘r2’ [-Wunused-variable]
 <span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre></div>
-<pre class="out" data-title="執行結果"><code>price 的位址 : 0x7ffc8fe54ac8
-ptr 的值      : 0x7ffc8fe54ac8
+<pre class="out" data-title="執行結果"><code>price 的位址 : 0x7ffcebb0d8a8
+ptr 的值      : 0x7ffcebb0d8a8
 *ptr          : 101.5
 price 變成    : 99
-ptr 自己的位址: 0x7ffc8fe54ad0，大小 8 bytes</code></pre>
+ptr 自己的位址: 0x7ffcebb0d8b0，大小 8 bytes</code></pre>
 <p>兩個符號、兩種角色（老師特別提醒要看上下文）：</p>
 <table>
 <thead>
@@ -738,8 +742,8 @@ ptr 自己的位址: 0x7ffc8fe54ad0，大小 8 bytes</code></pre>
 <span class="p">}</span>
 </code></pre></div>
 <pre class="out" data-title="執行結果"><code>x     = 100
-ptr   = 0x7fffe4911034，*ptr = 100
-ptr2  = 0x7fffe4911038，*ptr2 = 0x7fffe4911034，**ptr2 = 100</code></pre>
+ptr   = 0x7ffde6958994，*ptr = 100
+ptr2  = 0x7ffde6958998，*ptr2 = 0x7ffde6958994，**ptr2 = 100</code></pre>
 <p><code>*ptr2</code> 拿到的是 ptr（一個位址），再 <code>*</code> 一次 <code>**ptr2</code> 才拿到 x 的值 100。</p>
 <h3 id="s2-8-5">void* 指標</h3>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
@@ -991,8 +995,10 @@ b2 面額 = 1000，sizeof(Bond) = 24</code></pre>
 <li>const 與指標：<code>const T*</code> 不能透過它改值（Low-Level）、<code>T* const</code> 不能改指向（Top-Level）；<code>const T&amp;</code> 是唯讀別名。<code>&amp;&amp;</code> 右值參考綁定臨時物件，用於 move。</li>
 <li><code>struct</code> 打包資料（<code>.</code> 與 <code>-&gt;</code>）、<code>enum class</code> 取有意義的名字、<code>union</code> 共用記憶體。</li>
 </ul></section>
-<nav class="pager"><a class="prev" href="ch01.html">← 第 1 章</a><a class="next" href="ch03.html">第 3 章 →</a></nav></main>
+<nav class="pager" aria-label="上一頁與下一頁"><a class="prev" href="ch01.html"><small>← 上一章</small>第 1 章　C++ 簡介與第一支程式</a><a class="next" href="ch03.html"><small>下一章 →</small>第 3 章　陣列、指標與字串</a></nav></main>
+<footer class="site-foot"><span>金融程式計算：C++｜課程筆記</span></footer>
 <script src="assets/katex/katex.min.js"></script><script src="assets/katex/auto-render.min.js"></script>
-<script src="assets/search.js?v=d491be5e"></script>
-<script src="assets/site.js?v=99d8caa2"></script>
+<script src="assets/search.js?v=e155388e"></script>
+<script src="assets/glossary.js?v=943f81c7"></script>
+<script src="assets/site.js?v=f42ce8f5"></script>
 </body></html>
