@@ -44,7 +44,7 @@ var mac=/Mac|iPhone|iPad/.test(navigator.platform||'');
 tools.innerHTML='<button type="button" class="tb rd-search-btn" aria-label="搜尋全站">'+ICON.search+'<span class="lb">搜尋</span><kbd>'+(mac?'⌘K':'Ctrl K')+'</kbd></button>'+
  (hasQ?'<button type="button" class="tb rd-weak-btn" aria-pressed="false" aria-label="只看標記不熟的題目">'+ICON.star+'<span class="lb">只看不熟</span></button>':'')+
  (hasSec?'<button type="button" class="tb rd-outline-btn" aria-expanded="false" aria-label="本頁大綱">'+ICON.list+'<span class="lb">本頁大綱</span></button>':'')+
- (hasQ?'<button type="button" class="tb toggle-all">隱藏全部解答</button>':'')+
+ (hasQ?'<button type="button" class="tb toggle-all">顯示全部解答</button>':'')+
  '<button type="button" class="tb icon rd-theme" aria-label="切換深色模式"></button>';
 bar.appendChild(tools);
 var themeBtn=$('.rd-theme',tools);
@@ -57,15 +57,27 @@ var pbar=prog.firstChild,topBtn=document.createElement('button');topBtn.type='bu
 topBtn.onclick=function(){window.scrollTo({top:0,behavior:'smooth'});};
 function onScrollUI(){var h=document.documentElement,max=h.scrollHeight-h.clientHeight;pbar.style.width=(max>0?Math.min(100,h.scrollTop/max*100):0)+'%';topBtn.classList.toggle('show',h.scrollTop>900);}
 
-/* ---------- 解答按鈕（規則 14.4：預設顯示；單題與全部同步） ---------- */
+/* ---------- 解答按鈕（規則 14.4：預設隱藏，2026/11/14 改；單題與全部同步） ---------- */
 var qs=$$('.q');
-if(qs.length){var fl=document.createElement('button');fl.type='button';fl.className='rd-float toggle-all';fl.textContent='隱藏全部解答';B.appendChild(fl);}
+if(qs.length){var fl=document.createElement('button');fl.type='button';fl.className='rd-float toggle-all';fl.textContent='顯示全部解答';B.appendChild(fl);}
 var alls=$$('.toggle-all');
 function setQ(q,open){var b=$('.toggle',q),s=$('.sol',q);if(!b||!s)return;s.hidden=!open;b.setAttribute('aria-expanded',open);b.textContent=open?'隱藏解答':'顯示解答';}
 function anyOpen(){return qs.some(function(q){var s=$('.sol',q);return s&&!s.hidden;});}
 function sync(){var t=anyOpen()?'隱藏全部解答':'顯示全部解答';alls.forEach(function(b){b.textContent=t;});}
 qs.forEach(function(q){var b=$('.toggle',q);if(b)b.onclick=function(){setQ(q,$('.sol',q).hidden);sync();};});
 alls.forEach(function(b){b.onclick=function(){var o=!anyOpen();qs.forEach(function(q){setQ(q,o);});sync();};});
+/* ---------- 選擇題：點選項就判斷對錯，並打開正確答案與詳解 ---------- */
+qs.forEach(function(q){var key=q.getAttribute('data-key'),lis=$$('.opts li[data-k]',q);if(!key||!lis.length)return;
+ q.classList.add('q-mc');var fb=document.createElement('p');fb.className='q-fb';fb.setAttribute('aria-live','polite');fb.hidden=true;
+ var ol=$('.opts',q);ol.insertAdjacentElement('afterend',fb);
+ lis.forEach(function(li){li.setAttribute('role','button');li.setAttribute('tabindex','0');
+  function pick(){if(q.classList.contains('answered'))return;var k=li.getAttribute('data-k'),ok=k===key;q.classList.add('answered');
+   lis.forEach(function(x){var xk=x.getAttribute('data-k');x.classList.toggle('is-key',xk===key);x.classList.toggle('is-wrong',xk===k&&!ok);x.classList.toggle('is-picked',xk===k);x.removeAttribute('tabindex');});
+   fb.hidden=false;fb.className='q-fb '+(ok?'ok':'bad');fb.innerHTML=(ok?'答對了！':'答錯了，你選 ('+k+')，正確答案是 ('+key+')。')+' <button type="button" class="q-retry">重新作答</button>';
+   $('.q-retry',fb).onclick=function(){q.classList.remove('answered');fb.hidden=true;lis.forEach(function(x){x.classList.remove('is-key','is-wrong','is-picked');x.setAttribute('tabindex','0');});setQ(q,false);sync();};
+   setQ(q,true);sync();}
+  li.addEventListener('click',function(e){if(e.target.closest('a'))return;pick();});
+  li.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();pick();}});});});
 window.addEventListener('beforeprint',function(){qs.forEach(function(q){setQ(q,true);});$$('details').forEach(function(d){d.open=true;});sync();});
 
 /* ---------- 不熟標記 ---------- */

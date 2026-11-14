@@ -4,7 +4,7 @@
 <meta name="color-scheme" content="light dark">
 <script>try{var t=localStorage.getItem('notes:theme')||(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 <link rel="stylesheet" href="assets/katex/katex.min.css">
-<link rel="stylesheet" href="assets/style.css?v=f238fc88">
+<link rel="stylesheet" href="assets/style.css?v=6e5fdb29">
 
 </head><body data-page="ch10" data-mode="course" data-course="cf" data-key="cf">
 <a class="skip" href="#main">跳到主要內容</a>
@@ -47,7 +47,7 @@
 </tr>
 <tr>
 <td>6</td>
-<td><span class="gl" tabindex="0" role="button" data-g="命名空間">命名空間</span>、前置處理、記憶體、智慧指標</td>
+<td><span class="gl" tabindex="0" role="button" data-g="命名空間">命名空間</span>、前置處理、記憶體、<span class="gl" tabindex="0" role="button" data-g="智慧指標">智慧指標</span></td>
 <td>共用的市場資料、資源安全</td>
 </tr>
 <tr>
@@ -57,7 +57,7 @@
 </tr>
 <tr>
 <td>8</td>
-<td><span class="gl" tabindex="0" role="button" data-g="繼承">繼承</span>、虛函數、抽象類別、策略模式、單例</td>
+<td><span class="gl" tabindex="0" role="button" data-g="繼承">繼承</span>、<span class="gl" tabindex="0" role="button" data-g="虛函數">虛函數</span>、<span class="gl" tabindex="0" role="button" data-g="抽象類別">抽象類別</span>、策略模式、單例</td>
 <td>可替換的定價引擎、全域設定</td>
 </tr>
 <tr>
@@ -137,7 +137,7 @@ FixedRateBond</code></pre></div>
 <td>7.4、本章</td>
 </tr>
 </tbody>
-</table><section class="cc" id="cc-s10-1"><h3 class="cc-h">Concept Check：10.1 整學期的地圖</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s10-1-1" data-label="10.1 整學期的地圖 Q1"><div class="q-meta"><h4><a href="#q-s10-1-1">Q1</a></h4><span class="q-kind">選擇｜易</span><span class="q-title">關鍵字的用途</span></div><div class="q-text"><p>在一個 <code>Money</code> 類別的單參數建構函數加上 <code>explicit</code>，主要是為了防止什麼？</p></div><ol class="opts"><li><b>(A)</b><span>Money 物件被任意複製</span></li><li><b>(B)</b><span>數字被偷偷轉換成 Money</span></li><li><b>(C)</b><span>Money 被其他類別繼承</span></li><li><b>(D)</b><span>Money 的成員被外界修改</span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (B)</strong><p>數字被偷偷轉換成 Money</p></div><div class="why"><p class="sh">解析</p><p>explicit 禁止單參數建構函數被用來做隱式轉換，例如 <code>pay(250)</code> 自動把 250 變成 Money。</p></div></div></article></section></section><section class="sec" id="s10-2" data-label="10.2 NPV() 背後發生的事"><h2><span class="num">10.2</span>NPV() 背後發生的事</h2><p>在 QuantLib 中，<code>bond.NPV()</code> 的呼叫順序大致是：</p>
+</table><section class="cc" id="cc-s10-1"><h3 class="cc-h">Concept Check：10.1 整學期的地圖</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s10-1-1" data-key="B" data-label="10.1 整學期的地圖 Q1"><div class="q-meta"><h4><a href="#q-s10-1-1">Q1</a></h4><span class="q-kind">選擇｜易</span><span class="q-title">關鍵字的用途</span></div><div class="q-text"><p>在一個 <code>Money</code> 類別的單參數建構函數加上 <code>explicit</code>，主要是為了防止什麼？</p></div><ol class="opts"><li data-k="A"><b>(A)</b><span>Money 物件被任意複製</span></li><li data-k="B"><b>(B)</b><span>數字被偷偷轉換成 Money</span></li><li data-k="C"><b>(C)</b><span>Money 被其他類別繼承</span></li><li data-k="D"><b>(D)</b><span>Money 的成員被外界修改</span></li></ol><button class="toggle" type="button" aria-expanded="false">顯示解答</button><div class="sol" hidden><div class="ans"><strong>答案 (B)</strong><p>數字被偷偷轉換成 Money</p></div><div class="why"><p class="sh">解析</p><p>explicit 禁止單參數建構函數被用來做隱式轉換，例如 <code>pay(250)</code> 自動把 250 變成 Money。</p></div></div></article></section></section><section class="sec" id="s10-2" data-label="10.2 NPV() 背後發生的事"><h2><span class="num">10.2</span>NPV() 背後發生的事</h2><p>在 QuantLib 中，<code>bond.NPV()</code> 的呼叫順序大致是：</p>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">文字</span><pre><code>Bond::NPV()                     ← 使用者呼叫：只是「讀取結果」的介面
   └─ LazyObject::calculate()    ← 檢查結果是否還有效
        └─ performCalculations() ← 真的要算時才算
@@ -191,7 +191,7 @@ FixedRateBond</code></pre></div>
 <li><code>update()</code>（收到通知時）<strong>只做一件事：標記 <code>calculated_ = false</code></strong>，不計算。</li>
 <li><code>calculate()</code> 是「快取閘門＋有效性閘門」：結果有效就直接用；過期了才呼叫 <code>performCalculations()</code>。</li>
 <li><code>NPV()</code> 只負責「確保結果有效」，然後回傳——<strong>不把計算邏輯塞在 getter 裡</strong>。</li>
-</ul></section><section class="sec" id="s10-3" data-label="10.3 自己寫一個迷你 QuantLib"><h2><span class="num">10.3</span>自己寫一個迷你 QuantLib</h2><p>把整學期的語法組合起來：智慧指標、抽象類別、虛函數與 override、mutable、const、多重繼承與虛擬繼承、例外安全、lambda。</p>
+</ul></section><section class="sec" id="s10-3" data-label="10.3 自己寫一個迷你 QuantLib"><h2><span class="num">10.3</span>自己寫一個迷你 QuantLib</h2><p>把整學期的語法組合起來：智慧指標、抽象類別、虛函數與 override、mutable、const、<span class="gl" tabindex="0" role="button" data-g="多重繼承">多重繼承</span>與虛擬繼承、例外安全、lambda。</p>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iomanip&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;vector&gt;</span>
@@ -361,7 +361,7 @@ NPV = 102.1745，計算次數：2</code></pre>
 </thead>
 <tbody>
 <tr>
-<td>抽象類別、純虛函數</td>
+<td>抽象類別、<span class="gl" tabindex="0" role="button" data-g="純虛函數">純虛函數</span></td>
 <td><code>Observer::update</code>、<code>performCalculations</code></td>
 <td>8.4</td>
 </tr>
@@ -381,7 +381,7 @@ NPV = 102.1745，計算次數：2</code></pre>
 <td>7.4</td>
 </tr>
 <tr>
-<td><code>const</code> 成員函數</td>
+<td><code>const</code> <span class="gl" tabindex="0" role="button" data-g="成員函數">成員函數</span></td>
 <td><code>NPV()</code>、<code>discount()</code> 不改變「邏輯狀態」</td>
 <td>7.4</td>
 </tr>
@@ -391,8 +391,8 @@ NPV = 102.1745，計算次數：2</code></pre>
 <td>6.5</td>
 </tr>
 <tr>
-<td>虛解構函數</td>
-<td>所有父類別；解構時取消註冊</td>
+<td><span class="gl" tabindex="0" role="button" data-g="虛解構函數">虛解構函數</span></td>
+<td>所有<span class="gl" tabindex="0" role="button" data-g="父類別">父類別</span>；解構時取消註冊</td>
 <td>8.4、7.7</td>
 </tr>
 <tr>
@@ -407,7 +407,7 @@ NPV = 102.1745，計算次數：2</code></pre>
 </tr>
 </tbody>
 </table>
-<div class="box idea"><span class="tag">換個角度想</span><strong class="bt">為什麼 LazyObject 要用虛擬繼承？</strong><p>老師講義指出：<code>Instrument</code> 可能同時是 Observable 和 Observer；<code>PricingEngine</code> 也是。當一個類別經由多條路徑繼承 Observable 時，如果沒有虛擬繼承，物件裡會有好幾份觀察者清單，通知會漏掉。虛擬繼承確保整個物件只有<strong>一份</strong> Observable、<strong>一份</strong> Observer（第 8.7 節的菱形繼承）。</p></div><section class="cc" id="cc-s10-3"><h3 class="cc-h">Concept Check：10.3 自己寫一個迷你 QuantLib</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s10-3-1" data-label="10.3 自己寫一個迷你 QuantLib Q1"><div class="q-meta"><h4><a href="#q-s10-3-1">Q1</a></h4><span class="q-kind">選擇｜中</span><span class="q-title">update 的責任</span></div><div class="q-text"><p>在 LazyObject 的設計中，<code>update()</code> 被呼叫時應該做什麼？</p></div><ol class="opts"><li><b>(A)</b><span>只標記目前的結果已經過期</span></li><li><b>(B)</b><span>立刻重新計算一次最新的價格</span></li><li><b>(C)</b><span>把這個物件從記憶體中刪除</span></li><li><b>(D)</b><span>把最新算好的 NPV 回傳出去</span></li></ol><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案 (A)</strong><p>只標記目前的結果已經過期</p></div><div class="why"><p class="sh">解析</p><p>update 只負責把 calculated_ 設為 false、標記狀態；真正的計算延到下次有人呼叫 NPV() 時才做，避免市場資料頻繁變動時做大量沒人需要的計算。</p></div></div></article><article class="q" id="q-s10-3-2" data-label="10.3 自己寫一個迷你 QuantLib Q2"><div class="q-meta"><h4><a href="#q-s10-3-2">Q2</a></h4><span class="q-kind">簡答｜中</span><span class="q-title">mutable 的必要</span></div><div class="q-text"><p>為什麼 <code>calculated_</code> 與 <code>npv_</code> 要宣告成 <code>mutable</code>？</p></div><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案</strong><p>NPV() 是「讀取結果」的介面，邏輯上不改變物件的狀態，所以宣告為 const 成員函數，好讓 const 物件或 const 參考也能呼叫。但 NPV() 內部可能需要重新計算並更新快取（npv_）與旗標（calculated_），const 成員函數本來不能修改成員變數，所以這兩個成員要宣告為 mutable：它們屬於快取這種「不影響物件邏輯狀態」的內部細節。</p></div></div></article><article class="q" id="q-s10-3-3" data-label="10.3 自己寫一個迷你 QuantLib Q3"><div class="q-meta"><h4><a href="#q-s10-3-3">Q3</a></h4><span class="q-kind">寫程式｜難</span><span class="q-title">多一個觀察者</span></div><div class="q-text"><p>在上面的程式中，新增一張 10 年期、票面利率 2% 的債券，共用同一條曲線；報價從 2% 改成 3% 後，印出兩張債券的 NPV 與各自的計算次數，驗證一次報價變動會同時讓兩張債券過期。（main 以外的程式不需修改，只要寫出 main 的內容。）</p></div><button class="toggle" type="button" aria-expanded="true">隱藏解答</button><div class="sol"><div class="ans"><strong>答案</strong><div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<div class="box idea"><span class="tag">換個角度想</span><strong class="bt">為什麼 LazyObject 要用虛擬繼承？</strong><p>老師講義指出：<code>Instrument</code> 可能同時是 Observable 和 Observer；<code>PricingEngine</code> 也是。當一個類別經由多條路徑繼承 Observable 時，如果沒有虛擬繼承，物件裡會有好幾份觀察者清單，通知會漏掉。虛擬繼承確保整個物件只有<strong>一份</strong> Observable、<strong>一份</strong> Observer（第 8.7 節的菱形繼承）。</p></div><section class="cc" id="cc-s10-3"><h3 class="cc-h">Concept Check：10.3 自己寫一個迷你 QuantLib</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s10-3-1" data-key="A" data-label="10.3 自己寫一個迷你 QuantLib Q1"><div class="q-meta"><h4><a href="#q-s10-3-1">Q1</a></h4><span class="q-kind">選擇｜中</span><span class="q-title">update 的責任</span></div><div class="q-text"><p>在 LazyObject 的設計中，<code>update()</code> 被呼叫時應該做什麼？</p></div><ol class="opts"><li data-k="A"><b>(A)</b><span>只標記目前的結果已經過期</span></li><li data-k="B"><b>(B)</b><span>立刻重新計算一次最新的價格</span></li><li data-k="C"><b>(C)</b><span>把這個物件從記憶體中刪除</span></li><li data-k="D"><b>(D)</b><span>把最新算好的 NPV 回傳出去</span></li></ol><button class="toggle" type="button" aria-expanded="false">顯示解答</button><div class="sol" hidden><div class="ans"><strong>答案 (A)</strong><p>只標記目前的結果已經過期</p></div><div class="why"><p class="sh">解析</p><p>update 只負責把 calculated_ 設為 false、標記狀態；真正的計算延到下次有人呼叫 NPV() 時才做，避免市場資料頻繁變動時做大量沒人需要的計算。</p></div></div></article><article class="q" id="q-s10-3-2" data-label="10.3 自己寫一個迷你 QuantLib Q2"><div class="q-meta"><h4><a href="#q-s10-3-2">Q2</a></h4><span class="q-kind">簡答｜中</span><span class="q-title">mutable 的必要</span></div><div class="q-text"><p>為什麼 <code>calculated_</code> 與 <code>npv_</code> 要宣告成 <code>mutable</code>？</p></div><button class="toggle" type="button" aria-expanded="false">顯示解答</button><div class="sol" hidden><div class="ans"><strong>答案</strong><p>NPV() 是「讀取結果」的介面，邏輯上不改變物件的狀態，所以宣告為 const 成員函數，好讓 const 物件或 const 參考也能呼叫。但 NPV() 內部可能需要重新計算並更新快取（npv_）與旗標（calculated_），const 成員函數本來不能修改成員變數，所以這兩個成員要宣告為 mutable：它們屬於快取這種「不影響物件邏輯狀態」的內部細節。</p></div></div></article><article class="q" id="q-s10-3-3" data-label="10.3 自己寫一個迷你 QuantLib Q3"><div class="q-meta"><h4><a href="#q-s10-3-3">Q3</a></h4><span class="q-kind">寫程式｜難</span><span class="q-title">多一個觀察者</span></div><div class="q-text"><p>在上面的程式中，新增一張 10 年期、票面利率 2% 的債券，共用同一條曲線；報價從 2% 改成 3% 後，印出兩張債券的 NPV 與各自的計算次數，驗證一次報價變動會同時讓兩張債券過期。（main 以外的程式不需修改，只要寫出 main 的內容。）</p></div><button class="toggle" type="button" aria-expanded="false">顯示解答</button><div class="sol" hidden><div class="ans"><strong>答案</strong><div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">rate</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">SimpleQuote</span><span class="o">&gt;</span><span class="p">(</span><span class="mf">0.02</span><span class="p">);</span>
 <span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">curve</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">FlatCurve</span><span class="o">&gt;</span><span class="p">(</span><span class="n">rate</span><span class="p">);</span>
 <span class="w">    </span><span class="n">FixedRateBond</span><span class="w"> </span><span class="n">b5</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="mf">0.03</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="n">curve</span><span class="p">);</span>
@@ -464,7 +464,7 @@ N = 1000  歐式買權 11.346  歐式賣權 8.39056  美式賣權 8.67356</code>
 <ul>
 <li>期數越多越接近 Black-Scholes 的理論值；美式賣權因為可以提前履約，價值高於歐式。</li>
 <li><code>payoff</code> 用 <code>std::function</code> 傳入：同一棵樹可以定價買權、賣權、數位選擇權……</li>
-<li>練習：把它包成第 8 章的 <code>PricingEngine</code> 子類別（<code>BinomialEngine</code>），讓 <code>Option</code> 商品可以在 Black-Scholes 引擎與二項樹引擎之間切換。</li>
+<li>練習：把它包成第 8 章的 <code>PricingEngine</code> <span class="gl" tabindex="0" role="button" data-g="子類別">子類別</span>（<code>BinomialEngine</code>），讓 <code>Option</code> 商品可以在 Black-Scholes 引擎與二項樹引擎之間切換。</li>
 </ul></section><section class="sec" id="s10-5" data-label="10.5 從「學生」到「量化工程師」"><h2><span class="num">10.5</span>從「學生」到「量化工程師」</h2><p>老師對大家目前位置的描述：</p>
 <ul>
 <li><strong>現在的你</strong>：看得懂 QuantLib 的程式碼、能理解它的設計動機、不會亂寫繼承。</li>
@@ -492,7 +492,7 @@ N = 1000  歐式買權 11.346  歐式賣權 8.39056  美式賣權 8.67356</code>
 <nav class="pager" aria-label="上一頁與下一頁"><a class="prev" href="ch09.html"><small>← 上一章</small>第 9 章　模板與泛型</a></nav></main>
 <footer class="site-foot"><span>金融程式計算：C++｜課程筆記</span></footer>
 <script src="assets/katex/katex.min.js"></script><script src="assets/katex/auto-render.min.js"></script>
-<script src="assets/search.js?v=e155388e"></script>
-<script src="assets/glossary.js?v=943f81c7"></script>
-<script src="assets/site.js?v=ddb9f3f8"></script>
+<script src="assets/search.js?v=8095cf0d"></script>
+<script src="assets/glossary.js?v=7292a76d"></script>
+<script src="assets/site.js?v=484e1572"></script>
 </body></html>
