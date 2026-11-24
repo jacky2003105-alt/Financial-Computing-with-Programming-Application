@@ -653,8 +653,8 @@ main.cpp:5:14: error: assignment of member ‘Time::Hour’ in read-only object
 <span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre></div>
-<pre class="out" data-title="執行結果"><code>Lin 餘額 850（物件位址 0x7fff2a3235c0）
-a 的位址      0x7fff2a3235c0</code></pre>
+<pre class="out" data-title="執行結果"><code>Lin 餘額 850（物件位址 0x7ffc0832ea60）
+a 的位址      0x7ffc0832ea60</code></pre>
 <ul>
 <li><code>this</code> 是指標，<code>*this</code> 是物件本身。</li>
 <li>回傳 <code>*this</code> 的參考，就能把呼叫串起來：<code>a.deposit(1000).withdraw(200)</code>（<strong>鏈式呼叫</strong>，method chaining）。老師講義的 <code>mytime.rtnhour(3).rtnminute(5)</code> 也是這樣。</li>
@@ -954,7 +954,7 @@ main.cpp:3:9: note: declared here
 <span class="p">}</span>
 </code></pre></div>
 <pre class="out" data-title="執行結果"><code>9 15 9
-0x7ffea8021400 0x7ffea8021408</code></pre>
+0x7ffe3ed83ea0 0x7ffe3ed83ea8</code></pre>
 <ul>
 <li><strong>複製建構</strong>：用一個既有物件<strong>建立新物件</strong>——<code>Time t2 = t1;</code>、<code>Time t3(t1);</code>、傳值給函數、函數回傳物件時。</li>
 <li><strong>複製賦值</strong>：把一個物件的內容<strong>複製給另一個已經存在的物件</strong>——<code>t5 = t1;</code>。</li>
@@ -1046,7 +1046,7 @@ main 結束前
 <span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w">                            </span><span class="c1">// s1 解構時再 delete[] 一次：重複釋放</span>
 <span class="p">}</span>
 </code></pre></div>
-<pre class="out" data-title="執行結果"><code>s1.data_ = 0x55c0bf8812b0，s2.data_ = 0x55c0bf8812b0
+<pre class="out" data-title="執行結果"><code>s1.data_ = 0x55c44b9eb2b0，s2.data_ = 0x55c44b9eb2b0
 s1[0] = 999
 s1 現在指向已釋放的記憶體……
 free(): double free detected in tcache 2
@@ -1283,7 +1283,7 @@ Bond(US10Y)  殖利率 2% 價格 120.3012  修正存續期間 8.3497  反推殖�
 <nav class="pager" aria-label="上一頁與下一頁"><a class="prev" href="ch06.html"><small>← 上一章</small>第 6 章　命名空間、預處理與記憶體管理</a><a class="next" href="ch08.html"><small>下一章 →</small>第 8 章　類別 class（二）：繼承、多型與設計模式</a></nav></main>
 <footer class="site-foot"><span>金融程式計算：C++｜課程筆記</span></footer>
 <script src="assets/katex/katex.min.js"></script><script src="assets/katex/auto-render.min.js"></script>
-<script src="assets/search.js?v=9df7fef5"></script>
+<script src="assets/search.js?v=ec31cdb7"></script>
 <script src="assets/glossary.js?v=463e3d05"></script>
 <script src="assets/site.js?v=484e1572"></script>
 </body></html>

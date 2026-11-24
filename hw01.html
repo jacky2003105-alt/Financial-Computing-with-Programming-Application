@@ -10,9 +10,16 @@
 <a class="skip" href="#main">跳到主要內容</a>
 <header class="topbar"><a class="brand" href="index.html" aria-label="金融程式計算：C++｜課程筆記首頁"><span>金融程式計算：C++</span><span class="sub">｜課程筆記</span></a>
 <div class="pickers"><nav class="mode" aria-label="切換課程或作業"><a href="ch01.html" data-mode="course">課程</a><a href="hw01.html" data-mode="hw" class=on>作業</a></nav><label for="unitSelect">選擇作業</label><select id="unitSelect" aria-label="選擇作業"><option value="hw01.html" selected>期中作業　建構解構、遮蔽覆寫、切割、三法則與債券評價</option></select></div></header>
-<main class="wrap" id="main"><nav class="crumbs" aria-label="目前位置"><a href="index.html">首頁</a><span class="sep">›</span><span>作業</span><span class="sep">›</span><span>期中作業</span></nav><header class="ch-head"><p class=eyebrow>期中作業</p><h1>建構解構、遮蔽覆寫、切割、三法則與債券評價</h1><p class="ch-meta"><span>8 節</span><span>閱讀約 104 分鐘</span></p><details class="ch-toc"><summary>本頁目錄（8 節）</summary><ol><li><a href="#s0-0"><span>0.0</span>作業環境：怎麼在自己的電腦編譯</a></li><li><a href="#s0-1"><span>0.1</span>先備知識：看懂這份作業需要的 C++ 觀念</a></li><li><a href="#s1-0"><span>1.0</span>第一題　建構與解構中的虛函數（10 分）</a></li><li><a href="#s2-0"><span>2.0</span>第二題　重載、遮蔽與覆寫（20 分）</a></li><li><a href="#s3-0"><span>3.0</span>第三題　切割與向下轉型（15 分）</a></li><li><a href="#s4-0"><span>4.0</span>第四題　淺複製與三法則（20 分）</a></li><li><a href="#s5-0"><span>5.0</span>第五題　債券評價與可切換的折現方法（35 分）</a></li><li><a href="#s6-0"><span>6.0</span>AI 使用紀錄與自行驗證</a></li></ol></details></header>
+<main class="wrap" id="main"><nav class="crumbs" aria-label="目前位置"><a href="index.html">首頁</a><span class="sep">›</span><span>作業</span><span class="sep">›</span><span>期中作業</span></nav><header class="ch-head"><p class=eyebrow>期中作業</p><h1>建構解構、遮蔽覆寫、切割、三法則與債券評價</h1><p class="ch-meta"><span>8 節</span><span>閱讀約 105 分鐘</span></p><details class="ch-toc"><summary>本頁目錄（8 節）</summary><ol><li><a href="#s0-0"><span>0.0</span>作業環境：怎麼在自己的電腦編譯</a></li><li><a href="#s0-1"><span>0.1</span>先備知識：看懂這份作業需要的 C++ 觀念</a></li><li><a href="#s1-0"><span>1.0</span>第一題　建構與解構中的虛函數（10 分）</a></li><li><a href="#s2-0"><span>2.0</span>第二題　重載、遮蔽與覆寫（20 分）</a></li><li><a href="#s3-0"><span>3.0</span>第三題　切割與向下轉型（15 分）</a></li><li><a href="#s4-0"><span>4.0</span>第四題　淺複製與三法則（20 分）</a></li><li><a href="#s5-0"><span>5.0</span>第五題　債券評價與可切換的折現方法（35 分）</a></li><li><a href="#s6-0"><span>6.0</span>AI 使用紀錄與自行驗證</a></li></ol></details></header>
 <div class="ch-intro"><p>這一頁是「金融計算程式運用（二）」期中作業的<span class="gl" tabindex="0" role="button" data-g="參考">參考</span>解答與報告草稿。<strong>如果還沒讀過第 7、8 章，請先讀 0.1「先備知識」</strong>：它用同一個債券例子，從類別、<span class="gl" tabindex="0" role="button" data-g="父類別">父類別</span>與子類別一路講到<span class="gl" tabindex="0" role="button" data-g="虛函數">虛函數</span>、切割與<span class="gl" tabindex="0" role="button" data-g="三法則">三法則</span>，讀完再看題目就不會卡在名詞上。每一題依序是：<strong>題目 → 程式與實際執行結果 → 重點整理 → 可直接貼到報告的段落</strong>。<strong>每個小題各有一段可直接貼到報告的文字</strong>，用段落寫成：先寫結論與 C++ 規則的論證，再寫怎麼<span class="gl" tabindex="0" role="button" data-g="編譯">編譯</span>執行驗證，最後寫遇到的問題、怎麼修正，以及從這個小題學到什麼，內容涵蓋作業要求的四點（結論、規則與論證、編譯／執行驗證、問題與修正）。每小題另有一個可展開的「撰寫流程補充」，用比較口語的方式記錄當時怎麼一步步想出來，作為理解用的補充，不必貼進報告。</p>
-<p>所有程式都以 <strong>C++17</strong> 實際編譯執行（作業規定的標準），而且每一段都同時用 g++ 和 clang++ 編譯過、確認結果一致——你的 Mac 用的是 clang++（AppleClang），兩者對標準 C++17 的行為相同。可繳交的 .cpp 檔名標在每段程式的右上角，整理好的檔案放在 <code>金融程式計算/期中作業/src/</code>。</p></div><section class="sec" id="s0-0" data-label="0.0 作業環境：怎麼在自己的電腦編譯"><h2><span class="num">0.0</span>作業環境：怎麼在自己的電腦編譯</h2><h3 id="s0-0-1">為什麼筆記裡寫 g++，我的電腦卻是 clang++？</h3>
+<p>所有程式都以 <strong>C++17</strong> 實際編譯執行（作業規定的標準），而且每一段都同時用 g++ 和 clang++ 編譯過、確認結果一致——你的 Mac 用的是 clang++（AppleClang），兩者對標準 C++17 的行為相同。可繳交的 .cpp 檔名標在每段程式的右上角，整理好的檔案放在 <code>金融程式計算/期中作業/src/</code>。</p>
+<div class="box key"><span class="tag">重點</span><strong class="bt">老師說明的作業規則（第 7 堂開頭）</strong><ul>
+<li><strong>一定要交</strong>：這學期只有兩次作業，老師說只要有一次沒交，基本上就不會過。</li>
+<li><strong>遲交</strong>：可以，但要先跟老師說好延到哪一天，不能一直拖。例如晚兩天，分數打九五折。</li>
+<li><strong>要交的東西</strong>：一份書面報告，加上各題修改後的<span class="gl" tabindex="0" role="button" data-g="原始檔">原始檔</span>與測試結果；測試結果要寫進報告。壓縮後用 email 寄給老師，信件標題照老師的規定寫（要能看出學號），老師以寄信日期判斷有沒有準時。</li>
+<li><strong>可以用 AI</strong>：每一題要說明你怎麼用 AI、和 AI 對話與測試的過程中多學到什麼。</li>
+<li><strong>評分看觀念</strong>：能編譯不是重點，老師上課強調的觀念要寫進報告；他的說法是「你報告寫多少，我就認為你這堂課吸收多少」，當然寫的要是對的。不照題目要求、改用更好的做法也可以，但要看到結果，方向不能離題目太遠。</li>
+</ul></div></div><section class="sec" id="s0-0" data-label="0.0 作業環境：怎麼在自己的電腦編譯"><h2><span class="num">0.0</span>作業環境：怎麼在自己的電腦編譯</h2><h3 id="s0-0-1">為什麼筆記裡寫 g++，我的電腦卻是 clang++？</h3>
 <p><code>g++</code>（GNU）和 <code>clang++</code>（LLVM，Mac 上叫 AppleClang）是兩個<strong>不同廠牌的 C++ <span class="gl" tabindex="0" role="button" data-g="編譯器">編譯器</span></strong>，就像 Word 和 Pages 都能打開同一份文件。它們都實作同一份 C++ 標準，所以標準寫法的程式在兩邊編譯、執行的結果一樣；差別只在<strong>錯誤訊息的措辭</strong>和部分警告。課程網站是在 Linux 伺服器上建置的，那裡預設的是 g++；你的 Mac 在 VS Code 裡 <span class="gl" tabindex="0" role="button" data-g="CMake">CMake</span> 實際呼叫的是 <code>/usr/bin/clang++</code>（AppleClang 17，從你專案的 <code>build/CMakeCache.txt</code> 可以看到）。在 Mac 的終端機輸入 <code>g++ --version</code>，會發現它其實也是 clang 的別名。作業說明也寫了「可使用 GCC、Clang 或 MSVC」。</p>
 <h3 id="s0-0-2">兩種編譯方式</h3>
 <p><strong>方式一：終端機直接編譯單一檔案</strong>（最簡單，每題附的就是這個指令）</p>
@@ -1026,7 +1033,7 @@ b: n_=3, rates_ ──┘</code></pre></div>
 <span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">a</span><span class="p">.</span><span class="n">at</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre></div>
-<pre class="out" data-title="執行結果"><code>==5934==ERROR: AddressSanitizer: attempting double-free on 0x… in thread T0:
+<pre class="out" data-title="執行結果"><code>==3754==ERROR: AddressSanitizer: attempting double-free on 0x… in thread T0:
     在 RateCurve::~RateCurve() main.cpp:9
     在 main main.cpp:18
 0x… is located 0 bytes inside of 24-byte region [0x…,0x…)
@@ -1496,7 +1503,7 @@ y = NaN：殖利率 y 必須是有限且非負的數
 </main>
 <footer class="site-foot"><span>金融程式計算：C++｜課程筆記</span></footer>
 <script src="assets/katex/katex.min.js"></script><script src="assets/katex/auto-render.min.js"></script>
-<script src="assets/search.js?v=138aa5e3"></script>
+<script src="assets/search.js?v=ec31cdb7"></script>
 <script src="assets/glossary.js?v=463e3d05"></script>
 <script src="assets/site.js?v=484e1572"></script>
 </body></html>

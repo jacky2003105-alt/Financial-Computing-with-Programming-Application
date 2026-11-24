@@ -76,7 +76,7 @@ d 有 3 個元素</code></pre>
 <span class="p">}</span>
 </code></pre></div>
 <pre class="out" data-title="執行結果"><code>a[2] = 30
-a[3] = -1126254592（讀到的是不屬於 a 的記憶體）
+a[3] = -139774464（讀到的是不屬於 a 的記憶體）
 111 222</code></pre>
 <p>老師講義強調：使用 <code>a[10]</code>（超出範圍）時<strong>系統不會提示錯誤</strong>，但那塊記憶體不屬於你，寫進去可能蓋掉其他變數，造成「莫名其妙」的錯誤。讀到的值每次可能不同。R 越界會回傳 <code>NA</code>，C++ 不會——<strong>檢查下標是程式設計師自己的責任</strong>。</p>
 <h3 id="s3-1-4">陣列不能整個複製</h3>
@@ -174,12 +174,12 @@ main.cpp:3:9: warning: unused variable ‘a2’ [-Wunused-variable]
 <span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre></div>
-<pre class="out" data-title="執行結果"><code>a     = 0x7fff28ccbe0c
-&amp;a[0] = 0x7fff28ccbe0c
-p     = 0x7fff28ccbe0c
+<pre class="out" data-title="執行結果"><code>a     = 0x7ffe6e65222c
+&amp;a[0] = 0x7ffe6e65222c
+p     = 0x7ffe6e65222c
 200 200 200 200
-p     = 0x7fff28ccbe0c
-p + 1 = 0x7fff28ccbe10（差 4 bytes）</code></pre>
+p     = 0x7ffe6e65222c
+p + 1 = 0x7ffe6e652230（差 4 bytes）</code></pre>
 <ul>
 <li><strong>指標算術</strong>：<code>p + 1</code> 不是<span class="gl" tabindex="0" role="button" data-g="位址">位址</span>加 1，而是「往後一個<strong>元素</strong>」——int 就加 4 bytes，double 就加 8 bytes。所以 <code>*(p + i)</code> 就是 <code>a[i]</code>；事實上 <code>a[i]</code> 本來就被定義成 <code>*(a + i)</code>。</li>
 <li>陣列名稱像一個<strong>不能改的指標</strong>（老師說：Top-Level <span class="gl" tabindex="0" role="button" data-g="const">const</span>），所以 <code>a = a + 1;</code>、<code>++a</code> 都是錯的；但普通指標 <code>p</code> 可以移動：</li>
@@ -217,7 +217,7 @@ p + 1 = 0x7fff28ccbe10（差 4 bytes）</code></pre>
 <span class="p">}</span>
 </code></pre></div>
 <pre class="out" data-title="執行結果"><code>3 4 5
-parr = 0x7ffc12430d40，parr + 1 = 0x7ffc12430d54（跳過整個陣列 20 bytes）</code></pre>
+parr = 0x7ffea4637510，parr + 1 = 0x7ffea4637524（跳過整個陣列 20 bytes）</code></pre>
 <ul>
 <li><code>int &amp;refs[5];</code> 是錯的：<span class="gl" tabindex="0" role="button" data-g="參考">參考</span>不是<span class="gl" tabindex="0" role="button" data-g="物件">物件</span>，<strong>沒有「參考的陣列」</strong>。</li>
 <li><code>parr + 1</code> 一次跳過整個 5 個 int 的陣列——指標的型態決定「一步走多遠」。</li>
@@ -295,8 +295,8 @@ TAIEX，strlen = 5，sizeof = 20</code></pre>
 <pre class="out" data-title="執行結果"><code>Hello Quant
 H
 Quant
-0x555eca237004
-0x7ffd3cdf72ec</code></pre>
+0x55f134bf8004
+0x7ffe0046dc2c</code></pre>
 <p>這解釋了第 2 章為什麼 <code>&amp;grade</code>（char 的位址）要轉成 <code>void*</code> 才會印位址：cout 看到 <code>char*</code> 會假設它是 C 字串，從那裡一直印到 <code>&#x27;\0&#x27;</code>。</p><section class="cc" id="cc-s3-4"><h3 class="cc-h">Concept Check：3.4 字元陣列與 C 風格字串</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s3-4-1" data-key="C" data-label="3.4 字元陣列與 C 風格字串 Q1"><div class="q-meta"><h4><a href="#q-s3-4-1">Q1</a></h4><span class="q-kind">選擇｜易</span><span class="q-title">字串長度</span></div><div class="q-text"><p><code>char s[] = &quot;2330&quot;;</code> 則 <code>sizeof(s)</code> 與 <code>strlen(s)</code> 分別是？</p></div><ol class="opts"><li data-k="A"><b>(A)</b><span>4 和 4</span></li><li data-k="B"><b>(B)</b><span>5 和 5</span></li><li data-k="C"><b>(C)</b><span>5 和 4</span></li><li data-k="D"><b>(D)</b><span>4 和 5</span></li></ol><button class="toggle" type="button" aria-expanded="false">顯示解答</button><div class="sol" hidden><div class="ans"><strong>答案 (C)</strong><p>5 和 4</p></div><div class="why"><p class="sh">解析</p><p>字串字面值會自動加上 '\0'，陣列有 5 個 char；strlen 計算到 '\0' 之前，為 4。</p></div></div></article><article class="q" id="q-s3-4-2" data-label="3.4 字元陣列與 C 風格字串 Q2"><div class="q-meta"><h4><a href="#q-s3-4-2">Q2</a></h4><span class="q-kind">找錯｜中</span><span class="q-title">字元陣列賦值</span></div><div class="q-text"><p>下面程式為什麼無法編譯？請用兩種方式修正。</p>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
 <span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
@@ -864,8 +864,8 @@ true</code></pre>
 <span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre></div>
-<pre class="out" data-title="執行結果"><code>容量 3，首元素位址 0x55b4f5e0f2b0
-容量 6，首元素位址 0x55b4f5e102e0</code></pre>
+<pre class="out" data-title="執行結果"><code>容量 3，首元素位址 0x55fb5741f2b0
+容量 6，首元素位址 0x55fb574202e0</code></pre>
 <h3 id="s3-7-5">迭代器 + 演算法</h3>
 <p>迭代器真正強大的地方是搭配 <code>&lt;algorithm&gt;</code>：<strong>同一套演算法可以用在任何容器上</strong>，只要給它「從哪裡到哪裡」（一對迭代器）。</p>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
@@ -968,7 +968,7 @@ true</code></pre>
 <nav class="pager" aria-label="上一頁與下一頁"><a class="prev" href="ch02.html"><small>← 上一章</small>第 2 章　資料型態、變數與記憶體</a><a class="next" href="ch04.html"><small>下一章 →</small>第 4 章　表達式、運算子與流程控制</a></nav></main>
 <footer class="site-foot"><span>金融程式計算：C++｜課程筆記</span></footer>
 <script src="assets/katex/katex.min.js"></script><script src="assets/katex/auto-render.min.js"></script>
-<script src="assets/search.js?v=138aa5e3"></script>
+<script src="assets/search.js?v=ec31cdb7"></script>
 <script src="assets/glossary.js?v=463e3d05"></script>
 <script src="assets/site.js?v=484e1572"></script>
 </body></html>
