@@ -94,10 +94,10 @@
 <pre class="out" data-title="執行結果"><code>call_count = 2
 區域 value = 50，全域 value = 100</code></pre>
 <ul>
-<li><strong>匿名命名空間</strong>（沒有名字的 namespace）裡的東西只在<strong>這個<span class="gl" tabindex="0" role="button" data-g="原始檔">原始檔</span></strong>內有效，效果和第 5 章的 <code>static</code> 全域變數／函數一樣（內部<span class="gl" tabindex="0" role="button" data-g="連結">連結</span>），是現代 C++ 較建議的寫法。</li>
+<li><strong>匿名命名空間</strong>（沒有名字的 namespace）裡的東西只在<strong>這個<span class="gl" tabindex="0" role="button" data-g="原始檔">原始檔</span></strong>內有效，效果和<a class="xref" href="ch05.html">第 5 章</a>的 <code>static</code> 全域變數／函數一樣（內部<span class="gl" tabindex="0" role="button" data-g="連結">連結</span>），是現代 C++ 較建議的寫法。</li>
 <li><code>::名稱</code>（前面什麼都不寫）代表<strong>全域作用域</strong>的名稱，可以在被遮住時取用全域變數。</li>
 </ul><section class="cc" id="cc-s6-1"><h3 class="cc-h">Concept Check：6.1 命名空間 namespace</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s6-1-1" data-key="C" data-label="6.1 命名空間 namespace Q1"><div class="q-meta"><h4><a href="#q-s6-1-1">Q1</a></h4><span class="q-kind">選擇｜易</span><span class="q-title">作用域運算子</span></div><div class="q-text"><p>命名空間 <code>risk</code> 中有函數 <code>var()</code>，在 main 中要呼叫它，正確寫法是？</p></div><ol class="opts"><li data-k="A"><b>(A)</b><span><code>risk.var()</code></span></li><li data-k="B"><b>(B)</b><span><code>risk-&gt;var()</code></span></li><li data-k="C"><b>(C)</b><span><code>risk::var()</code></span></li><li data-k="D"><b>(D)</b><span><code>var::risk()</code></span></li></ol><button class="toggle" type="button" aria-expanded="false">顯示解答</button><div class="sol" hidden><div class="ans"><strong>答案 (C)</strong><code>risk::var()</code></div><div class="why"><p class="sh">解析</p><p>存取命名空間的成員用作用域運算子 ::；<code>.</code> 和 <code>-&gt;</code> 是存取物件成員。</p></div></div></article><article class="q" id="q-s6-1-2" data-label="6.1 命名空間 namespace Q2"><div class="q-meta"><h4><a href="#q-s6-1-2">Q2</a></h4><span class="q-kind">簡答｜中</span><span class="q-title">using namespace</span></div><div class="q-text"><p>為什麼不建議在標頭檔中寫 <code>using namespace std;</code>？</p></div><button class="toggle" type="button" aria-expanded="false">顯示解答</button><div class="sol" hidden><div class="ans"><strong>答案</strong><p>標頭檔會被許多 .cpp include，標頭檔中的 using namespace std 會把 std 的所有名稱帶進每一個 include 它的檔案的全域範圍，使用者無法拒絕。std 的名稱非常多（count、distance、data、size…），很容易和使用者自己的變數或函數撞名，造成難以理解的編譯錯誤或呼叫到錯誤的版本。</p></div></div></article></section></section><section class="sec" id="s6-2" data-label="6.2 前置處理器：#define、#include、條件編譯"><h2><span class="num">6.2</span>前置處理器：#define、#include、條件編譯</h2><h3 id="s6-2-1">編譯之前的「文字處理」</h3>
-<p>第 1 章提過建置流程：<strong>前置處理 → 編譯 → 組譯 → 連結</strong>。前置處理器只認得以 <code>#</code> 開頭的指令，它做的事情都是<strong>單純的文字替換</strong>，不懂 C++ 語法：</p>
+<p><a class="xref" href="ch01.html">第 1 章</a>提過建置流程：<strong>前置處理 → 編譯 → 組譯 → 連結</strong>。前置處理器只認得以 <code>#</code> 開頭的指令，它做的事情都是<strong>單純的文字替換</strong>，不懂 C++ 語法：</p>
 <ul>
 <li><code>#define</code>：巨集定義（文字替換）</li>
 <li><code>#include</code>：把另一個檔案的內容貼進來</li>
@@ -143,14 +143,14 @@ main.cpp:4:12: warning: unused variable ‘y’ [-Wunused-variable]
 <li>帶<span class="gl" tabindex="0" role="button" data-g="參數">參數</span>的巨集只做文字替換、<strong>不計算、不檢查<span class="gl" tabindex="0" role="button" data-g="型態">型態</span></strong>，所以老師強調參數要加括號。</li>
 <li>巨集從定義處有效到檔案結尾（或 <code>#undef 名稱</code>）。</li>
 </ul>
-<div class="box key"><span class="tag">重點</span><strong class="bt">能用 <span class="gl" tabindex="0" role="button" data-g="const">const</span>／<span class="gl" tabindex="0" role="button" data-g="constexpr">constexpr</span>／<span class="gl" tabindex="0" role="button" data-g="inline">inline</span> 就不要用巨集</strong><p><code>constexpr double PI = 3.1415926;</code> 有型態、有作用域、編譯器能檢查；<code>inline</code> 函數或<span class="gl" tabindex="0" role="button" data-g="模板">模板</span>（第 9 章）可以取代帶參數的巨集。巨集在現代 C++ 主要只剩下 <span class="gl" tabindex="0" role="button" data-g="include guard">include guard</span> 與條件編譯這兩個用途。</p></div>
+<div class="box key"><span class="tag">重點</span><strong class="bt">能用 <span class="gl" tabindex="0" role="button" data-g="const">const</span>／<span class="gl" tabindex="0" role="button" data-g="constexpr">constexpr</span>／<span class="gl" tabindex="0" role="button" data-g="inline">inline</span> 就不要用巨集</strong><p><code>constexpr double PI = 3.1415926;</code> 有型態、有作用域、編譯器能檢查；<code>inline</code> 函數或<span class="gl" tabindex="0" role="button" data-g="模板">模板</span>（<a class="xref" href="ch09.html">第 9 章</a>）可以取代帶參數的巨集。巨集在現代 C++ 主要只剩下 <span class="gl" tabindex="0" role="button" data-g="include guard">include guard</span> 與條件編譯這兩個用途。</p></div>
 <h3 id="s6-2-3">#include 與 include guard</h3>
 <ul>
 <li><code>#include &lt;檔名&gt;</code>：到<strong>系統目錄</strong>找（標準程式庫）。</li>
 <li><code>#include &quot;檔名&quot;</code>：先在<strong>目前目錄</strong>找，找不到再去系統目錄（自己的標頭檔）。</li>
 <li><code>#include</code> 就是把那個檔案的內容原封不動貼進來；標頭檔可以再 include 其他標頭檔（巢狀）。</li>
 </ul>
-<p>巢狀 include 很容易讓同一個標頭檔被貼進來兩次，造成重複定義。解法就是第 1 章看過的 <strong>include guard</strong>：</p>
+<p>巢狀 include 很容易讓同一個標頭檔被貼進來兩次，造成重複定義。解法就是<a class="xref" href="ch01.html">第 1 章</a>看過的 <strong>include guard</strong>：</p>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++ 檔案：rates.h</span><pre><code><span class="c1">// rates.h</span>
 <span class="cp">#ifndef RATES_H          </span><span class="c1">// 如果還沒定義 RATES_H……</span>
 <span class="cp">#define RATES_H          </span><span class="c1">// ……就定義它，並保留以下內容</span>
@@ -297,10 +297,10 @@ main.cpp:4:12: warning: unused variable ‘y’ [-Wunused-variable]
 <span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre></div>
-<pre class="out" data-title="執行結果"><code>堆疊   &amp;b = 0x7ffcb1ebae54
-堆積    p = 0x55a6e8fcb2b0
-靜態   &amp;g = 0x55a6c75d9154，&amp;d = 0x55a6c75d9158
-常數    s = 0x55a6c75d7004</code></pre>
+<pre class="out" data-title="執行結果"><code>堆疊   &amp;b = 0x7ffc08699a24
+堆積    p = 0x5560ed8012b0
+靜態   &amp;g = 0x5560b2d40154，&amp;d = 0x5560b2d40158
+常數    s = 0x5560b2d3e004</code></pre>
 <p>從位址可以看出它們位在完全不同的區段。</p>
 <ul>
 <li><strong>堆疊</strong>：空間小（通常幾 MB）、配置極快、自動管理，但無法控制物件活多久。</li>
@@ -335,7 +335,7 @@ main.cpp:4:12: warning: unused variable ‘y’ [-Wunused-variable]
 <ul>
 <li><code>new 型態(初值)</code> 在<span class="gl" tabindex="0" role="button" data-g="堆積">堆積</span>上建立一個<strong>沒有名字</strong>的物件，回傳它的位址。</li>
 <li><code>new 型態[n]</code> 建立長度為 n 的陣列——和一般陣列不同，<strong>n 可以是執行時才知道的變數</strong>。</li>
-<li>用 <code>new</code> 建立<span class="gl" tabindex="0" role="button" data-g="類別">類別</span>物件時，會自動呼叫<span class="gl" tabindex="0" role="button" data-g="建構函數">建構函數</span>；<code>delete</code> 時會呼叫<span class="gl" tabindex="0" role="button" data-g="解構函數">解構函數</span>（第 7 章）。<code>new</code>／<code>delete</code> 比 C 語言的 <code>malloc</code>／<code>free</code> 多做了這兩件事。</li>
+<li>用 <code>new</code> 建立<span class="gl" tabindex="0" role="button" data-g="類別">類別</span>物件時，會自動呼叫<span class="gl" tabindex="0" role="button" data-g="建構函數">建構函數</span>；<code>delete</code> 時會呼叫<span class="gl" tabindex="0" role="button" data-g="解構函數">解構函數</span>（<a class="xref" href="ch07.html">第 7 章</a>）。<code>new</code>／<code>delete</code> 比 C 語言的 <code>malloc</code>／<code>free</code> 多做了這兩件事。</li>
 <li><strong><code>new</code> 和 <code>delete</code> 必須成對</strong>；<code>new[]</code> 配 <code>delete[]</code>，不能混用。</li>
 </ul>
 <h3 id="s6-4-2">手動管理的三大問題</h3>
@@ -504,7 +504,7 @@ reset 後 p1 是空的：true
 <li>用 <code>std::make_shared&lt;T&gt;(參數)</code> 建立：只配置一次記憶體（物件和計數放在一起），比 <code>std::shared_ptr&lt;T&gt;(new T(...))</code> 有效率，也避免裸指標外流。</li>
 <li>智慧指標的建構函數是 <code>explicit</code>，不能寫 <code>std::shared_ptr&lt;int&gt; p = new int(1);</code>。</li>
 </ul>
-<div class="box fin"><span class="tag">金融應用</span><strong class="bt">共享的市場資料</strong><p>多個商品（債券、利率交換、選擇權）都要用同一條<span class="gl" tabindex="0" role="button" data-g="殖利率">殖利率</span>曲線來<span class="gl" tabindex="0" role="button" data-g="折現">折現</span>。讓每個商品持有一個指向曲線的 <code>shared_ptr</code>：曲線只有一份，大家共用；最後一個商品也被銷毀時，曲線才自動釋放。<span class="gl" tabindex="0" role="button" data-g="QuantLib">QuantLib</span> 這類量化程式庫大量使用這種設計（第 10 章會看到 <code>Handle</code> 與<span class="gl" tabindex="0" role="button" data-g="觀察者模式">觀察者模式</span>）。</p></div>
+<div class="box fin"><span class="tag">金融應用</span><strong class="bt">共享的市場資料</strong><p>多個商品（債券、利率交換、選擇權）都要用同一條<span class="gl" tabindex="0" role="button" data-g="殖利率">殖利率</span>曲線來<span class="gl" tabindex="0" role="button" data-g="折現">折現</span>。讓每個商品持有一個指向曲線的 <code>shared_ptr</code>：曲線只有一份，大家共用；最後一個商品也被銷毀時，曲線才自動釋放。<span class="gl" tabindex="0" role="button" data-g="QuantLib">QuantLib</span> 這類量化程式庫大量使用這種設計（<a class="xref" href="ch10.html">第 10 章</a>會看到 <code>Handle</code> 與<span class="gl" tabindex="0" role="button" data-g="觀察者模式">觀察者模式</span>）。</p></div>
 <h3 id="s6-5-4">不要混用裸指標與智慧指標</h3>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;memory&gt;</span>
@@ -604,7 +604,7 @@ reset 後 p1 是空的：true
 <li><code>std::ifstream in(&quot;檔名&quot;);</code> 開檔讀取；<code>if (!in)</code> 檢查是否成功開啟。</li>
 <li><code>while (std::getline(in, line))</code> 是「讀到檔尾為止」的標準寫法。</li>
 <li><code>std::getline(ss, 欄位, &#x27;,&#x27;)</code> 以逗號為分隔讀取一個欄位。</li>
-<li>檔案物件離開作用域時會<strong>自動關閉</strong>——這和智慧指標自動釋放記憶體是同一個想法（<span class="gl" tabindex="0" role="button" data-g="RAII">RAII</span>：資源的生命週期綁在物件上），第 7 章學 class 時會正式介紹。</li>
+<li>檔案物件離開作用域時會<strong>自動關閉</strong>——這和智慧指標自動釋放記憶體是同一個想法（<span class="gl" tabindex="0" role="button" data-g="RAII">RAII</span>：資源的生命週期綁在物件上），<a class="xref" href="ch07.html">第 7 章</a>學 class 時會正式介紹。</li>
 </ul><section class="cc" id="cc-s6-6"><h3 class="cc-h">Concept Check：6.6 補充：讀寫檔案</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s6-6-1" data-label="6.6 補充：讀寫檔案 Q1"><div class="q-meta"><h4><a href="#q-s6-6-1">Q1</a></h4><span class="q-kind">寫程式｜中</span><span class="q-title">讀檔計算平均</span></div><div class="q-text"><p>修改上面的程式：讀入 prices.csv 後，計算平均收盤價與最大成交量，印出來。（先寫檔再讀檔，讓程式可以獨立執行。）</p></div><button class="toggle" type="button" aria-expanded="false">顯示解答</button><div class="sol" hidden><div class="ans"><strong>答案</strong><div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fstream&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;sstream&gt;</span>

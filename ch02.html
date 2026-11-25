@@ -55,12 +55,12 @@
 <tr>
 <td>複合型態</td>
 <td>陣列、指標、參考</td>
-<td>本章後半、第 3 章</td>
+<td>本章後半、<a class="xref" href="ch03.html">第 3 章</a></td>
 </tr>
 <tr>
 <td>使用者定義型態</td>
 <td><code>struct</code>、<code>union</code>、<code>enum</code>、<code>class</code></td>
-<td>本章最後、第 7 章</td>
+<td>本章最後、<a class="xref" href="ch07.html">第 7 章</a></td>
 </tr>
 </tbody>
 </table>
@@ -119,10 +119,10 @@ double 最大約 1.79769e+308，有效位數約 15 位
 float  有效位數約 6 位</code></pre>
 <ul>
 <li>4 bytes = 32 bits，可以表示 \(2^{32}\) 種值。<code>int</code> 有正負號，範圍是 \(-2^{31}\) 到 \(2^{31}-1\)（約正負 21 億）；<code>unsigned int</code> 沒有負數，範圍是 0 到 \(2^{32}-1\)（約 43 億）。</li>
-<li>老師講義的表格中 short 的範圍印成 −32767～32768，實際是 <strong>−32768～32767</strong>（負的那邊多一個），以程式印出來的為準。</li>
+<li><code>short</code> 是 2 bytes（16 bits），範圍是 <strong>−32768～32767</strong>：負數比正數多一個，因為 0 佔掉了非負那一半的一個位置。</li>
 <li><code>double</code> 有約 15～16 位有效數字，<code>float</code> 只有約 6～7 位。<strong>金融計算幾乎一律用 <code>double</code></strong>。</li>
 </ul>
-<div class="box warn"><span class="tag">常見錯誤</span><strong class="bt">台積電市值裝得進 int 嗎？</strong><p>2.6 兆元這種數字超過 <code>int</code> 的上限（約 21 億），要用 <code>long long</code> 或 <code>double</code>。整數超過上限會「溢位」，下一節有示範。</p></div><section class="cc" id="cc-s2-1"><h3 class="cc-h">Concept Check：2.1 型態：資料長什麼樣子</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s2-1-1" data-key="B" data-label="2.1 型態：資料長什麼樣子 Q1"><div class="q-meta"><h4><a href="#q-s2-1-1">Q1</a></h4><span class="q-kind">選擇｜易</span><span class="q-title">強型別</span></div><div class="q-text"><p>C++ 是「強型別語言」，指的是什麼？</p></div><ol class="opts"><li data-k="A"><b>(A)</b><span>程式碼的關鍵字必須全部用大寫撰寫</span></li><li data-k="B"><b>(B)</b><span>變數要先宣告型態，之後不能改裝別種</span></li><li data-k="C"><b>(C)</b><span>只能使用整數運算，不能使用小數運算</span></li><li data-k="D"><b>(D)</b><span>型態在執行時才決定，編譯時不做檢查</span></li></ol><button class="toggle" type="button" aria-expanded="false">顯示解答</button><div class="sol" hidden><div class="ans"><strong>答案 (B)</strong><p>變數要先宣告型態，之後不能改裝別種</p></div><div class="why"><p class="sh">解析</p><p>強型別：變數在宣告時就決定型態，編譯器會依型態檢查每個操作是否合法。</p></div></div></article><article class="q" id="q-s2-1-2" data-key="A" data-label="2.1 型態：資料長什麼樣子 Q2"><div class="q-meta"><h4><a href="#q-s2-1-2">Q2</a></h4><span class="q-kind">選擇｜中</span><span class="q-title">sizeof</span></div><div class="q-text"><p>在 64 位元 Linux 上，<code>sizeof(double)</code> 和 <code>sizeof(int)</code> 通常各是多少？</p></div><ol class="opts"><li data-k="A"><b>(A)</b><span>8 和 4</span></li><li data-k="B"><b>(B)</b><span>4 和 4</span></li><li data-k="C"><b>(C)</b><span>8 和 8</span></li><li data-k="D"><b>(D)</b><span>16 和 2</span></li></ol><button class="toggle" type="button" aria-expanded="false">顯示解答</button><div class="sol" hidden><div class="ans"><strong>答案 (A)</strong><p>8 和 4</p></div><div class="why"><p class="sh">解析</p><p>double 佔 8 bytes、int 佔 4 bytes；這兩個在常見平台上都一樣。會因平台而不同的主要是 long。</p></div></div></article><article class="q" id="q-s2-1-3" data-label="2.1 型態：資料長什麼樣子 Q3"><div class="q-meta"><h4><a href="#q-s2-1-3">Q3</a></h4><span class="q-kind">填空｜中</span><span class="q-title">int 的範圍</span></div><div class="q-text"><p>4 bytes 的 <code>int</code> 最大值是 \(2^{31}-1\)，約等於 <strong><em>_</em>_（約幾億）；如果要存 3,000,000,000 這種數字，應改用 </strong>____ 型態。</p></div><button class="toggle" type="button" aria-expanded="false">顯示解答</button><div class="sol" hidden><div class="ans"><strong>答案</strong><p>約 21 億（2,147,483,647）；<code>long long</code>（或 <code>unsigned int</code>、<code>double</code>）</p></div></div></article></section></section><section class="sec" id="s2-2" data-label="2.2 變數：有名字的一塊記憶體"><h2><span class="num">2.2</span>變數：有名字的一塊記憶體</h2><h3 id="s2-2-1">宣告、初始化、賦值</h3>
+<div class="box warn"><span class="tag">常見錯誤</span><strong class="bt">台積電市值裝得進 int 嗎？</strong><p>2.6 兆元這種數字超過 <code>int</code> 的上限（約 21 億），要用 <code>long long</code> 或 <code>double</code>。整數超過上限會「溢位」，<a class="xref" href="#s2-2">下一節</a>有示範。</p></div><section class="cc" id="cc-s2-1"><h3 class="cc-h">Concept Check：2.1 型態：資料長什麼樣子</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s2-1-1" data-key="B" data-label="2.1 型態：資料長什麼樣子 Q1"><div class="q-meta"><h4><a href="#q-s2-1-1">Q1</a></h4><span class="q-kind">選擇｜易</span><span class="q-title">強型別</span></div><div class="q-text"><p>C++ 是「強型別語言」，指的是什麼？</p></div><ol class="opts"><li data-k="A"><b>(A)</b><span>程式碼的關鍵字必須全部用大寫撰寫</span></li><li data-k="B"><b>(B)</b><span>變數要先宣告型態，之後不能改裝別種</span></li><li data-k="C"><b>(C)</b><span>只能使用整數運算，不能使用小數運算</span></li><li data-k="D"><b>(D)</b><span>型態在執行時才決定，編譯時不做檢查</span></li></ol><button class="toggle" type="button" aria-expanded="false">顯示解答</button><div class="sol" hidden><div class="ans"><strong>答案 (B)</strong><p>變數要先宣告型態，之後不能改裝別種</p></div><div class="why"><p class="sh">解析</p><p>強型別：變數在宣告時就決定型態，編譯器會依型態檢查每個操作是否合法。</p></div></div></article><article class="q" id="q-s2-1-2" data-key="A" data-label="2.1 型態：資料長什麼樣子 Q2"><div class="q-meta"><h4><a href="#q-s2-1-2">Q2</a></h4><span class="q-kind">選擇｜中</span><span class="q-title">sizeof</span></div><div class="q-text"><p>在 64 位元 Linux 上，<code>sizeof(double)</code> 和 <code>sizeof(int)</code> 通常各是多少？</p></div><ol class="opts"><li data-k="A"><b>(A)</b><span>8 和 4</span></li><li data-k="B"><b>(B)</b><span>4 和 4</span></li><li data-k="C"><b>(C)</b><span>8 和 8</span></li><li data-k="D"><b>(D)</b><span>16 和 2</span></li></ol><button class="toggle" type="button" aria-expanded="false">顯示解答</button><div class="sol" hidden><div class="ans"><strong>答案 (A)</strong><p>8 和 4</p></div><div class="why"><p class="sh">解析</p><p>double 佔 8 bytes、int 佔 4 bytes；這兩個在常見平台上都一樣。會因平台而不同的主要是 long。</p></div></div></article><article class="q" id="q-s2-1-3" data-label="2.1 型態：資料長什麼樣子 Q3"><div class="q-meta"><h4><a href="#q-s2-1-3">Q3</a></h4><span class="q-kind">填空｜中</span><span class="q-title">int 的範圍</span></div><div class="q-text"><p>4 bytes 的 <code>int</code> 最大值是 \(2^{31}-1\)，約等於 <strong><em>_</em>_（約幾億）；如果要存 3,000,000,000 這種數字，應改用 </strong>____ 型態。</p></div><button class="toggle" type="button" aria-expanded="false">顯示解答</button><div class="sol" hidden><div class="ans"><strong>答案</strong><p>約 21 億（2,147,483,647）；<code>long long</code>（或 <code>unsigned int</code>、<code>double</code>）</p></div></div></article></section></section><section class="sec" id="s2-2" data-label="2.2 變數：有名字的一塊記憶體"><h2><span class="num">2.2</span>變數：有名字的一塊記憶體</h2><h3 id="s2-2-1">宣告、初始化、賦值</h3>
 <p><strong>變數</strong>（variable）就是「有名字的一塊記憶體」，裡面放的值可以改變。每個變數有三個資訊：<strong>型態</strong>、<strong>位址</strong>（在記憶體的哪裡）、<strong>儲存的值</strong>。</p>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
 
@@ -154,7 +154,7 @@ float  有效位數約 6 位</code></pre>
 main.cpp:4:9: note: ‘count’ was declared here
     4 |     int count;                       // 沒有初始化！
       |         ^~~~~</code></pre>
-<pre class="out" data-title="執行結果"><code>32764</code></pre>
+<pre class="out" data-title="執行結果"><code>32765</code></pre>
 <p><span class="gl" tabindex="0" role="button" data-g="編譯器">編譯器</span>（打開 <code>-Wall</code>）會警告 <code>is used uninitialized</code>。印出來的數字每台電腦、每次執行都可能不同（有時剛好是 0，別被騙了）。</p>
 <h3 id="s2-2-2">四種初始化寫法</h3>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
@@ -214,7 +214,7 @@ main.cpp:2:9: warning: unused variable ‘a’ [-Wunused-variable]
 <span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">shares</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre></div>
-<pre class="out" data-title="執行結果"><code>214</code></pre></div><div class="why"><p class="sh">解析</p><p><code>static_cast&lt;目標型態&gt;(值)</code> 是 C++ 建議的轉換寫法（第 4 章詳細介紹），讓讀程式的人一看就知道這裡是刻意轉型。</p></div></div></article></section></section><section class="sec" id="s2-3" data-label="2.3 整數與浮點數的陷阱"><h2><span class="num">2.3</span>整數與浮點數的陷阱</h2><h3 id="s2-3-1">整數除法</h3>
+<pre class="out" data-title="執行結果"><code>214</code></pre></div><div class="why"><p class="sh">解析</p><p><code>static_cast&lt;目標型態&gt;(值)</code> 是 C++ 建議的轉換寫法（<a class="xref" href="ch04.html">第 4 章</a>詳細介紹），讓讀程式的人一看就知道這裡是刻意轉型。</p></div></div></article></section></section><section class="sec" id="s2-3" data-label="2.3 整數與浮點數的陷阱"><h2><span class="num">2.3</span>整數與浮點數的陷阱</h2><h3 id="s2-3-1">整數除法</h3>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
 
 <span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
@@ -355,7 +355,7 @@ e
 <ul>
 <li><code>&#x27;a&#x27;</code> 是<strong>字元</strong>（1 個 byte），<code>&quot;a&quot;</code> 是<strong>字串</strong>：字串結尾會自動多一個看不見的<strong>結束字元</strong> <code>&#x27;\0&#x27;</code>（ASCII 碼 0），所以 <code>&quot;a&quot;</code> 佔 2 bytes。</li>
 <li><code>&#x27;\0&#x27;</code>（空字元）、<code>&#x27; &#x27;</code>（空格，ASCII 32）、<code>&quot;&quot;</code>（空字串）是三個不同的東西。</li>
-<li>字串的細節（C 字串 vs <code>std::string</code>）在第 3 章。</li>
+<li>字串的細節（C 字串 vs <code>std::string</code>）在<a class="xref" href="ch03.html">第 3 章</a>。</li>
 </ul>
 <h3 id="s2-4-3">布林</h3>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
@@ -481,7 +481,7 @@ main.cpp:4:15: warning: unused variable ‘k’ [-Wunused-variable]</code></pre>
 </code></pre></div>
 <pre class="out inp" data-title="鍵盤輸入"><code>abc</code></pre>
 <pre class="out" data-title="執行結果"><code>輸入的不是整數！n = 0</code></pre>
-<p>（<code>if</code> 在第 4 章介紹；這裡先知道「讀取可能失敗，要檢查」。）</p><section class="cc" id="cc-s2-5"><h3 class="cc-h">Concept Check：2.5 從鍵盤輸入：std::cin</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s2-5-1" data-key="C" data-label="2.5 從鍵盤輸入：std::cin Q1"><div class="q-meta"><h4><a href="#q-s2-5-1">Q1</a></h4><span class="q-kind">選擇｜易</span><span class="q-title">輸入運算子</span></div><div class="q-text"><p>要從鍵盤讀入一個整數到變數 <code>n</code>，正確的寫法是？</p></div><ol class="opts"><li data-k="A"><b>(A)</b><span><code>std::cout &gt;&gt; n;</code></span></li><li data-k="B"><b>(B)</b><span><code>std::cin &lt;&lt; n;</code></span></li><li data-k="C"><b>(C)</b><span><code>std::cin &gt;&gt; n;</code></span></li><li data-k="D"><b>(D)</b><span><code>std::cin(n);</code></span></li></ol><button class="toggle" type="button" aria-expanded="false">顯示解答</button><div class="sol" hidden><div class="ans"><strong>答案 (C)</strong><code>std::cin &gt;&gt; n;</code></div><div class="why"><p class="sh">解析</p><p>cin 搭配 &gt;&gt;（資料流入變數）；cout 搭配 &lt;&lt;（資料流向螢幕）。</p></div></div></article><article class="q" id="q-s2-5-2" data-label="2.5 從鍵盤輸入：std::cin Q2"><div class="q-meta"><h4><a href="#q-s2-5-2">Q2</a></h4><span class="q-kind">寫程式｜中</span><span class="q-title">讀入計算</span></div><div class="q-text"><p>寫一支程式：從鍵盤讀入持股數與每股價格，印出持股市值。（用 <code>stdin</code> 輸入 <code>3000 45.2</code> 測試。）</p></div><button class="toggle" type="button" aria-expanded="false">顯示解答</button><div class="sol" hidden><div class="ans"><strong>答案</strong><div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<p>（<code>if</code> 在<a class="xref" href="ch04.html">第 4 章</a>介紹；這裡先知道「讀取可能失敗，要檢查」。）</p><section class="cc" id="cc-s2-5"><h3 class="cc-h">Concept Check：2.5 從鍵盤輸入：std::cin</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s2-5-1" data-key="C" data-label="2.5 從鍵盤輸入：std::cin Q1"><div class="q-meta"><h4><a href="#q-s2-5-1">Q1</a></h4><span class="q-kind">選擇｜易</span><span class="q-title">輸入運算子</span></div><div class="q-text"><p>要從鍵盤讀入一個整數到變數 <code>n</code>，正確的寫法是？</p></div><ol class="opts"><li data-k="A"><b>(A)</b><span><code>std::cout &gt;&gt; n;</code></span></li><li data-k="B"><b>(B)</b><span><code>std::cin &lt;&lt; n;</code></span></li><li data-k="C"><b>(C)</b><span><code>std::cin &gt;&gt; n;</code></span></li><li data-k="D"><b>(D)</b><span><code>std::cin(n);</code></span></li></ol><button class="toggle" type="button" aria-expanded="false">顯示解答</button><div class="sol" hidden><div class="ans"><strong>答案 (C)</strong><code>std::cin &gt;&gt; n;</code></div><div class="why"><p class="sh">解析</p><p>cin 搭配 &gt;&gt;（資料流入變數）；cout 搭配 &lt;&lt;（資料流向螢幕）。</p></div></div></article><article class="q" id="q-s2-5-2" data-label="2.5 從鍵盤輸入：std::cin Q2"><div class="q-meta"><h4><a href="#q-s2-5-2">Q2</a></h4><span class="q-kind">寫程式｜中</span><span class="q-title">讀入計算</span></div><div class="q-text"><p>寫一支程式：從鍵盤讀入持股數與每股價格，印出持股市值。（用 <code>stdin</code> 輸入 <code>3000 45.2</code> 測試。）</p></div><button class="toggle" type="button" aria-expanded="false">顯示解答</button><div class="sol" hidden><div class="ans"><strong>答案</strong><div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
 
 <span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">shares</span><span class="p">;</span>
@@ -508,12 +508,12 @@ main.cpp:4:15: warning: unused variable ‘k’ [-Wunused-variable]</code></pre>
 <span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre></div>
-<pre class="out" data-title="執行結果"><code>shares 的值 = 1000，位址 = 0x7fffb799e5fc
-price  的值 = 101.5，位址 = 0x7fffb799e600
-grade  的位址 = 0x7fffb799e5fb</code></pre>
+<pre class="out" data-title="執行結果"><code>shares 的值 = 1000，位址 = 0x7ffe26036c8c
+price  的值 = 101.5，位址 = 0x7ffe26036c90
+grade  的位址 = 0x7ffe26036c8b</code></pre>
 <ul>
 <li>位址用<strong>十六進位</strong>顯示（0x 開頭），每次執行可能不同——作業系統每次分配的位置不一樣。</li>
-<li><code>char</code> 的位址要轉成 <code>void*</code> 才會印出位址，否則 cout 會把它當成字串去印（第 3 章字元陣列會說明）。</li>
+<li><code>char</code> 的位址要轉成 <code>void*</code> 才會印出位址，否則 cout 會把它當成字串去印（<a class="xref" href="ch03.html">第 3 章</a>字元陣列會說明）。</li>
 </ul>
 <h3 id="s2-6-2">為什麼要在意位址</h3>
 <p>在 R 裡你幾乎不用想記憶體；但 C++ 讓你直接操作位址，這帶來兩件事：</p>
@@ -598,7 +598,7 @@ main.cpp:4:10: warning: unused variable ‘r2’ [-Wunused-variable]
 <span class="p">}</span>
 </code></pre></div>
 <pre class="out" data-title="執行結果"><code>帳戶餘額：10290</code></pre>
-<p>函數拿到的是 <code>account</code> 的別名，所以在函數裡改 <code>balance</code> 就是改 <code>account</code>。第 5 章會詳細比較「傳值」和「<span class="gl" tabindex="0" role="button" data-g="傳參考">傳參考</span>」。</p><section class="cc" id="cc-s2-7"><h3 class="cc-h">Concept Check：2.7 參考：替變數取別名</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s2-7-1" data-label="2.7 參考：替變數取別名 Q1"><div class="q-meta"><h4><a href="#q-s2-7-1">Q1</a></h4><span class="q-kind">預測輸出｜中</span><span class="q-title">參考改值</span></div><div class="q-text"><p>下面程式印出什麼？</p>
+<p>函數拿到的是 <code>account</code> 的別名，所以在函數裡改 <code>balance</code> 就是改 <code>account</code>。<a class="xref" href="ch05.html">第 5 章</a>會詳細比較「傳值」和「<span class="gl" tabindex="0" role="button" data-g="傳參考">傳參考</span>」。</p><section class="cc" id="cc-s2-7"><h3 class="cc-h">Concept Check：2.7 參考：替變數取別名</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s2-7-1" data-label="2.7 參考：替變數取別名 Q1"><div class="q-meta"><h4><a href="#q-s2-7-1">Q1</a></h4><span class="q-kind">預測輸出｜中</span><span class="q-title">參考改值</span></div><div class="q-text"><p>下面程式印出什麼？</p>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
 <span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">8</span><span class="p">;</span>
@@ -638,11 +638,11 @@ main.cpp:4:10: warning: unused variable ‘r2’ [-Wunused-variable]
 <span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre></div>
-<pre class="out" data-title="執行結果"><code>price 的位址 : 0x7ffc35b98fa8
-ptr 的值      : 0x7ffc35b98fa8
+<pre class="out" data-title="執行結果"><code>price 的位址 : 0x7ffcb5ff4bc8
+ptr 的值      : 0x7ffcb5ff4bc8
 *ptr          : 101.5
 price 變成    : 99
-ptr 自己的位址: 0x7ffc35b98fb0，大小 8 bytes</code></pre>
+ptr 自己的位址: 0x7ffcb5ff4bd0，大小 8 bytes</code></pre>
 <p>兩個符號、兩種角色（老師特別提醒要看上下文）：</p>
 <table>
 <thead>
@@ -742,8 +742,8 @@ ptr 自己的位址: 0x7ffc35b98fb0，大小 8 bytes</code></pre>
 <span class="p">}</span>
 </code></pre></div>
 <pre class="out" data-title="執行結果"><code>x     = 100
-ptr   = 0x7ffca5eeea84，*ptr = 100
-ptr2  = 0x7ffca5eeea88，*ptr2 = 0x7ffca5eeea84，**ptr2 = 100</code></pre>
+ptr   = 0x7ffc40b08214，*ptr = 100
+ptr2  = 0x7ffc40b08218，*ptr2 = 0x7ffc40b08214，**ptr2 = 100</code></pre>
 <p><code>*ptr2</code> 拿到的是 ptr（一個位址），再 <code>*</code> 一次 <code>**ptr2</code> 才拿到 x 的值 100。</p>
 <h3 id="s2-8-5">void* 指標</h3>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
@@ -857,7 +857,7 @@ ptr2  = 0x7ffca5eeea88，*ptr2 = 0x7ffca5eeea84，**ptr2 = 100</code></pre>
 <span class="p">}</span>
 </code></pre></div>
 <pre class="out" data-title="執行結果"><code>5 10000</code></pre>
-<p>右值參考的目的是<strong>效率</strong>：對「反正要消失的臨時物件」，與其複製一份，不如直接把它的內容「搬走」（move）。這是現代 C++ 的重要機制，第 7 章講物件複製時會再看到；現在只要知道 <code>&amp;</code> 綁定有名字的東西、<code>&amp;&amp;</code> 綁定臨時的東西。</p><section class="cc" id="cc-s2-9"><h3 class="cc-h">Concept Check：2.9 const 與指標、右值參考</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s2-9-1" data-key="C" data-label="2.9 const 與指標、右值參考 Q1"><div class="q-meta"><h4><a href="#q-s2-9-1">Q1</a></h4><span class="q-kind">選擇｜難</span><span class="q-title">const 的位置</span></div><div class="q-text"><p><code>double x = 1, y = 2; double *const p = &amp;x;</code> 之後，下列哪一行<strong>無法</strong>編譯？</p></div><ol class="opts"><li data-k="A"><b>(A)</b><span><code>*p = 3;</code></span></li><li data-k="B"><b>(B)</b><span><code>x = 4;</code></span></li><li data-k="C"><b>(C)</b><span><code>p = &amp;y;</code></span></li><li data-k="D"><b>(D)</b><span><code>double z = *p;</code></span></li></ol><button class="toggle" type="button" aria-expanded="false">顯示解答</button><div class="sol" hidden><div class="ans"><strong>答案 (C)</strong><code>p = &amp;y;</code></div><div class="why"><p class="sh">解析</p><p><code>double *const p</code> 是常數指標（Top-Level const）：p 本身不能改指向，但可以透過 p 修改 x。</p></div></div></article><article class="q" id="q-s2-9-2" data-label="2.9 const 與指標、右值參考 Q2"><div class="q-meta"><h4><a href="#q-s2-9-2">Q2</a></h4><span class="q-kind">簡答｜中</span><span class="q-title">const 參考的用途</span></div><div class="q-text"><p>為什麼函數參數常寫成 <code>const std::vector&lt;double&gt; &amp;returns</code>，而不是 <code>std::vector&lt;double&gt; returns</code> 或 <code>std::vector&lt;double&gt; &amp;returns</code>？</p></div><button class="toggle" type="button" aria-expanded="false">顯示解答</button><div class="sol" hidden><div class="ans"><strong>答案</strong><p>寫成 <code>std::vector&lt;double&gt; returns</code>（傳值）會把整份資料複製一次，資料大時很慢；寫成 <code>std::vector&lt;double&gt; &amp;returns</code>（一般參考）不複製，但函數可能不小心修改呼叫端的資料。<code>const</code> 參考兩者兼顧：不複製、又保證函數只能讀不能改，也能接受臨時物件。</p></div></div></article></section></section><section class="sec" id="s2-10" data-label="2.10 自訂型態：struct、enum、union"><h2><span class="num">2.10</span>自訂型態：struct、enum、union</h2><h3 id="s2-10-1">struct：把相關的資料打包</h3>
+<p>右值參考的目的是<strong>效率</strong>：對「反正要消失的臨時物件」，與其複製一份，不如直接把它的內容「搬走」（move）。這是現代 C++ 的重要機制，<a class="xref" href="ch07.html">第 7 章</a>講物件複製時會再看到；現在只要知道 <code>&amp;</code> 綁定有名字的東西、<code>&amp;&amp;</code> 綁定臨時的東西。</p><section class="cc" id="cc-s2-9"><h3 class="cc-h">Concept Check：2.9 const 與指標、右值參考</h3><p class="cc-note">自編練習題（選擇、填空、預測輸出、找錯、寫程式），不是老師出的題目。寫程式題的參考答案都實際編譯執行過。</p><article class="q" id="q-s2-9-1" data-key="C" data-label="2.9 const 與指標、右值參考 Q1"><div class="q-meta"><h4><a href="#q-s2-9-1">Q1</a></h4><span class="q-kind">選擇｜難</span><span class="q-title">const 的位置</span></div><div class="q-text"><p><code>double x = 1, y = 2; double *const p = &amp;x;</code> 之後，下列哪一行<strong>無法</strong>編譯？</p></div><ol class="opts"><li data-k="A"><b>(A)</b><span><code>*p = 3;</code></span></li><li data-k="B"><b>(B)</b><span><code>x = 4;</code></span></li><li data-k="C"><b>(C)</b><span><code>p = &amp;y;</code></span></li><li data-k="D"><b>(D)</b><span><code>double z = *p;</code></span></li></ol><button class="toggle" type="button" aria-expanded="false">顯示解答</button><div class="sol" hidden><div class="ans"><strong>答案 (C)</strong><code>p = &amp;y;</code></div><div class="why"><p class="sh">解析</p><p><code>double *const p</code> 是常數指標（Top-Level const）：p 本身不能改指向，但可以透過 p 修改 x。</p></div></div></article><article class="q" id="q-s2-9-2" data-label="2.9 const 與指標、右值參考 Q2"><div class="q-meta"><h4><a href="#q-s2-9-2">Q2</a></h4><span class="q-kind">簡答｜中</span><span class="q-title">const 參考的用途</span></div><div class="q-text"><p>為什麼函數參數常寫成 <code>const std::vector&lt;double&gt; &amp;returns</code>，而不是 <code>std::vector&lt;double&gt; returns</code> 或 <code>std::vector&lt;double&gt; &amp;returns</code>？</p></div><button class="toggle" type="button" aria-expanded="false">顯示解答</button><div class="sol" hidden><div class="ans"><strong>答案</strong><p>寫成 <code>std::vector&lt;double&gt; returns</code>（傳值）會把整份資料複製一次，資料大時很慢；寫成 <code>std::vector&lt;double&gt; &amp;returns</code>（一般參考）不複製，但函數可能不小心修改呼叫端的資料。<code>const</code> 參考兩者兼顧：不複製、又保證函數只能讀不能改，也能接受臨時物件。</p></div></div></article></section></section><section class="sec" id="s2-10" data-label="2.10 自訂型態：struct、enum、union"><h2><span class="num">2.10</span>自訂型態：struct、enum、union</h2><h3 id="s2-10-1">struct：把相關的資料打包</h3>
 <p>一張債券有面額、票面利率、到期年數……分散成好幾個變數很亂。<strong>結構</strong>（struct）把它們打包成一個新型態：</p>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;cmath&gt;</span>
@@ -893,7 +893,7 @@ b2 面額 = 1000，sizeof(Bond) = 24</code></pre>
 <li><code>struct Bond { ... };</code> 定義一個新型態 Bond，之後 <code>Bond b1;</code> 就像 <code>int x;</code> 一樣用。</li>
 <li>用 <code>.</code> 存取成員：<code>b1.face</code>。</li>
 <li><code>sizeof(Bond)</code> 是 24 而不是 8 + 8 + 4 = 20：編譯器會在成員之間或尾端補空白（<strong>對齊</strong>，alignment），讓存取更快。</li>
-<li>老師提醒：<strong>struct 是 class 的基礎</strong>。第 7 章的類別就是「資料＋操作資料的函數」打包在一起。</li>
+<li>老師提醒：<strong>struct 是 class 的基礎</strong>。<a class="xref" href="ch07.html">第 7 章</a>的類別就是「資料＋操作資料的函數」打包在一起。</li>
 </ul>
 <p>結構可以套結構，也可以有指向結構的指標（用 <code>-&gt;</code> 存取成員）：</p>
 <div class="code"><button class="copy" type="button" aria-label="複製程式碼">複製</button><span class="lang">C++</span><pre><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
@@ -985,7 +985,7 @@ b2 面額 = 1000，sizeof(Bond) = 24</code></pre>
 </code></pre></div>
 <pre class="out" data-title="執行結果"><code>2330：35000
 2317：-13000
-合計：22000</code></pre></div><div class="why"><p class="sh">解析</p><p>學完第 3 章的 vector 後，可以把很多個 Position 放進 <code>std::vector&lt;Position&gt;</code>，用迴圈一次算完；第 7 章再把「計算損益」做成 Position 自己的成員函數。</p></div></div></article></section></section><section class="sec" id="s2-11" data-label="2.11 本章小結"><h2><span class="num">2.11</span>本章小結</h2><ul>
+合計：22000</code></pre></div><div class="why"><p class="sh">解析</p><p>學完<a class="xref" href="ch03.html">第 3 章</a>的 vector 後，可以把很多個 Position 放進 <code>std::vector&lt;Position&gt;</code>，用迴圈一次算完；<a class="xref" href="ch07.html">第 7 章</a>再把「計算損益」做成 Position 自己的成員函數。</p></div></div></article></section></section><section class="sec" id="s2-11" data-label="2.11 本章小結"><h2><span class="num">2.11</span>本章小結</h2><ul>
 <li>C++ 是強型別語言：整數 <code>int</code>／<code>long long</code>、浮點數 <code>double</code>（金融首選）、字元 <code>char</code>、布林 <code>bool</code>；用 <code>sizeof</code>、<code>numeric_limits</code> 查大小與範圍。</li>
 <li>變數要<strong>初始化</strong>；<code>{}</code> 初始化可防止縮窄轉換；double 轉 int 是捨去。</li>
 <li>陷阱：整數除法、整數溢位、signed／unsigned 混用、浮點數不能用 <code>==</code> 比較。</li>
@@ -998,7 +998,7 @@ b2 面額 = 1000，sizeof(Bond) = 24</code></pre>
 <nav class="pager" aria-label="上一頁與下一頁"><a class="prev" href="ch01.html"><small>← 上一章</small>第 1 章　C++ 簡介與第一支程式</a><a class="next" href="ch03.html"><small>下一章 →</small>第 3 章　陣列、指標與字串</a></nav></main>
 <footer class="site-foot"><span>金融程式計算：C++｜課程筆記</span></footer>
 <script src="assets/katex/katex.min.js"></script><script src="assets/katex/auto-render.min.js"></script>
-<script src="assets/search.js?v=ec31cdb7"></script>
+<script src="assets/search.js?v=8a1403df"></script>
 <script src="assets/glossary.js?v=463e3d05"></script>
 <script src="assets/site.js?v=484e1572"></script>
 </body></html>
